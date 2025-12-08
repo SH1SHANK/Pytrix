@@ -3,6 +3,7 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { PracticeProvider } from "./PracticeContext";
+import { GlobalProviders } from "./GlobalProviders";
 import { Toaster } from "@/components/ui/sonner";
 
 // JetBrains Mono for code
@@ -42,7 +43,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <PracticeProvider>
-            {children}
+            <GlobalProviders>{children}</GlobalProviders>
             <Toaster />
           </PracticeProvider>
         </ThemeProvider>

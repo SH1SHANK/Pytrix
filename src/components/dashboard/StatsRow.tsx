@@ -10,12 +10,13 @@ import {
   Target,
   Lightning,
 } from "@phosphor-icons/react";
+import { ApiUsageCard } from "./ApiUsageCard";
 
 export function StatsRow() {
   const { stats } = usePractice();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       {/* Topics Coverage */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -97,6 +98,9 @@ export function StatsRow() {
           </p>
         </CardContent>
       </Card>
+
+      {/* API Usage Card */}
+      <ApiUsageCard />
     </div>
   );
 }

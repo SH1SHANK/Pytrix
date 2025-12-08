@@ -14,6 +14,7 @@ import {
   isRateLimitError,
   isConfigurationError,
 } from "./geminiClient";
+import { recordApiUsage, recordRateLimitHit } from "../usageStore";
 
 // ============================================
 // TYPE DEFINITIONS
@@ -188,6 +189,15 @@ export async function callGeminiWithFallback<T>(
         data = text as unknown as T;
       }
 
+      // Estimate token counts (rough: ~4 chars per token)
+      const inputTokens = Math.ceil(prompt.length / 4);
+      const outputTokens = Math.ceil(text.length / 4);
+
+      // Record usage (client-side only, will be no-op on server)
+      if (typeof window !== "undefined") {
+        recordApiUsage(modelName, inputTokens, outputTokens);
+      }
+
       return {
         success: true,
         data,
@@ -207,6 +217,9 @@ export async function callGeminiWithFallback<T>(
 
       if (isRateLimitError(error)) {
         recordRateLimit(modelName);
+        if (typeof window !== "undefined") {
+          recordRateLimitHit(modelName);
+        }
         continue;
       }
 

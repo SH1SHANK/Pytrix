@@ -49,6 +49,8 @@ import { QuestionPanel } from "@/components/practice/QuestionPanel";
 import { CodeEditorPanel } from "@/components/practice/CodeEditorPanel";
 import { OutputPanel } from "@/components/practice/OutputPanel";
 import { AutoModeStatsBar } from "@/components/automode/AutoModeStatsBar";
+import { HelpSheet } from "@/components/help/HelpSheet";
+import { Question as QuestionIcon } from "@phosphor-icons/react";
 
 // AI Actions
 import { generateQuestion } from "@/lib/ai/generateQuestion";
@@ -540,6 +542,19 @@ function PracticeWorkspace() {
               Next <FastForward className="h-4 w-4 ml-2" />
             </Button>
           )}
+
+          {/* Help Button */}
+          <HelpSheet
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Help and Settings"
+              >
+                <QuestionIcon weight="duotone" className="h-5 w-5" />
+              </Button>
+            }
+          />
         </div>
       </header>
 
