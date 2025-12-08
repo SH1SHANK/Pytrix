@@ -41,7 +41,7 @@ import {
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { resetStats } from "@/lib/statsStore";
-import { getSaveFiles, exportAllRuns, importRuns } from "@/lib/autoModeService";
+import { exportAllRuns, importRuns } from "@/lib/autoModeService";
 import { usePractice } from "@/app/PracticeContext";
 
 interface HelpSheetProps {

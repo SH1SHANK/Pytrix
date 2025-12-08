@@ -34,6 +34,8 @@ import {
   Function as FunctionIcon,
   Database,
   Tree,
+  Gear,
+  Key,
 } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { resetStats } from "@/lib/statsStore";
@@ -144,71 +146,65 @@ export function CommandPalette({
         <CommandGroup heading="Navigation">
           <CommandItem onSelect={() => runCommand(() => router.push("/"))}>
             <House weight="duotone" className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
+            <span>Go to Dashboard</span>
           </CommandItem>
           <CommandItem
-            onSelect={() =>
-              runCommand(() => router.push("/practice?topic=Strings"))
-            }
+            onSelect={() => runCommand(() => router.push("/practice/manual"))}
           >
             <Target weight="duotone" className="mr-2 h-4 w-4" />
-            <span>Manual Practice</span>
+            <span>Open Manual Practice</span>
           </CommandItem>
           <CommandItem
-            onSelect={() =>
-              runCommand(() => {
-                // Open Auto Mode dialog - navigate to dashboard
-                router.push("/");
-                toast.info("Click 'Start Auto Mode' on dashboard");
-              })
-            }
+            onSelect={() => runCommand(() => router.push("/practice/auto"))}
           >
             <Lightning weight="duotone" className="mr-2 h-4 w-4" />
-            <span>Auto Mode</span>
+            <span>Open Auto Mode</span>
           </CommandItem>
           <CommandItem
-            onSelect={() =>
-              runCommand(() => {
-                router.push("/");
-                toast.info("Click 'Start Auto Mode' to view saved runs");
-              })
-            }
+            onSelect={() => runCommand(() => router.push("/history"))}
           >
             <FloppyDisk weight="duotone" className="mr-2 h-4 w-4" />
-            <span>Saved Runs</span>
+            <span>Open History</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => runCommand(() => router.push("/insights/stats"))}
+          >
+            <Gauge weight="duotone" className="mr-2 h-4 w-4" />
+            <span>Open Stats & Progress</span>
           </CommandItem>
           <CommandItem
             onSelect={() =>
-              runCommand(() => {
-                router.push("/");
-                // Focus on API Usage card
-              })
+              runCommand(() => router.push("/insights/api-usage"))
             }
           >
             <Gauge weight="duotone" className="mr-2 h-4 w-4" />
-            <span>API Usage</span>
+            <span>Open API Usage</span>
           </CommandItem>
           <CommandItem
-            onSelect={() =>
-              runCommand(() => {
-                // Trigger help sheet - it's on dashboard
-                router.push("/");
-                toast.info("Click Help icon (?) in top-right");
-              })
-            }
+            onSelect={() => runCommand(() => router.push("/support/help"))}
           >
             <Question weight="duotone" className="mr-2 h-4 w-4" />
-            <span>Help & Docs</span>
+            <span>Open Help & Docs</span>
           </CommandItem>
           <CommandItem
             onSelect={() =>
-              runCommand(() => {
-                window.open("https://github.com/issues", "_blank");
-              })
+              runCommand(() => router.push("/support/bug-report"))
             }
           >
             <Bug weight="duotone" className="mr-2 h-4 w-4" />
-            <span>Report a Bug</span>
+            <span>Open Bug Report</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => runCommand(() => router.push("/support/settings"))}
+          >
+            <Gear weight="duotone" className="mr-2 h-4 w-4" />
+            <span>Open Settings</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => runCommand(() => router.push("/support/settings"))}
+          >
+            <Key weight="duotone" className="mr-2 h-4 w-4" />
+            <span>Configure API Key</span>
           </CommandItem>
         </CommandGroup>
 

@@ -1,24 +1,22 @@
 /**
  * Gemini Client - Low-Level SDK Wrapper
  *
- * This module initializes the Google Generative AI client and provides
- * low-level access to models. Use modelRouter.ts for production calls
+ * This module provides factory functions to create Google Generative AI clients
+ * with user-provided API keys. Use modelRouter.ts for production calls
  * with fallback and cost-aware selection.
+ *
+ * ## BYOK (Bring Your Own Key) Architecture
+ * - No global client instance - each call creates a client with the provided key
+ * - API keys come from client-side storage via apiKeyStore.ts
+ * - Keys are passed to API routes via X-API-Key header
+ *
+ * ## How modelRouter picks up the key
+ * - modelRouter.callGeminiWithFallback() accepts an apiKey parameter
+ * - It passes this to createGeminiClient() / getModelWithKey()
+ * - API routes extract key from request headers and pass to these functions
  */
 
 import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
-
-// Environment variable loading
-// Prefer GEMINI_API_KEY, fallback to GOOGLE_API_KEY for flexibility.
-const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-
-if (!API_KEY) {
-  console.error(
-    "[GeminiClient] CRITICAL: Missing GEMINI_API_KEY or GOOGLE_API_KEY environment variable."
-  );
-}
-
-const genAI = new GoogleGenerativeAI(API_KEY || "");
 
 /**
  * Available Gemini Models (cost-aware)
@@ -46,18 +44,92 @@ export const AVAILABLE_MODELS = {
 export type ModelAlias = keyof typeof AVAILABLE_MODELS;
 
 /**
+ * Error thrown when no API key is provided.
+ */
+export class ApiKeyRequiredError extends Error {
+  constructor() {
+    super("API key is required. Please configure your API key in Settings.");
+    this.name = "ApiKeyRequiredError";
+  }
+}
+
+/**
+ * Create a GoogleGenerativeAI client with the provided API key.
+ *
+ * @param apiKey - User's Gemini API key
+ * @returns GoogleGenerativeAI instance
+ * @throws ApiKeyRequiredError if apiKey is empty
+ */
+export function createGeminiClient(apiKey: string): GoogleGenerativeAI {
+  if (!apiKey || apiKey.trim().length === 0) {
+    throw new ApiKeyRequiredError();
+  }
+  return new GoogleGenerativeAI(apiKey);
+}
+
+/**
  * Get a GenerativeModel instance by alias or raw model name.
  *
- * - If the caller passes a known alias (e.g. "gemini-2.5-flash-lite"),
- *   we map it via AVAILABLE_MODELS.
- * - If they pass a full model name directly, we use it as-is.
+ * @param apiKey - User's Gemini API key
+ * @param modelNameOrAlias - Model alias (e.g., "gemini-2.5-flash-lite") or full name
+ * @returns GenerativeModel instance
+ * @throws ApiKeyRequiredError if apiKey is empty
  */
-export function getModel(modelNameOrAlias: string): GenerativeModel {
+export function getModelWithKey(
+  apiKey: string,
+  modelNameOrAlias: string
+): GenerativeModel {
+  const genAI = createGeminiClient(apiKey);
   const actualModelName =
     (AVAILABLE_MODELS as Record<string, string>)[modelNameOrAlias] ||
     modelNameOrAlias;
 
   return genAI.getGenerativeModel({ model: actualModelName });
+}
+
+/**
+ * Test if an API key is valid by listing available models.
+ *
+ * @param apiKey - User's Gemini API key to test
+ * @returns Object with success status and any error message
+ */
+export async function testApiKey(apiKey: string): Promise<{
+  valid: boolean;
+  error?: string;
+}> {
+  if (!apiKey || apiKey.trim().length === 0) {
+    return { valid: false, error: "API key is empty" };
+  }
+
+  try {
+    const genAI = createGeminiClient(apiKey);
+    // Make a minimal API call to validate the key
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+    await model.generateContent("Hello");
+    return { valid: true };
+  } catch (error) {
+    const errorString = String(error);
+
+    if (
+      errorString.includes("API_KEY") ||
+      errorString.includes("401") ||
+      errorString.includes("403")
+    ) {
+      return {
+        valid: false,
+        error: "Invalid API key. Please check your key and try again.",
+      };
+    }
+    if (errorString.includes("quota") || errorString.includes("429")) {
+      // Key is valid but quota exceeded - still counts as valid
+      return { valid: true };
+    }
+
+    return {
+      valid: false,
+      error: "Could not verify API key. Please check your connection.",
+    };
+  }
 }
 
 /**

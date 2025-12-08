@@ -8,7 +8,7 @@
  */
 
 import { Question, DifficultyLevel } from "./types";
-import { generateQuestion } from "./ai/generateQuestion";
+import { generateQuestion } from "./aiClient";
 
 // ============================================
 // CONFIGURATION

@@ -1,9 +1,17 @@
 "use client";
 
+/**
+ * CodeEditorPanel - Monaco-based Python code editor
+ *
+ * Reads settings from useSettingsStore.editor:
+ * - tabSize, minimap, lineNumbers, wordWrap, highlightActiveLine
+ */
+
 import { Card } from "@/components/ui/card";
 import Editor, { loader } from "@monaco-editor/react";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
+import { useSettingsStore } from "@/lib/settingsStore";
 
 interface CodeEditorPanelProps {
   code: string;
@@ -52,12 +60,35 @@ const githubDarkTheme = {
 export function CodeEditorPanel({ code, onChange }: CodeEditorPanelProps) {
   const { theme } = useTheme();
 
+  // Read editor settings from store
+  const {
+    tabSize,
+    showLineNumbers,
+    showMinimap,
+    wordWrap,
+    highlightActiveLine,
+  } = useSettingsStore((s) => s.editor);
+
+  // Get code font from appearance settings
+  const { codeFont } = useSettingsStore((s) => s.appearance);
+
   // Register GitHub Dark theme when Monaco loads
   useEffect(() => {
     loader.init().then((monaco) => {
       monaco.editor.defineTheme("github-dark", githubDarkTheme);
     });
   }, []);
+
+  // Determine font family
+  let fontFamily = "'JetBrains Mono', monospace";
+  switch (codeFont) {
+    case "fira-code":
+      fontFamily = "'Fira Code', monospace";
+      break;
+    case "system-monospace":
+      fontFamily = "ui-monospace, monospace";
+      break;
+  }
 
   return (
     <Card className="h-full border-none shadow-none rounded-none overflow-hidden flex flex-col">
@@ -70,16 +101,18 @@ export function CodeEditorPanel({ code, onChange }: CodeEditorPanelProps) {
           value={code}
           onChange={onChange}
           options={{
-            minimap: { enabled: false },
+            minimap: { enabled: showMinimap },
             fontSize: 14,
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily,
             fontLigatures: true,
             scrollBeyondLastLine: false,
             automaticLayout: true,
-            tabSize: 4,
+            tabSize,
             lineHeight: 1.6,
             padding: { top: 12 },
-            renderLineHighlight: "line",
+            renderLineHighlight: highlightActiveLine ? "line" : "none",
+            lineNumbers: showLineNumbers ? "on" : "off",
+            wordWrap: wordWrap ? "on" : "off",
             cursorBlinking: "smooth",
             cursorSmoothCaretAnimation: "on",
             smoothScrolling: true,

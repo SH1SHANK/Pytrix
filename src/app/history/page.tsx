@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+
 import {
   ColumnDef,
   flexRender,
@@ -22,26 +22,49 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowLeft,
-  ArrowUpDown,
+  ArrowsDownUp,
   Check,
-  X,
   Minus,
   Clock,
-  Search,
-} from "lucide-react";
-import {
+  MagnifyingGlass,
+  ArrowSquareOut,
+  Copy,
+  Code,
+  Trash,
   Lightning,
   User,
   Sparkle,
   Barbell,
   Trophy,
 } from "@phosphor-icons/react";
-import { getHistory, QuestionHistoryEntry } from "@/lib/historyStore";
+import {
+  getHistory,
+  deleteHistoryEntry,
+  QuestionHistoryEntry,
+} from "@/lib/historyStore";
+import { toast } from "sonner";
+import { useRequireApiKey } from "@/hooks/useRequireApiKey";
 
 // ============================================
 // COLUMN DEFINITIONS
@@ -79,7 +102,7 @@ const columns: ColumnDef<QuestionHistoryEntry>[] = [
         className="-ml-4"
       >
         Question
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowsDownUp className="ml-2 h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => (
@@ -165,7 +188,7 @@ const columns: ColumnDef<QuestionHistoryEntry>[] = [
         className="-ml-4"
       >
         Time
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowsDownUp className="ml-2 h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => (
@@ -179,7 +202,9 @@ const columns: ColumnDef<QuestionHistoryEntry>[] = [
 
 // ============================================
 // MAIN COMPONENT
-// ============================================
+import { Skeleton } from "@/components/ui/skeleton";
+
+// ... imports ...
 
 export default function HistoryPage() {
   const router = useRouter();
@@ -189,11 +214,15 @@ export default function HistoryPage() {
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const { isLoading } = useRequireApiKey();
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
     setHistory(getHistory());
+    setIsDataLoading(false);
   }, []);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: history,
     columns,
@@ -220,117 +249,211 @@ export default function HistoryPage() {
     router.push(`/practice?mode=review&historyId=${entry.id}`);
   };
 
+  // Context menu actions (following shadcn patterns from llms.txt)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] =
+    useState<QuestionHistoryEntry | null>(null);
+
+  const handleCopyQuestion = (entry: QuestionHistoryEntry) => {
+    navigator.clipboard.writeText(entry.questionText);
+    toast.success("Question copied to clipboard");
+  };
+
+  const handleCopyCode = (entry: QuestionHistoryEntry) => {
+    navigator.clipboard.writeText(entry.codeSnapshot);
+    toast.success("Code copied to clipboard");
+  };
+
+  const handleDeleteClick = (entry: QuestionHistoryEntry) => {
+    setEntryToDelete(entry);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (entryToDelete) {
+      deleteHistoryEntry(entryToDelete.id);
+      setHistory(getHistory());
+      toast.success("Entry deleted");
+    }
+    setDeleteDialogOpen(false);
+    setEntryToDelete(null);
+  };
+
+  if (isLoading) return null;
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <h1 className="text-xl font-semibold">Question History</h1>
-          </div>
-        </div>
-      </header>
-
+    <div className="p-6">
       {/* Content */}
-      <main className="container mx-auto px-4 py-6">
-        {/* Filters */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search questions..."
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {table.getFilteredRowModel().rows.length} entries
-          </div>
+      {/* Filters */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="relative flex-1 max-w-sm">
+          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search questions..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="pl-10"
+          />
         </div>
+        <div className="text-sm text-muted-foreground">
+          {table.getFilteredRowModel().rows.length} entries
+        </div>
+      </div>
 
-        {/* Table */}
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    onClick={() => handleRowClick(row.original)}
-                    className="cursor-pointer"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+      {/* Table */}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
                         )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No history yet. Start practicing to see your attempts here!
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isDataLoading ? (
+              // Loading Skeletons
+              [...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="h-5 w-[200px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-[100px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-[80px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-[80px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-[40px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-[80px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-[120px]" />
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <ContextMenu key={row.id}>
+                  <ContextMenuTrigger asChild>
+                    <TableRow
+                      onClick={() => handleRowClick(row.original)}
+                      className="cursor-pointer"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="w-48">
+                    <ContextMenuItem
+                      onClick={() => handleRowClick(row.original)}
+                    >
+                      <ArrowSquareOut className="mr-2 h-4 w-4" />
+                      Open in Practice
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                      onClick={() => handleCopyQuestion(row.original)}
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy Question Text
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => handleCopyCode(row.original)}
+                    >
+                      <Code className="mr-2 h-4 w-4" />
+                      Copy Code
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => handleDeleteClick(row.original)}
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete from History
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No history yet. Start practicing to see your attempts here!
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between py-4">
-          <div className="text-sm text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
+      {/* Pagination */}
+      <div className="flex items-center justify-between py-4">
+        <div className="text-sm text-muted-foreground">
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {table.getPageCount()}
         </div>
-      </main>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete History Entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove &quot;{entryToDelete?.questionTitle}
+              &quot; from your history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

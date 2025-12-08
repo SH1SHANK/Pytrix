@@ -12,8 +12,33 @@ import {
 } from "@phosphor-icons/react";
 import { ApiUsageCard } from "./ApiUsageCard";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 export function StatsRow() {
-  const { stats } = usePractice();
+  const { stats, isLoading } = usePractice();
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {[...Array(5)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Skeleton className="h-4 w-[100px]" />
+              <Skeleton className="h-4 w-4 rounded-full" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+              <Skeleton className="h-3 w-[120px] mt-2" />
+              <Skeleton className="h-2 w-full mt-3" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

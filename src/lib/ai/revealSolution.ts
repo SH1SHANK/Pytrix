@@ -1,9 +1,20 @@
 "use server";
 
+/**
+ * Reveal Solution - Server Action (DEPRECATED)
+ *
+ * NOTE: This module is kept for backwards compatibility.
+ * New code should use the client-side aiClient.ts which calls
+ * the API route /api/ai/reveal-solution.
+ *
+ * For direct server-side usage, pass an apiKey parameter.
+ */
+
 import { callGeminiWithFallback, AIResult } from "./modelRouter";
 import { Question } from "@/lib/types";
 
 export async function revealSolution(
+  apiKey: string,
   question: Question,
   failedAttempts: number
 ): Promise<{ referenceSolution: string }> {
@@ -28,6 +39,7 @@ Return ONLY the raw Python code (no markdown, no explanation).
 `;
 
   const result: AIResult<string> = await callGeminiWithFallback(
+    apiKey,
     "reveal-solution",
     prompt
     // No JSON parser - we want raw text

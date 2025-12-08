@@ -1,5 +1,15 @@
 "use server";
 
+/**
+ * Evaluate Code - Server Action (DEPRECATED)
+ *
+ * NOTE: This module is kept for backwards compatibility.
+ * New code should use the client-side aiClient.ts which calls
+ * the API route /api/ai/evaluate-code.
+ *
+ * For direct server-side usage, pass an apiKey parameter.
+ */
+
 import {
   callGeminiWithFallback,
   parseJsonResponse,
@@ -15,6 +25,7 @@ interface ExecutionContext {
 }
 
 export async function evaluateCode(
+  apiKey: string,
   question: Question,
   code: string,
   executionContext?: ExecutionContext
@@ -65,6 +76,7 @@ Return ONLY a raw JSON object with this schema:
 `;
 
   const result: AIResult<EvaluationResult> = await callGeminiWithFallback(
+    apiKey,
     "code-feedback",
     prompt,
     parseJsonResponse<EvaluationResult>
@@ -82,6 +94,16 @@ Return ONLY a raw JSON object with this schema:
       status: "error",
       explanation:
         "All AI backends are currently unavailable. Please try again in a moment.",
+      expectedBehavior: "",
+      nextHint: null,
+    };
+  }
+
+  if (result.errorType === "api_key_required") {
+    return {
+      status: "error",
+      explanation:
+        "API key required. Please configure your API key in Settings.",
       expectedBehavior: "",
       nextHint: null,
     };

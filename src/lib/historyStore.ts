@@ -126,7 +126,6 @@ export function addHistoryEntry(
   }
 
   saveHistory(entries);
-  console.log(`[HistoryStore] Added entry: ${newEntry.questionTitle}`);
 
   return newEntry;
 }
@@ -167,7 +166,6 @@ export function deleteHistoryEntry(id: string): boolean {
   entries.splice(index, 1);
   saveHistory(entries);
 
-  console.log(`[HistoryStore] Deleted entry: ${id}`);
   return true;
 }
 
@@ -177,7 +175,6 @@ export function deleteHistoryEntry(id: string): boolean {
 export function clearHistory(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(HISTORY_CONFIG.STORAGE_KEY);
-  console.log("[HistoryStore] Cleared all history");
 }
 
 /**

@@ -3,8 +3,10 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { PracticeProvider } from "./PracticeContext";
+import { ApiKeyProvider } from "./ApiKeyContext";
 import { GlobalProviders } from "./GlobalProviders";
 import { Toaster } from "@/components/ui/sonner";
+import { AppShell } from "@/components/layout/AppShell";
 
 // JetBrains Mono for code
 const jetbrainsMono = JetBrains_Mono({
@@ -42,10 +44,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <PracticeProvider>
-            <GlobalProviders>{children}</GlobalProviders>
-            <Toaster />
-          </PracticeProvider>
+          <ApiKeyProvider>
+            <PracticeProvider>
+              <GlobalProviders>
+                <AppShell>{children}</AppShell>
+              </GlobalProviders>
+              <Toaster />
+            </PracticeProvider>
+          </ApiKeyProvider>
         </ThemeProvider>
       </body>
     </html>

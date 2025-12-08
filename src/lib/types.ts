@@ -1,4 +1,4 @@
-import { DifficultyLevel, DifficultyStats } from "./statsStore";
+import { DifficultyLevel } from "./statsStore";
 
 export type Difficulty = DifficultyLevel;
 

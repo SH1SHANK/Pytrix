@@ -34,24 +34,28 @@ import {
   FastForward,
   Lightbulb,
   Lock,
-  RotateCcw,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+  ArrowCounterClockwise,
+  SpinnerGap,
+  ArrowsClockwise,
+  Question as QuestionIcon,
+} from "@phosphor-icons/react";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { QuestionPanel } from "@/components/practice/QuestionPanel";
 import { CodeEditorPanel } from "@/components/practice/CodeEditorPanel";
 import { OutputPanel } from "@/components/practice/OutputPanel";
 import { AutoModeStatsBar } from "@/components/automode/AutoModeStatsBar";
 import { HelpSheet } from "@/components/help/HelpSheet";
-import { Question as QuestionIcon } from "@phosphor-icons/react";
 import { RuntimeStatusBar } from "@/components/practice/RuntimeStatusBar";
+import { Kbd } from "@/components/ui/kbd";
 
-// AI Actions
-import { generateQuestion } from "@/lib/ai/generateQuestion";
-import { evaluateCode } from "@/lib/ai/evaluateCode";
-import { getHints } from "@/lib/ai/getHints";
-import { revealSolution } from "@/lib/ai/revealSolution";
+// AI Client (uses API routes with user's API key)
+import {
+  generateQuestion,
+  revealSolution, // was generateSolution
+  getHints, // was generateHint
+  evaluateCode,
+} from "@/lib/aiClient";
 
 // Question Buffer Service
 import {
@@ -60,7 +64,7 @@ import {
 } from "@/lib/questionBufferService";
 
 // Python Runtime
-import { runPython, initPyodide, isRuntimeReady } from "@/lib/pythonRuntime";
+import { runPython, isRuntimeReady } from "@/lib/pythonRuntime";
 
 import {
   loadSaveFile,
@@ -71,6 +75,9 @@ import {
   AutoModeSaveFile,
 } from "@/lib/autoModeService";
 
+// History tracking
+import { upsertHistoryEntry, getHistoryEntry } from "@/lib/historyStore";
+
 function PracticeWorkspace() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -79,6 +86,7 @@ function PracticeWorkspace() {
   const mode = searchParams.get("mode");
   const topicId = searchParams.get("topic") || "Strings";
   const saveId = searchParams.get("saveId");
+  const historyId = searchParams.get("historyId"); // For review mode
   const difficultyParam = searchParams.get(
     "difficulty"
   ) as DifficultyLevel | null;
@@ -109,7 +117,6 @@ function PracticeWorkspace() {
   const [saveFile, setSaveFile] = useState<AutoModeSaveFile | null>(null);
 
   // Session limit tracking
-  const [sessionLimitReached, setSessionLimitReached] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -152,6 +159,42 @@ function PracticeWorkspace() {
     }
   }, [mode, saveId, router]);
 
+  // Review mode: Load question from history
+  useEffect(() => {
+    if (mode === "review" && historyId) {
+      const entry = getHistoryEntry(historyId);
+      if (entry) {
+        // Reconstruct question object from history entry
+        const restoredQuestion: Question = {
+          id: entry.questionId,
+          topicId: entry.topic.toLowerCase(),
+          topicName: entry.topic,
+          topic: entry.topic,
+          difficulty: entry.difficulty || "beginner",
+          title: entry.questionTitle,
+          description: entry.questionText,
+          inputDescription: "",
+          outputDescription: "",
+          constraints: [],
+          sampleInput: entry.sampleInput || "",
+          sampleOutput: entry.sampleOutput || "",
+          starterCode: entry.codeSnapshot,
+          referenceSolution: null,
+          testCases: [],
+        };
+
+        setQuestion(restoredQuestion);
+        setCode(entry.codeSnapshot);
+        setCurrentDifficulty(entry.difficulty || "beginner");
+        setIsLoading(false);
+        toast.info(`Reviewing: ${entry.questionTitle}`);
+      } else {
+        toast.error("History entry not found");
+        router.push("/history");
+      }
+    }
+  }, [mode, historyId, router]);
+
   // Load Question via Buffer Service
   useEffect(() => {
     let isMounted = true;
@@ -177,7 +220,6 @@ function PracticeWorkspace() {
         );
 
         if (!newQuestion) {
-          setSessionLimitReached(true);
           toast.error("Session limit reached. Please try again later.");
           if (isMounted) setIsLoading(false);
           return;
@@ -203,7 +245,12 @@ function PracticeWorkspace() {
       }
     }
 
-    // Only load if we have what we need
+    // Only load if we have what we need (skip if review mode)
+    if (mode === "review") {
+      // Review mode handled by separate effect
+      return;
+    }
+
     if (mode === "auto") {
       if (saveFile) load();
     } else {
@@ -287,6 +334,23 @@ function PracticeWorkspace() {
         toast.success("Correct! " + result.explanation);
         incrementSolved(question.topic, currentDifficulty);
 
+        // Log to history
+        upsertHistoryEntry({
+          mode: mode === "auto" ? "auto" : "manual",
+          topic: question.topic,
+          difficulty: currentDifficulty,
+          questionId: question.id,
+          questionTitle: question.title,
+          questionText: question.description,
+          codeSnapshot: code,
+          wasSubmitted: true,
+          wasCorrect: true,
+          executedAt: Date.now(),
+          runId: saveId || null,
+          sampleInput: question.sampleInput,
+          sampleOutput: question.sampleOutput,
+        });
+
         // Update save file for Auto Mode
         if (mode === "auto" && saveFile) {
           const updated = recordQuestionCompleted(saveFile.id, question.topic);
@@ -301,6 +365,23 @@ function PracticeWorkspace() {
           }
         }
       } else {
+        // Log incorrect attempt to history
+        upsertHistoryEntry({
+          mode: mode === "auto" ? "auto" : "manual",
+          topic: question.topic,
+          difficulty: currentDifficulty,
+          questionId: question.id,
+          questionTitle: question.title,
+          questionText: question.description,
+          codeSnapshot: code,
+          wasSubmitted: true,
+          wasCorrect: false,
+          executedAt: Date.now(),
+          runId: saveId || null,
+          sampleInput: question.sampleInput,
+          sampleOutput: question.sampleOutput,
+        });
+
         setFailedAttempts((prev) => prev + 1);
         toast.error("Incorrect. Check the feedback.");
         if (result.nextHint) {
@@ -383,7 +464,6 @@ function PracticeWorkspace() {
     );
 
     if (!nextQ) {
-      setSessionLimitReached(true);
       toast.error("Session limit reached. No more questions available.");
       return;
     }
@@ -451,19 +531,10 @@ function PracticeWorkspace() {
     }
   };
 
-  if (isLoading || !question) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-muted-foreground animate-pulse">
-          Consulting the AI...
-        </p>
-      </div>
-    );
-  }
+  // if (isLoading || !question) removed to allow Skeleton rendering
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Auto Mode Stats Bar */}
       {mode === "auto" && saveFile && <AutoModeStatsBar saveFile={saveFile} />}
 
@@ -476,7 +547,7 @@ function PracticeWorkspace() {
             </Link>
           </Button>
           <span className="font-semibold truncate max-w-[200px] md:max-w-md">
-            {question.title}
+            {question ? question.title : <Skeleton className="h-5 w-48" />}
           </span>
         </div>
 
@@ -491,7 +562,7 @@ function PracticeWorkspace() {
                   onClick={handleRegenerate}
                   disabled={isLoading}
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" /> New
+                  <ArrowsClockwise className="h-4 w-4 mr-2" /> New
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Generate New Question</TooltipContent>
@@ -510,7 +581,7 @@ function PracticeWorkspace() {
                     )
                   }
                 >
-                  <RotateCcw className="h-4 w-4 mr-2" /> Reset
+                  <ArrowCounterClockwise className="h-4 w-4 mr-2" /> Reset
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Reset Code</TooltipContent>
@@ -561,18 +632,32 @@ function PracticeWorkspace() {
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button
-            size="sm"
-            onClick={handleRun}
-            disabled={isRunning || runResult.status === "correct"}
-          >
-            {isRunning ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Play className="h-4 w-4 mr-2" />
-            )}
-            Run & Check
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  onClick={handleRun}
+                  disabled={isRunning || runResult.status === "correct"}
+                >
+                  {isRunning ? (
+                    <SpinnerGap className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4 mr-2" />
+                  )}
+                  Run & Check
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="flex items-center gap-1">
+                Run Code
+                <div className="flex items-center gap-0.5 ml-1">
+                  <Kbd>Ctrl</Kbd>{" "}
+                  <span className="text-muted-foreground">+</span>{" "}
+                  <Kbd>Enter</Kbd>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {runResult.status === "correct" && (
             <Button size="sm" variant="default" onClick={handleNext}>
@@ -599,8 +684,8 @@ function PracticeWorkspace() {
       <div className="flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           {/* Left: Question */}
-          <ResizablePanel defaultSize={30} minSize={20}>
-            <QuestionPanel question={question} />
+          <ResizablePanel defaultSize={40} minSize={30}>
+            <QuestionPanel question={question} isLoading={isLoading} />
           </ResizablePanel>
 
           <ResizableHandle />

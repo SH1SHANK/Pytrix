@@ -1,5 +1,15 @@
 "use server";
 
+/**
+ * Generate Question - Server Action (DEPRECATED)
+ *
+ * NOTE: This module is kept for backwards compatibility.
+ * New code should use the client-side aiClient.ts which calls
+ * the API route /api/ai/generate-question.
+ *
+ * For direct server-side usage, pass an apiKey parameter.
+ */
+
 import {
   callGeminiWithFallback,
   parseJsonResponse,
@@ -24,6 +34,7 @@ interface GeneratedQuestionData {
 }
 
 export async function generateQuestion(
+  apiKey: string,
   topic: string,
   difficulty: Difficulty
 ): Promise<Question> {
@@ -51,6 +62,7 @@ Ensure the question is solvable and the reference solution is correct.
 `;
 
   const result: AIResult<GeneratedQuestionData> = await callGeminiWithFallback(
+    apiKey,
     "question-generation",
     prompt,
     parseJsonResponse<GeneratedQuestionData>

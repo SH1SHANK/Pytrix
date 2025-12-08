@@ -1,5 +1,15 @@
 "use server";
 
+/**
+ * Get Hints - Server Action (DEPRECATED)
+ *
+ * NOTE: This module is kept for backwards compatibility.
+ * New code should use the client-side aiClient.ts which calls
+ * the API route /api/ai/get-hints.
+ *
+ * For direct server-side usage, pass an apiKey parameter.
+ */
+
 import {
   callGeminiWithFallback,
   parseJsonResponse,
@@ -9,6 +19,7 @@ import { Question } from "@/lib/types";
 import { Hint } from "../types/Hint";
 
 export async function getHints(
+  apiKey: string,
   question: Question,
   code: string,
   hintsCount: number // 0 = first hint needed, 1 = second hint needed
@@ -34,6 +45,7 @@ Return ONLY a raw JSON object:
 `;
 
   const result: AIResult<Hint> = await callGeminiWithFallback(
+    apiKey,
     "hint",
     prompt,
     parseJsonResponse<Hint>

@@ -10,20 +10,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
-  Trash2,
+  Trash,
   Play,
   Plus,
   Clock,
-  Download,
-  Upload,
-  FileDown,
-} from "lucide-react";
+  DownloadSimple,
+  UploadSimple,
+  FileArrowDown,
+  Pencil,
+} from "@phosphor-icons/react";
 import {
   getSaveFiles,
   createSaveFile,
@@ -48,6 +56,13 @@ export function SaveFileDialog({ open, onOpenChange }: SaveFileDialogProps) {
   const [newRunName, setNewRunName] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Rename state
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<AutoModeSaveFile | null>(
+    null
+  );
+  const [renameValue, setRenameValue] = useState("");
 
   // Compute save files synchronously when dialog opens (or after a delete)
   const saveFiles = useMemo<AutoModeSaveFile[]>(() => {
@@ -167,6 +182,29 @@ export function SaveFileDialog({ open, onOpenChange }: SaveFileDialogProps) {
     });
   };
 
+  // Context menu actions (following shadcn patterns from llms.txt)
+  const handleRenameClick = (file: AutoModeSaveFile) => {
+    setRenameTarget(file);
+    setRenameValue(file.name);
+    setRenameDialogOpen(true);
+  };
+
+  const confirmRename = () => {
+    if (renameTarget && renameValue.trim()) {
+      // Update the run name in localStorage
+      const files = getSaveFiles();
+      const updated = files.find((f) => f.id === renameTarget.id);
+      if (updated) {
+        updated.name = renameValue.trim();
+        localStorage.setItem("pypractice-savefiles", JSON.stringify(files));
+        refreshFiles();
+        toast.success("Run renamed");
+      }
+    }
+    setRenameDialogOpen(false);
+    setRenameTarget(null);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -193,52 +231,104 @@ export function SaveFileDialog({ open, onOpenChange }: SaveFileDialogProps) {
             <ScrollArea className="max-h-[300px] pr-4">
               <div className="space-y-2">
                 {saveFiles.map((file) => (
-                  <Card
-                    key={file.id}
-                    className={`p-3 cursor-pointer transition-colors hover:border-primary/50 ${
-                      selectedId === file.id
-                        ? "border-primary bg-primary/5"
-                        : ""
-                    }`}
-                    onClick={() => setSelectedId(file.id)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="font-medium">{file.name}</div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatDate(file.lastUpdatedAt)}
+                  <ContextMenu key={file.id}>
+                    <ContextMenuTrigger asChild>
+                      <Card
+                        className={`p-3 cursor-pointer transition-colors hover:border-primary/50 ${
+                          selectedId === file.id
+                            ? "border-primary bg-primary/5"
+                            : ""
+                        }`}
+                        onClick={() => setSelectedId(file.id)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="font-medium">{file.name}</div>
+                            <div className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDate(file.lastUpdatedAt)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {getSaveFileSummary(file)}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary">
+                              {file.completedQuestions} done
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) =>
+                                handleExportRun(file.id, file.name, e)
+                              }
+                              title="Export run"
+                            >
+                              <FileArrowDown className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={(e) => handleDelete(file.id, e)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {getSaveFileSummary(file)}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Badge variant="secondary">
-                          {file.completedQuestions} done
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={(e) =>
-                            handleExportRun(file.id, file.name, e)
+                      </Card>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent className="w-48">
+                      <ContextMenuItem
+                        onClick={() => {
+                          router.push(`/practice?mode=auto&saveId=${file.id}`);
+                          onOpenChange(false);
+                        }}
+                      >
+                        <Play className="mr-2 h-4 w-4" />
+                        Continue Run
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem onClick={() => handleRenameClick(file)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Rename Run
+                      </ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const data = exportRun(file.id);
+                          if (data) {
+                            const safeName = file.name
+                              .replace(/[^a-z0-9]/gi, "_")
+                              .toLowerCase();
+                            downloadJson(
+                              data,
+                              `pypractice-run-${safeName}.json`
+                            );
+                            toast.success("Run exported");
                           }
-                          title="Export run"
-                        >
-                          <FileDown className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={(e) => handleDelete(file.id, e)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
+                        }}
+                      >
+                        <FileArrowDown className="mr-2 h-4 w-4" />
+                        Export Run
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => {
+                          deleteSaveFile(file.id);
+                          refreshFiles();
+                          if (selectedId === file.id) {
+                            setSelectedId(null);
+                          }
+                        }}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete Run
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 ))}
               </div>
             </ScrollArea>
@@ -251,7 +341,7 @@ export function SaveFileDialog({ open, onOpenChange }: SaveFileDialogProps) {
                   onClick={handleExportAll}
                   title="Export all runs"
                 >
-                  <Download className="h-4 w-4" />
+                  <DownloadSimple className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
@@ -259,7 +349,7 @@ export function SaveFileDialog({ open, onOpenChange }: SaveFileDialogProps) {
                   onClick={() => fileInputRef.current?.click()}
                   title="Import runs"
                 >
-                  <Upload className="h-4 w-4" />
+                  <UploadSimple className="h-4 w-4" />
                 </Button>
               </div>
               <Button
@@ -311,7 +401,7 @@ export function SaveFileDialog({ open, onOpenChange }: SaveFileDialogProps) {
                 onClick={() => fileInputRef.current?.click()}
                 title="Import runs"
               >
-                <Upload className="h-4 w-4" />
+                <UploadSimple className="h-4 w-4" />
               </Button>
               {saveFiles.length > 0 && (
                 <Button
@@ -330,6 +420,32 @@ export function SaveFileDialog({ open, onOpenChange }: SaveFileDialogProps) {
           </>
         )}
       </DialogContent>
+
+      {/* Rename Dialog */}
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename Run</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              placeholder="Run name"
+              onKeyDown={(e) => e.key === "Enter" && confirmRename()}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRenameDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={confirmRename}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

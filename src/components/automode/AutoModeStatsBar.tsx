@@ -8,7 +8,7 @@ import {
   getNextTopic,
   getTopicProgress,
 } from "@/lib/autoModeService";
-import { ChevronRight, Target, Zap } from "lucide-react";
+import { CaretRight, Target, Lightning } from "@phosphor-icons/react";
 
 interface AutoModeStatsBarProps {
   saveFile: AutoModeSaveFile;
@@ -33,7 +33,7 @@ export function AutoModeStatsBar({ saveFile }: AutoModeStatsBarProps) {
 
         {/* Questions in Topic */}
         <div className="flex items-center gap-2">
-          <Zap className="h-4 w-4 text-yellow-500" />
+          <Lightning className="h-4 w-4 text-yellow-500" />
           <span className="text-muted-foreground">In Topic:</span>
           <span className="font-medium">
             {progress.current} / {progress.total}
@@ -47,7 +47,7 @@ export function AutoModeStatsBar({ saveFile }: AutoModeStatsBarProps) {
 
         {/* Next Topic */}
         <div className="flex items-center gap-2 text-muted-foreground">
-          <ChevronRight className="h-4 w-4" />
+          <CaretRight className="h-4 w-4" />
           <span>Next:</span>
           <Badge variant="outline">{nextTopic}</Badge>
         </div>

@@ -1,5 +1,14 @@
 "use server";
 
+/**
+ * Optimize Solution - Server Action (DEPRECATED)
+ *
+ * NOTE: This module is kept for backwards compatibility.
+ * New code should use a client-side API route approach.
+ *
+ * For direct server-side usage, pass an apiKey parameter.
+ */
+
 import {
   callGeminiWithFallback,
   parseJsonResponse,
@@ -17,11 +26,13 @@ interface OptimizedSolution {
  * Get an optimized/idiomatic solution for a correct answer.
  * Uses the cheapest model (flash-lite) to minimize costs.
  *
+ * @param apiKey - User's API key
  * @param question - The problem being solved
  * @param userCode - The user's correct solution
  * @returns Optimized code with comments and explanation
  */
 export async function optimizeSolution(
+  apiKey: string,
   question: Question,
   userCode: string
 ): Promise<OptimizedSolution | null> {
@@ -54,6 +65,7 @@ Return ONLY a raw JSON object with this schema:
 `;
 
   const result: AIResult<OptimizedSolution> = await callGeminiWithFallback(
+    apiKey,
     "hint", // Use cheapest model tier
     prompt,
     parseJsonResponse<OptimizedSolution>

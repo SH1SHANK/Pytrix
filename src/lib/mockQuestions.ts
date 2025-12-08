@@ -1,4 +1,4 @@
-import { Question, DifficultyLevel } from "./types";
+import { Question } from "./types";
 
 // Base topic type without per-difficulty stats (stats are derived at runtime)
 export interface BaseTopic {

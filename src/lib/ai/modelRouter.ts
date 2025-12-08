@@ -7,14 +7,19 @@
  * - Use gemini-2.5-pro only for rare, high-value tasks (e.g., reveal-solution).
  *
  * All AI calls should go through `callGeminiWithFallback()`.
+ *
+ * ## BYOK Support
+ * - callGeminiWithFallback() requires an apiKey parameter
+ * - If no key provided, returns an error result (does not throw)
+ * - Usage is recorded via callback function passed by caller
  */
 
 import {
-  getModel,
+  getModelWithKey,
   isRateLimitError,
   isConfigurationError,
+  ApiKeyRequiredError,
 } from "./geminiClient";
-import { recordApiUsage, recordRateLimitHit } from "../usageStore";
 
 // ============================================
 // TYPE DEFINITIONS
@@ -30,9 +35,18 @@ export type TaskType =
 export interface AIResult<T = unknown> {
   success: boolean;
   data?: T;
-  errorType?: "rate_limit" | "config_error" | "parse_error" | "ai_unavailable";
+  errorType?:
+    | "rate_limit"
+    | "config_error"
+    | "parse_error"
+    | "ai_unavailable"
+    | "api_key_required";
   message?: string;
   modelUsed?: string;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
 }
 
 // ============================================
@@ -149,26 +163,32 @@ export function getModelPriorityList(task: TaskType): string[] {
  * - Cooldown tracking
  * - Response parsing
  *
+ * @param apiKey - User's Gemini API key (required)
  * @param task - The task type for model selection
  * @param prompt - The prompt string to send
  * @param parseResponse - Optional function to parse/validate the response
  */
 export async function callGeminiWithFallback<T>(
+  apiKey: string,
   task: TaskType,
   prompt: string,
   parseResponse?: (text: string) => T
 ): Promise<AIResult<T>> {
-  const models = getModelPriorityList(task);
+  // Check for API key first
+  if (!apiKey || apiKey.trim().length === 0) {
+    return {
+      success: false,
+      errorType: "api_key_required",
+      message:
+        "LLM features require your own API key. Configure it in Settings → API & Keys.",
+    };
+  }
 
-  console.log(
-    `[ModelRouter] Task: ${task}, Models to try: ${models.join(" -> ")}`
-  );
+  const models = getModelPriorityList(task);
 
   for (const modelName of models) {
     try {
-      console.log(`[ModelRouter] Trying model: ${modelName}`);
-
-      const model = getModel(modelName);
+      const model = getModelWithKey(apiKey, modelName);
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
@@ -193,18 +213,26 @@ export async function callGeminiWithFallback<T>(
       const inputTokens = Math.ceil(prompt.length / 4);
       const outputTokens = Math.ceil(text.length / 4);
 
-      // Record usage (client-side only, will be no-op on server)
-      if (typeof window !== "undefined") {
-        recordApiUsage(modelName, inputTokens, outputTokens);
-      }
-
       return {
         success: true,
         data,
         modelUsed: modelName,
+        usage: {
+          inputTokens,
+          outputTokens,
+        },
       };
     } catch (error) {
       console.error(`[ModelRouter] Error with ${modelName}:`, error);
+
+      // Check for API key errors first
+      if (error instanceof ApiKeyRequiredError) {
+        return {
+          success: false,
+          errorType: "api_key_required",
+          message: error.message,
+        };
+      }
 
       if (isConfigurationError(error)) {
         return {
@@ -217,9 +245,6 @@ export async function callGeminiWithFallback<T>(
 
       if (isRateLimitError(error)) {
         recordRateLimit(modelName);
-        if (typeof window !== "undefined") {
-          recordRateLimitHit(modelName);
-        }
         continue;
       }
 

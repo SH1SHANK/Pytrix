@@ -15,6 +15,12 @@ import {
  * Button to open the Command Palette manually.
  * Shows Cmd+K shortcut hint.
  */
+import { Kbd } from "@/components/ui/kbd";
+
+/**
+ * Button to open the Command Palette manually.
+ * Shows Cmd+K shortcut hint.
+ */
 export function CommandPaletteButton() {
   const [open, setOpen] = useState(false);
 
@@ -32,8 +38,12 @@ export function CommandPaletteButton() {
               <Command weight="duotone" className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            Command Palette <kbd className="ml-1 font-mono text-xs">⌘K</kbd>
+          <TooltipContent className="flex items-center gap-1">
+            Command Palette
+            <div className="flex items-center gap-0.5 ml-1">
+              <Kbd>⌘</Kbd>
+              <Kbd>K</Kbd>
+            </div>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

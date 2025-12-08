@@ -1,0 +1,60 @@
+# Pytrix - PyPractice MVP
+
+AI-powered Python practice platform for DSA interview prep.
+
+## Tech Stack
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui components
+- Google Gemini LLM
+- Pyodide (in-browser Python runtime)
+
+## Architecture
+
+### Core Services (src/lib/)
+- aiClient.ts - Client-side LLM API wrapper (BYOK pattern)
+- apiKeyStore.ts - User API key management (localStorage)
+- usageStore.ts - API usage tracking (localStorage)
+- statsStore.ts - Practice stats (per-topic, per-difficulty)
+- historyStore.ts - Question attempt history
+- questionBufferService.ts - Prefetched question queue
+- autoModeService.ts - Auto mode session management
+- pythonRuntime.ts - Pyodide integration
+
+### AI Modules (src/lib/ai/)
+- geminiClient.ts - Gemini SDK wrapper
+- modelRouter.ts - Cost-aware model fallback
+- generateQuestion.ts - Question generation (deprecated, use aiClient)
+- evaluateCode.ts - Code evaluation (deprecated, use aiClient)
+- getHints.ts - Hint generation (deprecated, use aiClient)
+- revealSolution.ts - Solution reveal (deprecated, use aiClient)
+- optimizeSolution.ts - Code optimization (deprecated, use aiClient)
+
+### API Routes (src/app/api/ai/)
+- generate-question - POST with X-API-Key header
+- evaluate-code - POST with X-API-Key header
+- get-hints - POST with X-API-Key header
+- reveal-solution - POST with X-API-Key header
+- optimize-solution - POST with X-API-Key header
+- test-connection - POST to validate API key
+
+### Components (src/components/)
+- ui/ - shadcn/ui primitives
+- dashboard/ - Dashboard cards and grids
+- practice/ - Editor, output, question panels
+- automode/ - Auto mode UI elements
+- layout/ - Sidebar, navbar
+- help/ - Help sheet
+
+## Naming Conventions
+- Components: PascalCase (e.g., TopicGrid.tsx)
+- Hooks: useXyz (e.g., use-mobile.ts)
+- Stores: xyzStore.ts (e.g., statsStore.ts)
+- Services: xyzService.ts (e.g., questionBufferService.ts)
+
+## BYOK Pattern
+User provides their own Gemini API key stored in localStorage.
+Key is passed via X-API-Key header to API routes.
+Usage is recorded client-side after each call.

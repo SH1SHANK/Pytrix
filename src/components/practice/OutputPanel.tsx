@@ -6,11 +6,18 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { Sparkle, ArrowRight, Copy } from "@phosphor-icons/react";
+import {
+  WarningCircle,
+  CheckCircle,
+  XCircle,
+  SpinnerGap,
+  Sparkle,
+  ArrowRight,
+  Copy,
+} from "@phosphor-icons/react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { optimizeSolution } from "@/lib/ai/optimizeSolution";
+import { optimizeSolution } from "@/lib/aiClient";
 
 interface OutputPanelProps {
   runResult: RunResult;
@@ -146,7 +153,7 @@ export function OutputPanel({
                     <XCircle className="h-5 w-5" />
                   )}
                   {runResult.status === "error" && (
-                    <AlertCircle className="h-5 w-5" />
+                    <WarningCircle className="h-5 w-5" />
                   )}
 
                   <span className="font-semibold uppercase text-sm">
@@ -168,7 +175,7 @@ export function OutputPanel({
                     >
                       {isOptimizing ? (
                         <>
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          <SpinnerGap className="h-3 w-3 mr-1 animate-spin" />
                           Optimizing...
                         </>
                       ) : (
@@ -212,7 +219,7 @@ export function OutputPanel({
                 {/* AI Feedback */}
                 {runResult.status !== "correct" && (
                   <Alert>
-                    <AlertCircle className="h-4 w-4" />
+                    <WarningCircle className="h-4 w-4" />
                     <AlertTitle>Feedback</AlertTitle>
                     <AlertDescription>
                       {runResult.status === "error"

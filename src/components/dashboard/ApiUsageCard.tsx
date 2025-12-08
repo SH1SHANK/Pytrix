@@ -39,6 +39,10 @@ function getProgressColor(percent: number): string {
   return "";
 }
 
+import { Skeleton } from "@/components/ui/skeleton";
+
+// ... functions ...
+
 export function ApiUsageCard() {
   const [usage, setUsage] = useState<DailyUsage | null>(null);
   const [quotas, setQuotas] = useState<QuotaStatus[]>([]);
@@ -64,8 +68,29 @@ export function ApiUsageCard() {
     toast.success("API usage stats reset");
   };
 
+  // Loading state
   if (!usage) {
-    return null;
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex justify-between">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+          <div className="flex justify-between">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+          <div className="pt-2 border-t space-y-2">
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-3/4" />
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const hasWarning = quotas.some((q) => q.isNearLimit);

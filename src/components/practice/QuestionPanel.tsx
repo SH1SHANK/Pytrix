@@ -1,16 +1,19 @@
 "use client";
 
-import { Question, DifficultyLevel } from "@/lib/types";
+import { Question } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 interface QuestionPanelProps {
-  question: Question;
+  question: Question | null;
+  isLoading?: boolean;
 }
 
-function getDifficultyVariant(difficulty: DifficultyLevel) {
+function getDifficultyVariant(difficulty: string) {
   switch (difficulty) {
     case "beginner":
       return "secondary";
@@ -23,7 +26,51 @@ function getDifficultyVariant(difficulty: DifficultyLevel) {
   }
 }
 
-export function QuestionPanel({ question }: QuestionPanelProps) {
+export function QuestionPanel({ question, isLoading }: QuestionPanelProps) {
+  if (isLoading || !question) {
+    return (
+      <Card className="h-full flex flex-col border-none shadow-none">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between mb-2">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-24" />
+          </div>
+          <Skeleton className="h-7 w-3/4" />
+        </CardHeader>
+        <CardContent className="flex-1 overflow-hidden p-0">
+          <div className="h-full px-6 pb-6 pt-2 space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            </div>
+            <Separator />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-20 w-full rounded-md" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="h-full flex flex-col border-none shadow-none">
       <CardHeader className="pb-2">

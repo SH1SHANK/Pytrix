@@ -269,6 +269,51 @@ export function resetStats(): GlobalStats {
 }
 
 /**
+ * Reset stats for a specific topic to zero.
+ * @param topicId - The topic ID (e.g., "strings")
+ */
+export function resetTopicStats(topicId: string): GlobalStats {
+  if (typeof window === "undefined") {
+    return createEmptyStats();
+  }
+
+  const stats = getStats();
+  const topicName = DEFAULT_TOPICS.find(
+    (t) => t.toLowerCase() === topicId.toLowerCase()
+  );
+
+  if (!topicName) {
+    console.warn(`[statsStore] Topic not found: ${topicId}`);
+    return stats;
+  }
+
+  const topicStats = stats.perTopic.find(
+    (t) => t.topic.toLowerCase() === topicName.toLowerCase()
+  );
+
+  if (topicStats) {
+    // Subtract from totals
+    stats.totalAttempts -= topicStats.attempts;
+    stats.totalSolved -= topicStats.solved;
+
+    // Reset the topic
+    Object.assign(topicStats, createEmptyTopicStats(topicName));
+  }
+
+  // Recalculate derived values
+  stats.topicsTouched = countTopicsTouched(stats.perTopic);
+  stats.masteryPercent = calculateMastery(stats);
+
+  // Persist
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ ...stats, version: STATS_VERSION })
+  );
+
+  return stats;
+}
+
+/**
  * Get stats for a specific topic.
  */
 export function getTopicStats(topicName: string): TopicStats | null {

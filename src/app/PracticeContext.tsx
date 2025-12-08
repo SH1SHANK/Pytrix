@@ -12,6 +12,7 @@ import {
 interface PracticeContextType {
   stats: Stats;
   topics: Topic[];
+  isLoading: boolean;
   incrementSolved: (topicName: string, difficulty?: DifficultyLevel) => void;
   incrementAttempts: (
     topicName: string,
@@ -72,36 +73,36 @@ const PracticeContext = createContext<PracticeContextType | undefined>(
 );
 
 export function PracticeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize directly from localStorage using lazy initializers
-  const [stats, setStats] = useState<Stats>(() => {
-    if (typeof window === "undefined") {
-      return {
-        problemsSolved: 0,
-        totalAttempts: 0,
-        topicsTouched: 0,
-        totalTopics: TOPICS.length,
-        masteryPercent: 0,
-        beginnerSolved: 0,
-        intermediateSolved: 0,
-        advancedSolved: 0,
-      };
-    }
-    const globalStats = getStats();
-    return mapGlobalStatsToStats(globalStats);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize with empty defaults to match Server-Side Rendering
+  const [stats, setStats] = useState<Stats>({
+    problemsSolved: 0,
+    totalAttempts: 0,
+    topicsTouched: 0,
+    totalTopics: TOPICS.length,
+    masteryPercent: 0,
+    beginnerSolved: 0,
+    intermediateSolved: 0,
+    advancedSolved: 0,
   });
 
-  const [topics, setTopics] = useState<Topic[]>(() => {
-    if (typeof window === "undefined") {
-      return TOPICS.map((t) => ({
-        ...t,
-        beginnerSolved: 0,
-        intermediateSolved: 0,
-        advancedSolved: 0,
-      }));
-    }
+  const [topics, setTopics] = useState<Topic[]>(
+    TOPICS.map((t) => ({
+      ...t,
+      beginnerSolved: 0,
+      intermediateSolved: 0,
+      advancedSolved: 0,
+    }))
+  );
+
+  // Load data from localStorage on client mount
+  React.useEffect(() => {
     const globalStats = getStats();
-    return deriveTopicsFromStats(globalStats);
-  });
+    setStats(mapGlobalStatsToStats(globalStats));
+    setTopics(deriveTopicsFromStats(globalStats));
+    setIsLoading(false);
+  }, []);
 
   function refreshStats() {
     const globalStats = getStats();
@@ -138,6 +139,7 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
       value={{
         stats,
         topics,
+        isLoading,
         incrementSolved,
         incrementAttempts,
         refreshStats,

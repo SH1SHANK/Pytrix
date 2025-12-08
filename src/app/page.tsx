@@ -15,16 +15,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { RotateCcw } from "lucide-react";
-import { Question } from "@phosphor-icons/react";
+import { ArrowCounterClockwise } from "@phosphor-icons/react";
 import { resetStats } from "@/lib/statsStore";
 import { usePractice } from "@/app/PracticeContext";
+import { useApiKey } from "@/app/ApiKeyContext";
 import { toast } from "sonner";
-import { HelpSheet } from "@/components/help/HelpSheet";
-import { CommandPaletteButton } from "@/components/CommandPaletteButton";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { useSettingsStore } from "@/lib/settingsStore";
 
 export default function Home() {
   const { refreshStats } = usePractice();
+  const { hasApiKey, isLoading } = useApiKey();
+  const { hasCompletedOnboarding } = useSettingsStore();
 
   const handleResetStats = () => {
     resetStats();
@@ -32,38 +34,26 @@ export default function Home() {
     toast.success("Stats have been reset.");
   };
 
+  // Show nothing while checking key state
+  if (isLoading) {
+    return null;
+  }
+
+  // Show onboarding if no API key or hasn't completed onboarding
+  const showOnboarding = !hasApiKey || !hasCompletedOnboarding;
+
   return (
-    <main className="container min-h-screen py-8 px-4 md:px-8 mx-auto max-w-7xl">
-      <div className="flex flex-col space-y-8">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col space-y-2">
-            <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-              PyPractice MVP
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Master Python through hands-on coding challenges.
-            </p>
-          </div>
-          {/* Command Palette Button */}
-          <CommandPaletteButton />
-          {/* Help Button */}
-          <HelpSheet
-            trigger={
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="Help and Settings"
-              >
-                <Question weight="duotone" className="h-5 w-5" />
-              </Button>
-            }
-          />
-        </div>
+    <>
+      {/* Onboarding Wizard - shown when no API key or first time */}
+      <OnboardingWizard isVisible={showOnboarding} />
 
-        <Separator />
-
-        {/* Stats Section */}
+      {/* Dashboard Content - hidden during onboarding */}
+      <div
+        className={`p-6 space-y-6 transition-all duration-300 ${
+          showOnboarding ? "blur-sm pointer-events-none select-none" : ""
+        }`}
+        aria-hidden={showOnboarding}
+      >
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold tracking-tight">
@@ -72,7 +62,7 @@ export default function Home() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <RotateCcw className="h-4 w-4 mr-2" />
+                  <ArrowCounterClockwise className="h-4 w-4 mr-2" />
                   Reset Stats
                 </Button>
               </AlertDialogTrigger>
@@ -106,6 +96,6 @@ export default function Home() {
           <TopicGrid />
         </section>
       </div>
-    </main>
+    </>
   );
 }
