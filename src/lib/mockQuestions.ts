@@ -1,6 +1,13 @@
-import { Question, Topic } from "./types";
+import { Question, DifficultyLevel } from "./types";
 
-export const TOPICS: Topic[] = [
+// Base topic type without per-difficulty stats (stats are derived at runtime)
+export interface BaseTopic {
+  id: string;
+  name: string;
+  problemsSolved: number;
+}
+
+export const TOPICS: BaseTopic[] = [
   { id: "strings", name: "Strings", problemsSolved: 0 },
   { id: "lists", name: "Lists", problemsSolved: 0 },
   { id: "tuples", name: "Tuples", problemsSolved: 0 },
@@ -22,7 +29,7 @@ export const MOCK_QUESTIONS: Question[] = [
     topicId: "strings",
     topicName: "Strings",
     topic: "Strings",
-    difficulty: "easy",
+    difficulty: "beginner",
     title: "Reverse a String",
     description:
       "Write a function that takes a string `s` and returns it reversed.",
@@ -43,7 +50,7 @@ export const MOCK_QUESTIONS: Question[] = [
     topicId: "strings",
     topicName: "Strings",
     topic: "Strings",
-    difficulty: "easy",
+    difficulty: "beginner",
     title: "Check Palindrome",
     description:
       "Check if the given string is a palindrome (reads same forwards and backwards).",
@@ -65,7 +72,7 @@ export const MOCK_QUESTIONS: Question[] = [
     topicId: "lists",
     topicName: "Lists",
     topic: "Lists",
-    difficulty: "easy",
+    difficulty: "beginner",
     title: "Sum of Elements",
     description: "Given a list of numbers, return their sum.",
     inputDescription: "A list of integers.",
@@ -85,7 +92,7 @@ export const MOCK_QUESTIONS: Question[] = [
     topicId: "lists",
     topicName: "Lists",
     topic: "Lists",
-    difficulty: "medium",
+    difficulty: "intermediate",
     title: "Filter Evens",
     description:
       "Return a new list containing only the even numbers from the original list.",
@@ -108,7 +115,7 @@ export const MOCK_QUESTIONS: Question[] = [
     topicId: "dictionaries",
     topicName: "Dictionaries",
     topic: "Dictionaries",
-    difficulty: "easy",
+    difficulty: "beginner",
     title: "Word Frequency",
     description: "Count the frequency of each word in a list.",
     inputDescription: "A list of strings.",
@@ -130,7 +137,7 @@ export const MOCK_QUESTIONS: Question[] = [
     topicId: "oop",
     topicName: "OOP",
     topic: "OOP",
-    difficulty: "medium",
+    difficulty: "intermediate",
     title: "Car Class",
     description:
       "Create a class `Car` with a method `drive` that returns 'Vroom'.",
@@ -150,7 +157,7 @@ export const MOCK_QUESTIONS: Question[] = [
     topicId: "pandas",
     topicName: "Pandas",
     topic: "Pandas",
-    difficulty: "easy",
+    difficulty: "beginner",
     title: "Create Series",
     description: "Create a pandas Series from a list `[10, 20, 30]`.",
     inputDescription: "None",

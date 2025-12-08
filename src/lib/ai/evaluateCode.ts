@@ -8,10 +8,29 @@ import {
 import { Question } from "@/lib/types";
 import { EvaluationResult } from "../types/Evaluation";
 
+interface ExecutionContext {
+  stdout?: string;
+  stderr?: string;
+  didExecute?: boolean;
+}
+
 export async function evaluateCode(
   question: Question,
-  code: string
+  code: string,
+  executionContext?: ExecutionContext
 ): Promise<EvaluationResult> {
+  // Build execution info section if we have runtime output
+  let executionInfo = "";
+  if (executionContext?.didExecute) {
+    executionInfo = `
+
+ACTUAL EXECUTION RESULTS (from Pyodide runtime):
+stdout: ${executionContext.stdout || "(empty)"}
+stderr: ${executionContext.stderr || "(none)"}
+
+Use this actual output to verify correctness.`;
+  }
+
   const prompt = `
 You are a Python Code Evaluator.
 
@@ -25,12 +44,16 @@ User Code:
 \`\`\`python
 ${code}
 \`\`\`
-
+${executionInfo}
 Task:
 1. Analyze the user's code logic.
 2. Verify if it correctly solves the problem described.
 3. Check for edge cases and constraints.
-4. Simulate running the code against the Sample Input.
+${
+  executionContext?.didExecute
+    ? "4. Compare the actual output with expected output."
+    : "4. Simulate running the code against the Sample Input."
+}
 
 Return ONLY a raw JSON object with this schema:
 {

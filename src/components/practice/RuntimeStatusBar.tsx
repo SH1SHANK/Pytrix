@@ -8,6 +8,7 @@ import {
   Warning,
   Play,
   CloudArrowDown,
+  Timer,
 } from "@phosphor-icons/react";
 import {
   subscribeToRuntimeStatus,
@@ -17,9 +18,13 @@ import {
 
 interface RuntimeStatusBarProps {
   onReady?: () => void;
+  executionTimeMs?: number | null;
 }
 
-export function RuntimeStatusBar({ onReady }: RuntimeStatusBarProps) {
+export function RuntimeStatusBar({
+  onReady,
+  executionTimeMs,
+}: RuntimeStatusBarProps) {
   const [info, setInfo] = useState<RuntimeInfo>({
     status: "unloaded",
     version: null,
@@ -78,38 +83,55 @@ export function RuntimeStatusBar({ onReady }: RuntimeStatusBarProps) {
   const status = getStatusDisplay();
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2 border-t bg-muted/30 text-xs font-mono">
+    <div className="flex items-center gap-3 px-3 py-1.5 bg-muted/50 text-xs font-mono border-y border-border/50">
       {/* Python Version */}
       <div className="flex items-center gap-1.5">
-        <span className="text-muted-foreground">Python</span>
-        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+        <span className="text-muted-foreground font-sans">Python</span>
+        <Badge
+          variant="secondary"
+          className="text-[10px] px-1.5 py-0 font-mono"
+        >
           {info.version || "—"}
         </Badge>
       </div>
 
       {/* Separator */}
-      <span className="text-muted-foreground/50">·</span>
+      <span className="text-muted-foreground/40">·</span>
 
       {/* Runtime Type */}
-      <span className="text-muted-foreground">Pyodide</span>
+      <span className="text-muted-foreground font-sans">Pyodide</span>
 
       {/* Separator */}
-      <span className="text-muted-foreground/50">·</span>
+      <span className="text-muted-foreground/40">·</span>
 
       {/* Status */}
       <div className={`flex items-center gap-1 ${status.color}`}>
         {status.icon}
-        <span>{status.text}</span>
+        <span className="font-sans">{status.text}</span>
       </div>
+
+      {/* Execution Time */}
+      {executionTimeMs !== null && executionTimeMs !== undefined && (
+        <>
+          <span className="text-muted-foreground/40">·</span>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Timer weight="duotone" className="h-3 w-3" />
+            <span>{executionTimeMs.toFixed(0)}ms</span>
+          </div>
+        </>
+      )}
 
       {/* Error message if any */}
       {info.error && (
-        <span
-          className="text-red-400 truncate max-w-[200px]"
-          title={info.error}
-        >
-          {info.error}
-        </span>
+        <>
+          <span className="text-muted-foreground/40">·</span>
+          <span
+            className="text-red-400 truncate max-w-[200px]"
+            title={info.error}
+          >
+            {info.error}
+          </span>
+        </>
       )}
     </div>
   );

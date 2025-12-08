@@ -1,6 +1,6 @@
 "use client";
 
-import { Question } from "@/lib/types";
+import { Question, DifficultyLevel } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,21 +10,26 @@ interface QuestionPanelProps {
   question: Question;
 }
 
+function getDifficultyVariant(difficulty: DifficultyLevel) {
+  switch (difficulty) {
+    case "beginner":
+      return "secondary";
+    case "intermediate":
+      return "default";
+    case "advanced":
+      return "destructive";
+    default:
+      return "outline";
+  }
+}
+
 export function QuestionPanel({ question }: QuestionPanelProps) {
   return (
     <Card className="h-full flex flex-col border-none shadow-none">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between mb-2">
           <Badge variant="outline">{question.topicName}</Badge>
-          <Badge
-            variant={
-              question.difficulty === "easy"
-                ? "secondary"
-                : question.difficulty === "medium"
-                ? "default"
-                : "destructive"
-            }
-          >
+          <Badge variant={getDifficultyVariant(question.difficulty)}>
             {question.difficulty}
           </Badge>
         </div>

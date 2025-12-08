@@ -1,4 +1,6 @@
-export type Difficulty = "easy" | "medium" | "hard";
+import { DifficultyLevel, DifficultyStats } from "./statsStore";
+
+export type Difficulty = DifficultyLevel;
 
 export type RunStatus = "not_run" | "correct" | "incorrect" | "error";
 
@@ -8,15 +10,20 @@ export interface Stats {
   topicsTouched: number; // Count of topics with at least 1 attempt
   totalTopics: number;
   masteryPercent: number; // Overall mastery
-  easyPercent: number;
-  mediumPercent: number;
-  hardPercent: number;
+  // Per-difficulty aggregates
+  beginnerSolved: number;
+  intermediateSolved: number;
+  advancedSolved: number;
 }
 
 export interface Topic {
   id: string; // e.g., "strings", "lists"
   name: string; // Display name
-  problemsSolved: number;
+  problemsSolved: number; // Total across all difficulties
+  // Per-difficulty solved counts
+  beginnerSolved: number;
+  intermediateSolved: number;
+  advancedSolved: number;
 }
 
 export interface Question {
@@ -51,5 +58,10 @@ export interface RunResult {
 }
 
 // Re-export from centralized modules
-export type { TopicStats, GlobalStats } from "./statsStore";
+export type {
+  TopicStats,
+  GlobalStats,
+  DifficultyStats,
+  DifficultyLevel,
+} from "./statsStore";
 export type { AutoModeSaveFile } from "./autoModeService";

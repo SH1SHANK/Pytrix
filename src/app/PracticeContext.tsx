@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { Stats, Topic } from "@/lib/types";
+import { Stats, Topic, DifficultyLevel } from "@/lib/types";
 import { TOPICS } from "@/lib/mockQuestions";
 import {
   getStats,
@@ -12,8 +12,12 @@ import {
 interface PracticeContextType {
   stats: Stats;
   topics: Topic[];
-  incrementSolved: (topicName: string) => void;
-  incrementAttempts: (topicName: string, isCorrect: boolean) => void;
+  incrementSolved: (topicName: string, difficulty?: DifficultyLevel) => void;
+  incrementAttempts: (
+    topicName: string,
+    isCorrect: boolean,
+    difficulty?: DifficultyLevel
+  ) => void;
   refreshStats: () => void;
 }
 
@@ -21,16 +25,26 @@ interface PracticeContextType {
  * Convert GlobalStats from statsStore to the Stats interface used in UI.
  */
 function mapGlobalStatsToStats(gs: GlobalStats): Stats {
+  // Sum per-difficulty solved counts across all topics
+  let beginnerSolved = 0;
+  let intermediateSolved = 0;
+  let advancedSolved = 0;
+
+  for (const topic of gs.perTopic) {
+    beginnerSolved += topic.beginner?.solved || 0;
+    intermediateSolved += topic.intermediate?.solved || 0;
+    advancedSolved += topic.advanced?.solved || 0;
+  }
+
   return {
     problemsSolved: gs.totalSolved,
     totalAttempts: gs.totalAttempts,
     topicsTouched: gs.topicsTouched,
     totalTopics: TOPICS.length,
     masteryPercent: gs.masteryPercent,
-    // Difficulty breakdowns not tracked yet; set to 0
-    easyPercent: 0,
-    mediumPercent: 0,
-    hardPercent: 0,
+    beginnerSolved,
+    intermediateSolved,
+    advancedSolved,
   };
 }
 
@@ -42,10 +56,13 @@ function deriveTopicsFromStats(gs: GlobalStats): Topic[] {
     const topicStats = gs.perTopic.find(
       (p) => p.topic.toLowerCase() === t.name.toLowerCase()
     );
-    const solved = topicStats?.solved || 0;
+
     return {
       ...t,
-      problemsSolved: solved,
+      problemsSolved: topicStats?.solved || 0,
+      beginnerSolved: topicStats?.beginner?.solved || 0,
+      intermediateSolved: topicStats?.intermediate?.solved || 0,
+      advancedSolved: topicStats?.advanced?.solved || 0,
     };
   });
 }
@@ -56,30 +73,31 @@ const PracticeContext = createContext<PracticeContextType | undefined>(
 
 export function PracticeProvider({ children }: { children: React.ReactNode }) {
   // Initialize directly from localStorage using lazy initializers
-  // This avoids the need for a useEffect that calls setState synchronously
   const [stats, setStats] = useState<Stats>(() => {
-    // Check if we're on the client (localStorage available)
     if (typeof window === "undefined") {
-      // Server-side: return defaults
       return {
         problemsSolved: 0,
         totalAttempts: 0,
         topicsTouched: 0,
         totalTopics: TOPICS.length,
         masteryPercent: 0,
-        easyPercent: 0,
-        mediumPercent: 0,
-        hardPercent: 0,
+        beginnerSolved: 0,
+        intermediateSolved: 0,
+        advancedSolved: 0,
       };
     }
-    // Client-side: hydrate from localStorage
     const globalStats = getStats();
     return mapGlobalStatsToStats(globalStats);
   });
 
   const [topics, setTopics] = useState<Topic[]>(() => {
     if (typeof window === "undefined") {
-      return TOPICS;
+      return TOPICS.map((t) => ({
+        ...t,
+        beginnerSolved: 0,
+        intermediateSolved: 0,
+        advancedSolved: 0,
+      }));
     }
     const globalStats = getStats();
     return deriveTopicsFromStats(globalStats);
@@ -91,14 +109,24 @@ export function PracticeProvider({ children }: { children: React.ReactNode }) {
     setTopics(deriveTopicsFromStats(globalStats));
   }
 
-  function incrementSolved(topicName: string) {
-    // This is a convenience wrapper - call with isCorrect=true
-    incrementAttempts(topicName, true);
+  function incrementSolved(
+    topicName: string,
+    difficulty: DifficultyLevel = "beginner"
+  ) {
+    incrementAttempts(topicName, true, difficulty);
   }
 
-  function incrementAttempts(topicName: string, isCorrect: boolean) {
-    // Update persistent store
-    const newGlobalStats = storeIncrementAttempt(topicName, isCorrect);
+  function incrementAttempts(
+    topicName: string,
+    isCorrect: boolean,
+    difficulty: DifficultyLevel = "beginner"
+  ) {
+    // Update persistent store with difficulty
+    const newGlobalStats = storeIncrementAttempt(
+      topicName,
+      isCorrect,
+      difficulty
+    );
 
     // Sync React state
     setStats(mapGlobalStatsToStats(newGlobalStats));

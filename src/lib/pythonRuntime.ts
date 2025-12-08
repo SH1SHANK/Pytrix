@@ -2,16 +2,13 @@
  * Python Runtime Service
  *
  * Provides in-browser Python execution using Pyodide (Python via WebAssembly).
+ * Uses CDN-based loading to avoid bundler issues with Next.js/Turbopack.
  *
  * Features:
- * - Lazy loading of Pyodide (only when needed)
+ * - Lazy loading of Pyodide from CDN
  * - Timeout protection against infinite loops
  * - Capture of stdout/stderr
  * - Python version info
- *
- * Usage:
- *   await initPyodide();
- *   const result = await runPython("print('Hello!')");
  */
 
 // ============================================
@@ -52,6 +49,9 @@ let pythonVersion: string | null = null;
 let initError: string | null = null;
 let statusListeners: Array<(info: RuntimeInfo) => void> = [];
 
+// Pyodide CDN URL
+const PYODIDE_CDN = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+
 // ============================================
 // STATUS MANAGEMENT
 // ============================================
@@ -65,7 +65,6 @@ export function subscribeToRuntimeStatus(
   listener: (info: RuntimeInfo) => void
 ): () => void {
   statusListeners.push(listener);
-  // Immediately notify with current status
   listener(getRuntimeInfo());
   return () => {
     statusListeners = statusListeners.filter((l) => l !== listener);
@@ -81,19 +80,40 @@ export function getRuntimeInfo(): RuntimeInfo {
 }
 
 // ============================================
+// CDN SCRIPT LOADING
+// ============================================
+
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Check if already loaded
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
 /**
  * Initialize Pyodide runtime.
- * Call this once when the practice page loads.
- * Safe to call multiple times (will return existing instance).
+ * Loads from CDN to avoid bundler issues.
  */
 export async function initPyodide(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+
   // Already loaded or loading
   if (pyodideInstance) return true;
   if (runtimeStatus === "loading") {
-    // Wait for ongoing initialization
     return new Promise((resolve) => {
       const unsubscribe = subscribeToRuntimeStatus((info) => {
         if (info.status === "ready") {
@@ -112,11 +132,18 @@ export async function initPyodide(): Promise<boolean> {
   notifyStatusChange();
 
   try {
-    // Dynamic import to enable lazy loading
-    const { loadPyodide } = await import("pyodide");
+    // Load Pyodide script from CDN
+    await loadScript(`${PYODIDE_CDN}pyodide.js`);
 
-    pyodideInstance = await loadPyodide({
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/",
+    // Access global loadPyodide function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const loadPyodideFunc = (window as any).loadPyodide;
+    if (!loadPyodideFunc) {
+      throw new Error("Pyodide script loaded but loadPyodide not found");
+    }
+
+    pyodideInstance = await loadPyodideFunc({
+      indexURL: PYODIDE_CDN,
     });
 
     // Get Python version
@@ -145,10 +172,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
 /**
  * Run Python code and capture output.
- *
- * @param code - Python code to execute
- * @param timeoutMs - Maximum execution time (default 10 seconds)
- * @returns ExecutionResult with stdout, stderr, and timing
  */
 export async function runPython(
   code: string,
@@ -156,7 +179,6 @@ export async function runPython(
 ): Promise<ExecutionResult> {
   const startTime = performance.now();
 
-  // Ensure runtime is ready
   if (!pyodideInstance) {
     const initialized = await initPyodide();
     if (!initialized) {
@@ -189,7 +211,10 @@ sys.stderr = _stderr_capture
 
     // Execute with timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("Execution timeout")), timeoutMs);
+      setTimeout(
+        () => reject(new Error("Execution timeout (10s limit)")),
+        timeoutMs
+      );
     });
 
     const executionPromise = pyodideInstance.runPythonAsync(code);
@@ -198,7 +223,6 @@ sys.stderr = _stderr_capture
     try {
       returnValue = await Promise.race([executionPromise, timeoutPromise]);
     } catch (execError) {
-      // Restore stdout/stderr before handling error
       await pyodideInstance.runPythonAsync(`
 sys.stdout = _old_stdout
 sys.stderr = _old_stderr
@@ -206,8 +230,6 @@ sys.stderr = _old_stderr
 
       const errorMessage =
         execError instanceof Error ? execError.message : String(execError);
-
-      // Get any captured output before the error
       const stdout = await pyodideInstance.runPython(
         "_stdout_capture.getvalue()"
       );
@@ -230,7 +252,6 @@ sys.stderr = _old_stderr
       };
     }
 
-    // Capture output and restore streams
     const stdout = await pyodideInstance.runPython(
       "_stdout_capture.getvalue()"
     );
@@ -274,23 +295,14 @@ sys.stderr = _old_stderr
 // UTILITIES
 // ============================================
 
-/**
- * Get the Python version string.
- */
 export function getPythonVersion(): string | null {
   return pythonVersion;
 }
 
-/**
- * Check if runtime is ready to execute code.
- */
 export function isRuntimeReady(): boolean {
   return runtimeStatus === "ready" && pyodideInstance !== null;
 }
 
-/**
- * Reset the runtime (for testing/debugging).
- */
 export function resetRuntime(): void {
   pyodideInstance = null;
   runtimeStatus = "unloaded";

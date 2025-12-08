@@ -1,15 +1,9 @@
 "use client";
 
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  Suspense,
-} from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePractice } from "@/app/PracticeContext";
-import { Question, RunResult } from "@/lib/types";
+import { Question, RunResult, DifficultyLevel } from "@/lib/types";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -51,6 +45,7 @@ import { OutputPanel } from "@/components/practice/OutputPanel";
 import { AutoModeStatsBar } from "@/components/automode/AutoModeStatsBar";
 import { HelpSheet } from "@/components/help/HelpSheet";
 import { Question as QuestionIcon } from "@phosphor-icons/react";
+import { RuntimeStatusBar } from "@/components/practice/RuntimeStatusBar";
 
 // AI Actions
 import { generateQuestion } from "@/lib/ai/generateQuestion";
@@ -58,11 +53,18 @@ import { evaluateCode } from "@/lib/ai/evaluateCode";
 import { getHints } from "@/lib/ai/getHints";
 import { revealSolution } from "@/lib/ai/revealSolution";
 
-// Auto Mode Services
+// Question Buffer Service
+import {
+  initBuffer,
+  nextQuestion as bufferNextQuestion,
+} from "@/lib/questionBufferService";
+
+// Python Runtime
+import { runPython, initPyodide, isRuntimeReady } from "@/lib/pythonRuntime";
+
 import {
   loadSaveFile,
   getCurrentTopic,
-  getNextTopic,
   recordQuestionCompleted,
   shouldRotateTopic,
   advanceTopic,
@@ -77,6 +79,14 @@ function PracticeWorkspace() {
   const mode = searchParams.get("mode");
   const topicId = searchParams.get("topic") || "Strings";
   const saveId = searchParams.get("saveId");
+  const difficultyParam = searchParams.get(
+    "difficulty"
+  ) as DifficultyLevel | null;
+
+  // Current difficulty for this session (defaults to beginner)
+  const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(
+    difficultyParam || "beginner"
+  );
 
   // Core state
   const [question, setQuestion] = useState<Question | null>(null);
@@ -91,11 +101,15 @@ function PracticeWorkspace() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
+  const [lastExecutionTimeMs, setLastExecutionTimeMs] = useState<number | null>(
+    null
+  );
 
   // Auto Mode state
   const [saveFile, setSaveFile] = useState<AutoModeSaveFile | null>(null);
-  const prefetchedQuestion = useRef<Question | null>(null);
-  const isPrefetching = useRef(false);
+
+  // Session limit tracking
+  const [sessionLimitReached, setSessionLimitReached] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -138,25 +152,7 @@ function PracticeWorkspace() {
     }
   }, [mode, saveId, router]);
 
-  // Prefetch next question (background, non-blocking)
-  const prefetchNextQuestion = useCallback(async (nextTopic: string) => {
-    if (isPrefetching.current) return;
-    isPrefetching.current = true;
-
-    try {
-      console.log(`[Prefetch] Starting for topic: ${nextTopic}`);
-      const nextQ = await generateQuestion(nextTopic, "easy");
-      prefetchedQuestion.current = nextQ;
-      console.log(`[Prefetch] Complete: ${nextQ.title}`);
-    } catch (err) {
-      console.warn("[Prefetch] Failed:", err);
-      prefetchedQuestion.current = null;
-    } finally {
-      isPrefetching.current = false;
-    }
-  }, []);
-
-  // Load Question
+  // Load Question via Buffer Service
   useEffect(() => {
     let isMounted = true;
 
@@ -165,14 +161,27 @@ function PracticeWorkspace() {
 
       try {
         let targetTopic = topicId;
-        const targetDiff: "easy" | "medium" | "hard" = "easy";
+        const targetDiff: DifficultyLevel = currentDifficulty;
+        const bufferMode = mode === "auto" ? "auto" : "manual";
 
         // For Auto Mode, get topic from save file
         if (mode === "auto" && saveFile) {
           targetTopic = getCurrentTopic(saveFile);
         }
 
-        const newQuestion = await generateQuestion(targetTopic, targetDiff);
+        // Use buffer service - gets first question immediately, prefetches in background
+        const newQuestion = await initBuffer(
+          bufferMode,
+          targetTopic,
+          targetDiff
+        );
+
+        if (!newQuestion) {
+          setSessionLimitReached(true);
+          toast.error("Session limit reached. Please try again later.");
+          if (isMounted) setIsLoading(false);
+          return;
+        }
 
         if (isMounted) {
           setQuestion(newQuestion);
@@ -185,12 +194,6 @@ function PracticeWorkspace() {
           setIsSolutionRevealed(false);
           setHintsUsed(0);
           toast.info(`Generated: ${newQuestion.title}`);
-
-          // Start prefetching next question for Auto Mode
-          if (mode === "auto" && saveFile) {
-            const nextTopic = getNextTopic(saveFile);
-            prefetchNextQuestion(nextTopic);
-          }
         }
       } catch (err) {
         console.error(err);
@@ -210,30 +213,79 @@ function PracticeWorkspace() {
     return () => {
       isMounted = false;
     };
-  }, [mode, topicId, saveFile, prefetchNextQuestion]);
+  }, [mode, topicId, saveFile, currentDifficulty]);
 
   const handleRun = async () => {
     if (!question) return;
 
     setIsRunning(true);
-    incrementAttempts(question.topic, false); // Record attempt first
-    toast.info("Analyzing code...");
+    incrementAttempts(question.topic, false, currentDifficulty); // Record attempt first
 
+    // Step 1: Execute in Pyodide
+    toast.info("Running code...");
+    let executionOutput = "";
+    let executionError = "";
+    let executionSuccess = false;
+
+    if (isRuntimeReady()) {
+      const execResult = await runPython(code);
+      executionSuccess = execResult.success;
+      executionOutput = execResult.stdout;
+      executionError = execResult.stderr || execResult.error || "";
+
+      if (execResult.traceback) {
+        executionError = execResult.traceback;
+      }
+
+      // Store execution time for status bar
+      setLastExecutionTimeMs(execResult.executionTimeMs);
+
+      // Show raw output immediately
+      setRunResult({
+        status: executionSuccess ? "not_run" : "error",
+        stdout: executionOutput,
+        stderr: executionError,
+        message: executionSuccess
+          ? `Executed in ${execResult.executionTimeMs.toFixed(0)}ms`
+          : "Runtime error",
+      });
+
+      if (!executionSuccess) {
+        setFailedAttempts((prev) => prev + 1);
+        toast.error("Runtime error. Check the output.");
+        setIsRunning(false);
+        return;
+      }
+    } else {
+      toast.info("Python runtime initializing, using AI evaluation...");
+    }
+
+    // Step 2: LLM Evaluation (with execution context if available)
+    toast.info("Checking solution...");
     try {
-      const result = await evaluateCode(question, code);
+      // Pass execution output to evaluator for context
+      const result = await evaluateCode(question, code, {
+        stdout: executionOutput,
+        stderr: executionError,
+        didExecute: isRuntimeReady(),
+      });
 
       setRunResult({
         status: result.status,
-        stdout: result.expectedBehavior
-          ? `Expected: ${result.expectedBehavior}`
-          : "",
-        stderr: result.status === "error" ? result.explanation : "",
+        stdout:
+          executionOutput ||
+          (result.expectedBehavior
+            ? `Expected: ${result.expectedBehavior}`
+            : ""),
+        stderr:
+          executionError ||
+          (result.status === "error" ? result.explanation : ""),
         message: result.explanation,
       });
 
       if (result.status === "correct") {
         toast.success("Correct! " + result.explanation);
-        incrementSolved(question.topic);
+        incrementSolved(question.topic, currentDifficulty);
 
         // Update save file for Auto Mode
         if (mode === "auto" && saveFile) {
@@ -260,8 +312,8 @@ function PracticeWorkspace() {
       toast.error("Evaluation failed.");
       setRunResult({
         status: "error",
-        stdout: "",
-        stderr: "Failed to connect to AI evaluator.",
+        stdout: executionOutput,
+        stderr: executionError || "Failed to connect to AI evaluator.",
         message: "Network error.",
       });
     } finally {
@@ -310,58 +362,43 @@ function PracticeWorkspace() {
   };
 
   const handleNext = async () => {
+    const bufferMode = mode === "auto" ? "auto" : "manual";
+    let targetTopic = topicId;
+
+    // For Auto Mode, handle topic rotation
     if (mode === "auto" && saveFile) {
-      // Use prefetched question if available
-      if (prefetchedQuestion.current) {
-        const nextQ = prefetchedQuestion.current;
-        prefetchedQuestion.current = null;
-
-        setQuestion(nextQ);
-        setCode(
-          nextQ.starterCode ||
-            `def solve(input_data):\n    # Write your solution here\n    pass`
-        );
-        setRunResult({ status: "not_run", stdout: "", stderr: "" });
-        setFailedAttempts(0);
-        setIsSolutionRevealed(false);
-        setHintsUsed(0);
-        toast.info(`Loaded: ${nextQ.title}`);
-
-        // Prefetch the next one
-        const nextTopic = getNextTopic(saveFile);
-        prefetchNextQuestion(nextTopic);
-      } else {
-        // No prefetched question, regenerate with current topic
-        setIsLoading(true);
-        try {
-          const currentTopic = getCurrentTopic(saveFile);
-          const newQ = await generateQuestion(currentTopic, "easy");
-
-          setQuestion(newQ);
-          setCode(
-            newQ.starterCode ||
-              `def solve(input_data):\n    # Write your solution here\n    pass`
-          );
-          setRunResult({ status: "not_run", stdout: "", stderr: "" });
-          setFailedAttempts(0);
-          setIsSolutionRevealed(false);
-          setHintsUsed(0);
-          toast.info(`Generated: ${newQ.title}`);
-
-          // Start prefetching
-          const nextTopic = getNextTopic(saveFile);
-          prefetchNextQuestion(nextTopic);
-        } catch (err) {
-          console.error(err);
-          toast.error("Failed to load next question.");
-        } finally {
-          setIsLoading(false);
-        }
+      // Check if we should rotate to next topic
+      if (shouldRotateTopic(saveFile)) {
+        const rotated = advanceTopic(saveFile);
+        setSaveFile(rotated);
       }
-    } else {
-      toast.info("Select another topic from dashboard.");
-      router.push("/");
+      targetTopic = getCurrentTopic(saveFile);
     }
+
+    // Use buffered question - instant if available
+    const nextQ = await bufferNextQuestion(
+      bufferMode,
+      targetTopic,
+      currentDifficulty
+    );
+
+    if (!nextQ) {
+      setSessionLimitReached(true);
+      toast.error("Session limit reached. No more questions available.");
+      return;
+    }
+
+    setQuestion(nextQ);
+    setCode(
+      nextQ.starterCode ||
+        `def solve(input_data):\n    # Write your solution here\n    pass`
+    );
+    setRunResult({ status: "not_run", stdout: "", stderr: "" });
+    setFailedAttempts(0);
+    setIsSolutionRevealed(false);
+    setHintsUsed(0);
+    setLastExecutionTimeMs(null);
+    toast.info(`Next: ${nextQ.title}`);
   };
 
   const handleRegenerate = async () => {
@@ -369,7 +406,7 @@ function PracticeWorkspace() {
       // Manual mode regenerate
       setIsLoading(true);
       try {
-        const newQ = await generateQuestion(topicId, "easy");
+        const newQ = await generateQuestion(topicId, currentDifficulty);
         setQuestion(newQ);
         setCode(
           newQ.starterCode ||
@@ -393,7 +430,7 @@ function PracticeWorkspace() {
       setIsLoading(true);
       try {
         const currentTopic = getCurrentTopic(saveFile);
-        const newQ = await generateQuestion(currentTopic, "easy");
+        const newQ = await generateQuestion(currentTopic, currentDifficulty);
 
         setQuestion(newQ);
         setCode(
@@ -572,10 +609,16 @@ function PracticeWorkspace() {
           <ResizablePanel defaultSize={70}>
             <ResizablePanelGroup direction="vertical">
               <ResizablePanel defaultSize={60} minSize={30}>
-                <CodeEditorPanel
-                  code={code}
-                  onChange={(val) => setCode(val || "")}
-                />
+                <div className="h-full flex flex-col">
+                  <div className="flex-1">
+                    <CodeEditorPanel
+                      code={code}
+                      onChange={(val) => setCode(val || "")}
+                    />
+                  </div>
+                  {/* Runtime Status Bar - between editor and output */}
+                  <RuntimeStatusBar executionTimeMs={lastExecutionTimeMs} />
+                </div>
               </ResizablePanel>
 
               <ResizableHandle />
@@ -585,6 +628,10 @@ function PracticeWorkspace() {
                   runResult={runResult}
                   question={question}
                   isRevealed={isSolutionRevealed}
+                  currentCode={code}
+                  onApplyOptimizedCode={(optimizedCode) =>
+                    setCode(optimizedCode)
+                  }
                 />
               </ResizablePanel>
             </ResizablePanelGroup>
