@@ -57,6 +57,9 @@ import {
   evaluateCode,
 } from "@/lib/aiClient";
 
+// Question Service for topic-select mode
+import { getTemplateQuestion } from "@/lib/questionService";
+
 // Question Buffer Service
 import {
   initBuffer,
@@ -87,6 +90,9 @@ function PracticeWorkspace() {
   const topicId = searchParams.get("topic") || "Strings";
   const saveId = searchParams.get("saveId");
   const historyId = searchParams.get("historyId"); // For review mode
+  const moduleParam = searchParams.get("module"); // For manual mode
+  const subtopicParam = searchParams.get("subtopic"); // For manual mode
+  const problemTypeParam = searchParams.get("problemType"); // For topic-select/manual mode
   const difficultyParam = searchParams.get(
     "difficulty"
   ) as DifficultyLevel | null;
@@ -195,6 +201,50 @@ function PracticeWorkspace() {
     }
   }, [mode, historyId, router]);
 
+  // Topic-select mode: Load question from sessionStorage or generate new
+  useEffect(() => {
+    if (mode !== "topic-select") return;
+    if (!problemTypeParam) {
+      toast.error("No problem type specified");
+      router.push("/practice/manual");
+      return;
+    }
+
+    // Try to load from sessionStorage first
+    const pending = sessionStorage.getItem("pendingQuestion");
+    if (pending) {
+      try {
+        const { question: pendingQ } = JSON.parse(pending);
+        setQuestion(pendingQ);
+        setCode(
+          pendingQ.starterCode ||
+            `def solve(input_data):\n    # Write your solution here\n    pass`
+        );
+        sessionStorage.removeItem("pendingQuestion");
+        setIsLoading(false);
+        toast.info(`Practice: ${pendingQ.title}`);
+        return;
+      } catch {
+        // Fall through to generate
+      }
+    }
+
+    // Generate from problemTypeParam
+    const newQ = getTemplateQuestion(problemTypeParam, currentDifficulty);
+    if (newQ) {
+      setQuestion(newQ);
+      setCode(
+        newQ.starterCode ||
+          `def solve(input_data):\n    # Write your solution here\n    pass`
+      );
+      setIsLoading(false);
+      toast.info(`Practice: ${newQ.title}`);
+    } else {
+      toast.error("Failed to generate question");
+      router.push("/practice/manual");
+    }
+  }, [mode, problemTypeParam, currentDifficulty, router]);
+
   // Load Question via Buffer Service
   useEffect(() => {
     let isMounted = true;
@@ -209,7 +259,8 @@ function PracticeWorkspace() {
 
         // For Auto Mode, get topic from save file
         if (mode === "auto" && saveFile) {
-          targetTopic = getCurrentTopic(saveFile);
+          const entry = getCurrentTopic(saveFile);
+          targetTopic = entry.problemTypeName;
         }
 
         // Use buffer service - gets first question immediately, prefetches in background
@@ -245,9 +296,9 @@ function PracticeWorkspace() {
       }
     }
 
-    // Only load if we have what we need (skip if review mode)
-    if (mode === "review") {
-      // Review mode handled by separate effect
+    // Only load if we have what we need (skip if review or topic-select mode)
+    if (mode === "review" || mode === "topic-select") {
+      // These modes handled by separate effects
       return;
     }
 
@@ -453,7 +504,8 @@ function PracticeWorkspace() {
         const rotated = advanceTopic(saveFile);
         setSaveFile(rotated);
       }
-      targetTopic = getCurrentTopic(saveFile);
+      const entry = getCurrentTopic(saveFile);
+      targetTopic = entry.problemTypeName;
     }
 
     // Use buffered question - instant if available
@@ -482,6 +534,31 @@ function PracticeWorkspace() {
   };
 
   const handleRegenerate = async () => {
+    // Topic-select mode: use questionService template
+    if (mode === "topic-select" && problemTypeParam) {
+      setIsLoading(true);
+      try {
+        const newQ = getTemplateQuestion(problemTypeParam, currentDifficulty);
+        if (newQ) {
+          setQuestion(newQ);
+          setCode(
+            newQ.starterCode ||
+              `def solve(input_data):\n    # Write your solution here\n    pass`
+          );
+          setRunResult({ status: "not_run", stdout: "", stderr: "" });
+          setFailedAttempts(0);
+          setIsSolutionRevealed(false);
+          setHintsUsed(0);
+          toast.info(`Regenerated: ${newQ.title}`);
+        } else {
+          toast.error("Failed to regenerate question.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (!saveFile && mode !== "auto") {
       // Manual mode regenerate
       setIsLoading(true);
@@ -509,8 +586,11 @@ function PracticeWorkspace() {
     if (mode === "auto" && saveFile) {
       setIsLoading(true);
       try {
-        const currentTopic = getCurrentTopic(saveFile);
-        const newQ = await generateQuestion(currentTopic, currentDifficulty);
+        const entry = getCurrentTopic(saveFile);
+        const newQ = await generateQuestion(
+          entry.problemTypeName,
+          currentDifficulty
+        );
 
         setQuestion(newQ);
         setCode(

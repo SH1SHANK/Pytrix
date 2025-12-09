@@ -1,12 +1,11 @@
 /**
- * Stats Store - localStorage-backed stats system
+ * Stats Store v2 - Hierarchical Stats System
  *
- * Provides real stats tracking that persists across sessions.
- * Supports per-difficulty tracking (beginner, intermediate, advanced).
- * Designed to be replaceable with a backend later.
+ * Provides stats tracking with module → subtopic → problemType hierarchy.
+ * Supports per-difficulty tracking and migration from old flat format.
  */
 
-import { TOPICS } from "./mockQuestions";
+import { getAllModules } from "./topicsStore";
 
 // ============================================
 // TYPE DEFINITIONS
@@ -14,50 +13,108 @@ import { TOPICS } from "./mockQuestions";
 
 export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
+/**
+ * Stats for a single difficulty level.
+ */
 export interface DifficultyStats {
   attempts: number;
   solved: number;
+  avgTimeTakenMs: number;
+  lastAttemptAt: number;
 }
 
-export interface TopicStats {
-  topic: string;
-  // Per-difficulty breakdown
+/**
+ * Stats for a problem type.
+ */
+export interface ProblemTypeStats {
+  problemTypeId: string;
+  problemTypeName: string;
   beginner: DifficultyStats;
   intermediate: DifficultyStats;
   advanced: DifficultyStats;
-  // Aggregate totals (sum of all difficulties)
   attempts: number;
   solved: number;
 }
 
-export interface GlobalStats {
+/**
+ * Stats for a subtopic.
+ */
+export interface SubtopicStats {
+  subtopicId: string;
+  subtopicName: string;
+  problemTypes: ProblemTypeStats[];
+  attempts: number;
+  solved: number;
+  masteryPercent: number;
+}
+
+/**
+ * Stats for a module.
+ */
+export interface ModuleStats {
+  moduleId: string;
+  moduleName: string;
+  subtopics: SubtopicStats[];
+  attempts: number;
+  solved: number;
+  masteryPercent: number;
+}
+
+/**
+ * Global stats structure v2.
+ */
+export interface GlobalStatsV2 {
+  version: 3;
   totalAttempts: number;
   totalSolved: number;
-  topicsTouched: number;
+  totalTimeTakenMs: number;
+  modulesTouched: number;
+  subtopicsTouched: number;
   masteryPercent: number;
-  perTopic: TopicStats[];
+  modules: ModuleStats[];
+  lastUpdatedAt: number;
+}
+
+/**
+ * Input for recording an attempt.
+ */
+export interface RecordAttemptInput {
+  moduleId: string;
+  subtopicId: string;
+  problemTypeId: string;
+  correct: boolean;
+  timeTakenMs: number;
+  difficulty?: DifficultyLevel;
 }
 
 // ============================================
 // CONSTANTS
 // ============================================
 
-const STORAGE_KEY = "pypractice-stats";
-const STATS_VERSION = 2; // Increment when schema changes
-
-const DEFAULT_TOPICS = TOPICS.map((t) => t.name);
+const STORAGE_KEY_V2 = "pytrix_stats_v2";
+const STORAGE_KEY_OLD = "pypractice-stats";
+const STATS_VERSION = 3;
 
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
 
 function createEmptyDifficultyStats(): DifficultyStats {
-  return { attempts: 0, solved: 0 };
+  return {
+    attempts: 0,
+    solved: 0,
+    avgTimeTakenMs: 0,
+    lastAttemptAt: 0,
+  };
 }
 
-function createEmptyTopicStats(topic: string): TopicStats {
+function createEmptyProblemTypeStats(
+  problemTypeId: string,
+  problemTypeName: string
+): ProblemTypeStats {
   return {
-    topic,
+    problemTypeId,
+    problemTypeName,
     beginner: createEmptyDifficultyStats(),
     intermediate: createEmptyDifficultyStats(),
     advanced: createEmptyDifficultyStats(),
@@ -66,63 +123,60 @@ function createEmptyTopicStats(topic: string): TopicStats {
   };
 }
 
-function createEmptyStats(): GlobalStats {
+function createEmptySubtopicStats(
+  subtopicId: string,
+  subtopicName: string
+): SubtopicStats {
   return {
+    subtopicId,
+    subtopicName,
+    problemTypes: [],
+    attempts: 0,
+    solved: 0,
+    masteryPercent: 0,
+  };
+}
+
+function createEmptyModuleStats(
+  moduleId: string,
+  moduleName: string
+): ModuleStats {
+  return {
+    moduleId,
+    moduleName,
+    subtopics: [],
+    attempts: 0,
+    solved: 0,
+    masteryPercent: 0,
+  };
+}
+
+function createEmptyStatsV2(): GlobalStatsV2 {
+  return {
+    version: 3,
     totalAttempts: 0,
     totalSolved: 0,
-    topicsTouched: 0,
+    totalTimeTakenMs: 0,
+    modulesTouched: 0,
+    subtopicsTouched: 0,
     masteryPercent: 0,
-    perTopic: DEFAULT_TOPICS.map((topic) => createEmptyTopicStats(topic)),
+    modules: [],
+    lastUpdatedAt: Date.now(),
   };
 }
 
-function calculateMastery(stats: GlobalStats): number {
-  if (stats.totalAttempts === 0) return 0;
-  const ratio = stats.totalSolved / stats.totalAttempts;
-  return Math.min(100, Math.round(ratio * 100));
+function calculateMastery(attempts: number, solved: number): number {
+  if (attempts === 0) return 0;
+  return Math.min(100, Math.round((solved / attempts) * 100));
 }
 
-function countTopicsTouched(perTopic: TopicStats[]): number {
-  return perTopic.filter((t) => t.attempts > 0).length;
-}
-
-/**
- * Migrate old flat stats format to new difficulty-aware format.
- * Old format: { topic, attempts, solved }
- * New format: { topic, beginner, intermediate, advanced, attempts, solved }
- */
-function migrateTopicStats(oldTopic: {
-  topic: string;
-  attempts?: number;
-  solved?: number;
-  beginner?: DifficultyStats;
-  intermediate?: DifficultyStats;
-  advanced?: DifficultyStats;
-}): TopicStats {
-  // If already has difficulty breakdown, return as-is
-  if (oldTopic.beginner && oldTopic.intermediate && oldTopic.advanced) {
-    return {
-      topic: oldTopic.topic,
-      beginner: oldTopic.beginner,
-      intermediate: oldTopic.intermediate,
-      advanced: oldTopic.advanced,
-      attempts: oldTopic.attempts || 0,
-      solved: oldTopic.solved || 0,
-    };
-  }
-
-  // Migrate: put old flat stats into "beginner" tier (conservative assumption)
-  const attempts = oldTopic.attempts || 0;
-  const solved = oldTopic.solved || 0;
-
-  return {
-    topic: oldTopic.topic,
-    beginner: { attempts, solved },
-    intermediate: createEmptyDifficultyStats(),
-    advanced: createEmptyDifficultyStats(),
-    attempts,
-    solved,
-  };
+function updateAvgTime(
+  currentAvg: number,
+  currentCount: number,
+  newTime: number
+): number {
+  if (currentCount === 0) return newTime;
+  return Math.round((currentAvg * currentCount + newTime) / (currentCount + 1));
 }
 
 // ============================================
@@ -130,191 +184,424 @@ function migrateTopicStats(oldTopic: {
 // ============================================
 
 /**
- * Get stats from localStorage.
- * Initializes empty stats if none exist.
- * Migrates old format if detected.
+ * Get stats from localStorage (v2 format).
  */
-export function getStats(): GlobalStats {
+export function getStatsV2(): GlobalStatsV2 {
   if (typeof window === "undefined") {
-    return createEmptyStats();
+    return createEmptyStatsV2();
   }
 
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = localStorage.getItem(STORAGE_KEY_V2);
   if (!stored) {
-    const empty = createEmptyStats();
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ ...empty, version: STATS_VERSION })
-    );
+    // Check if old stats exist and need migration
+    const oldStats = localStorage.getItem(STORAGE_KEY_OLD);
+    if (oldStats) {
+      console.log("[statsStore] Old stats detected, run migration script.");
+    }
+
+    const empty = createEmptyStatsV2();
+    localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(empty));
     return empty;
   }
 
   try {
-    const parsed = JSON.parse(stored);
-
-    // Migrate per-topic entries
-    const migratedPerTopic: TopicStats[] = (parsed.perTopic || []).map(
-      migrateTopicStats
-    );
-
-    // Ensure all topics exist (in case new topics were added)
-    const existingTopics = new Set(migratedPerTopic.map((t) => t.topic));
-    for (const topic of DEFAULT_TOPICS) {
-      if (!existingTopics.has(topic)) {
-        migratedPerTopic.push(createEmptyTopicStats(topic));
-      }
-    }
-
-    const stats: GlobalStats = {
-      totalAttempts: parsed.totalAttempts || 0,
-      totalSolved: parsed.totalSolved || 0,
-      topicsTouched: parsed.topicsTouched || 0,
-      masteryPercent: parsed.masteryPercent || 0,
-      perTopic: migratedPerTopic,
-    };
-
-    // Persist migrated format if version changed
-    if (parsed.version !== STATS_VERSION) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ ...stats, version: STATS_VERSION })
-      );
-    }
-
-    return stats;
+    const parsed = JSON.parse(stored) as GlobalStatsV2;
+    return parsed;
   } catch {
-    console.warn("[statsStore] Corrupted stats, resetting.");
-    const empty = createEmptyStats();
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ ...empty, version: STATS_VERSION })
-    );
+    console.warn("[statsStore] Corrupted stats v2, resetting.");
+    const empty = createEmptyStatsV2();
+    localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(empty));
     return empty;
   }
 }
 
 /**
- * Increment attempt for a topic at a specific difficulty.
- * @param topicName - The topic name (e.g., "Strings")
- * @param isCorrect - Whether the attempt was successful
- * @param difficulty - The difficulty level (beginner, intermediate, advanced)
+ * Save stats to localStorage.
+ */
+function saveStatsV2(stats: GlobalStatsV2): void {
+  if (typeof window === "undefined") return;
+  stats.lastUpdatedAt = Date.now();
+  localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(stats));
+}
+
+/**
+ * Record an attempt with full hierarchy.
+ */
+export function recordAttempt(input: RecordAttemptInput): GlobalStatsV2 {
+  const {
+    moduleId,
+    subtopicId,
+    problemTypeId,
+    correct,
+    timeTakenMs,
+    difficulty = "beginner",
+  } = input;
+
+  const stats = getStatsV2();
+
+  // Find or create module
+  let moduleStats = stats.modules.find((m) => m.moduleId === moduleId);
+  if (!moduleStats) {
+    // Get module name from topicsStore
+    const modules = getAllModules();
+    const moduleData = modules.find((m) => m.id === moduleId);
+    moduleStats = createEmptyModuleStats(
+      moduleId,
+      moduleData?.name || moduleId
+    );
+    stats.modules.push(moduleStats);
+  }
+
+  // Find or create subtopic
+  let subtopicStats = moduleStats.subtopics.find(
+    (s) => s.subtopicId === subtopicId
+  );
+  if (!subtopicStats) {
+    const modules = getAllModules();
+    const moduleData = modules.find((m) => m.id === moduleId);
+    const subtopicData = moduleData?.subtopics.find((s) => s.id === subtopicId);
+    subtopicStats = createEmptySubtopicStats(
+      subtopicId,
+      subtopicData?.name || subtopicId
+    );
+    moduleStats.subtopics.push(subtopicStats);
+  }
+
+  // Find or create problem type
+  let problemTypeStats = subtopicStats.problemTypes.find(
+    (p) => p.problemTypeId === problemTypeId
+  );
+  if (!problemTypeStats) {
+    const modules = getAllModules();
+    const moduleData = modules.find((m) => m.id === moduleId);
+    const subtopicData = moduleData?.subtopics.find((s) => s.id === subtopicId);
+    const ptData = subtopicData?.problemTypes.find(
+      (p) => p.id === problemTypeId
+    );
+    problemTypeStats = createEmptyProblemTypeStats(
+      problemTypeId,
+      ptData?.name || problemTypeId
+    );
+    subtopicStats.problemTypes.push(problemTypeStats);
+  }
+
+  // Update difficulty-specific stats
+  const diffStats = problemTypeStats[difficulty];
+  diffStats.attempts++;
+  if (correct) diffStats.solved++;
+  diffStats.avgTimeTakenMs = updateAvgTime(
+    diffStats.avgTimeTakenMs,
+    diffStats.attempts - 1,
+    timeTakenMs
+  );
+  diffStats.lastAttemptAt = Date.now();
+
+  // Update problem type aggregates
+  problemTypeStats.attempts++;
+  if (correct) problemTypeStats.solved++;
+
+  // Update subtopic aggregates
+  subtopicStats.attempts++;
+  if (correct) subtopicStats.solved++;
+  subtopicStats.masteryPercent = calculateMastery(
+    subtopicStats.attempts,
+    subtopicStats.solved
+  );
+
+  // Update module aggregates
+  moduleStats.attempts++;
+  if (correct) moduleStats.solved++;
+  moduleStats.masteryPercent = calculateMastery(
+    moduleStats.attempts,
+    moduleStats.solved
+  );
+
+  // Update global aggregates
+  stats.totalAttempts++;
+  if (correct) stats.totalSolved++;
+  stats.totalTimeTakenMs += timeTakenMs;
+  stats.masteryPercent = calculateMastery(
+    stats.totalAttempts,
+    stats.totalSolved
+  );
+  stats.modulesTouched = stats.modules.filter((m) => m.attempts > 0).length;
+  stats.subtopicsTouched = stats.modules.reduce(
+    (sum, m) => sum + m.subtopics.filter((s) => s.attempts > 0).length,
+    0
+  );
+
+  saveStatsV2(stats);
+  return stats;
+}
+
+/**
+ * Get module stats by ID.
+ */
+export function getModuleStats(moduleId: string): ModuleStats | null {
+  const stats = getStatsV2();
+  return stats.modules.find((m) => m.moduleId === moduleId) || null;
+}
+
+/**
+ * Get subtopic stats.
+ */
+export function getSubtopicStats(
+  moduleId: string,
+  subtopicId: string
+): SubtopicStats | null {
+  const moduleStats = getModuleStats(moduleId);
+  if (!moduleStats) return null;
+  return moduleStats.subtopics.find((s) => s.subtopicId === subtopicId) || null;
+}
+
+/**
+ * Get weakest modules (lowest mastery with at least 1 attempt).
+ */
+export function getWeakestModules(count: number = 3): ModuleStats[] {
+  const stats = getStatsV2();
+
+  return [...stats.modules]
+    .filter((m) => m.attempts > 0)
+    .sort((a, b) => a.masteryPercent - b.masteryPercent)
+    .slice(0, count);
+}
+
+/**
+ * Get weakest subtopics across all modules.
+ */
+export function getWeakestSubtopics(count: number = 3): Array<{
+  moduleId: string;
+  subtopic: SubtopicStats;
+}> {
+  const stats = getStatsV2();
+
+  const allSubtopics: Array<{ moduleId: string; subtopic: SubtopicStats }> = [];
+
+  for (const mod of stats.modules) {
+    for (const subtopic of mod.subtopics) {
+      if (subtopic.attempts > 0) {
+        allSubtopics.push({ moduleId: mod.moduleId, subtopic });
+      }
+    }
+  }
+
+  return allSubtopics
+    .sort((a, b) => a.subtopic.masteryPercent - b.subtopic.masteryPercent)
+    .slice(0, count);
+}
+
+/**
+ * Get untouched modules (0 attempts).
+ */
+export function getUntouchedModules(): string[] {
+  const stats = getStatsV2();
+  const touchedIds = new Set(stats.modules.map((m) => m.moduleId));
+
+  const allModules = getAllModules();
+  return allModules
+    .filter(
+      (m) =>
+        !touchedIds.has(m.id) ||
+        stats.modules.find((s) => s.moduleId === m.id)?.attempts === 0
+    )
+    .map((m) => m.id);
+}
+
+/**
+ * Reset all stats.
+ */
+export function resetStatsV2(): GlobalStatsV2 {
+  if (typeof window === "undefined") {
+    return createEmptyStatsV2();
+  }
+
+  const empty = createEmptyStatsV2();
+  localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(empty));
+  return empty;
+}
+
+/**
+ * Reset stats for a specific module.
+ */
+export function resetModuleStats(moduleId: string): GlobalStatsV2 {
+  const stats = getStatsV2();
+
+  const moduleStats = stats.modules.find((m) => m.moduleId === moduleId);
+  if (moduleStats) {
+    // Subtract from totals
+    stats.totalAttempts -= moduleStats.attempts;
+    stats.totalSolved -= moduleStats.solved;
+
+    // Remove the module
+    stats.modules = stats.modules.filter((m) => m.moduleId !== moduleId);
+
+    // Recalculate
+    stats.masteryPercent = calculateMastery(
+      stats.totalAttempts,
+      stats.totalSolved
+    );
+    stats.modulesTouched = stats.modules.filter((m) => m.attempts > 0).length;
+    stats.subtopicsTouched = stats.modules.reduce(
+      (sum, m) => sum + m.subtopics.filter((s) => s.attempts > 0).length,
+      0
+    );
+  }
+
+  saveStatsV2(stats);
+  return stats;
+}
+
+// ============================================
+// LEGACY COMPATIBILITY (getStats wrapper)
+// ============================================
+
+// Re-export old types for compatibility
+export type { DifficultyLevel as DifficultyLevelLegacy };
+
+/**
+ * Legacy TopicStats format for backward compatibility.
+ */
+export interface TopicStats {
+  topic: string;
+  beginner: { attempts: number; solved: number };
+  intermediate: { attempts: number; solved: number };
+  advanced: { attempts: number; solved: number };
+  attempts: number;
+  solved: number;
+}
+
+/**
+ * Legacy GlobalStats format for backward compatibility.
+ */
+export interface GlobalStats {
+  totalAttempts: number;
+  totalSolved: number;
+  topicsTouched: number;
+  masteryPercent: number;
+  perTopic: TopicStats[];
+}
+
+/**
+ * Legacy getStats() for backward compatibility.
+ * Converts v2 stats to old format.
+ */
+export function getStats(): GlobalStats {
+  const v2 = getStatsV2();
+
+  // Convert modules to flat topics
+  const perTopic: TopicStats[] = [];
+
+  for (const mod of v2.modules) {
+    // Add module as a topic
+    perTopic.push({
+      topic: mod.moduleName,
+      beginner: { attempts: 0, solved: 0 },
+      intermediate: { attempts: 0, solved: 0 },
+      advanced: { attempts: 0, solved: 0 },
+      attempts: mod.attempts,
+      solved: mod.solved,
+    });
+
+    // Add each subtopic as a topic (for dashboard compatibility)
+    for (const subtopic of mod.subtopics) {
+      const aggregated: TopicStats = {
+        topic: subtopic.subtopicName,
+        beginner: { attempts: 0, solved: 0 },
+        intermediate: { attempts: 0, solved: 0 },
+        advanced: { attempts: 0, solved: 0 },
+        attempts: subtopic.attempts,
+        solved: subtopic.solved,
+      };
+
+      // Aggregate difficulty stats from problem types
+      for (const pt of subtopic.problemTypes) {
+        aggregated.beginner.attempts += pt.beginner.attempts;
+        aggregated.beginner.solved += pt.beginner.solved;
+        aggregated.intermediate.attempts += pt.intermediate.attempts;
+        aggregated.intermediate.solved += pt.intermediate.solved;
+        aggregated.advanced.attempts += pt.advanced.attempts;
+        aggregated.advanced.solved += pt.advanced.solved;
+      }
+
+      perTopic.push(aggregated);
+    }
+  }
+
+  return {
+    totalAttempts: v2.totalAttempts,
+    totalSolved: v2.totalSolved,
+    topicsTouched: v2.subtopicsTouched,
+    masteryPercent: v2.masteryPercent,
+    perTopic,
+  };
+}
+
+/**
+ * Legacy incrementAttempt for backward compatibility.
  */
 export function incrementAttempt(
   topicName: string,
   isCorrect: boolean,
   difficulty: DifficultyLevel = "beginner"
 ): GlobalStats {
-  if (typeof window === "undefined") {
-    return createEmptyStats();
+  // Try to find matching module/subtopic
+  const modules = getAllModules();
+
+  for (const mod of modules) {
+    for (const subtopic of mod.subtopics) {
+      if (
+        subtopic.name.toLowerCase() === topicName.toLowerCase() ||
+        mod.name.toLowerCase() === topicName.toLowerCase()
+      ) {
+        // Use first problem type as fallback
+        const firstPt = subtopic.problemTypes[0];
+        if (firstPt) {
+          recordAttempt({
+            moduleId: mod.id,
+            subtopicId: subtopic.id,
+            problemTypeId: firstPt.id,
+            correct: isCorrect,
+            timeTakenMs: 0,
+            difficulty,
+          });
+        }
+        break;
+      }
+    }
   }
 
-  const stats = getStats();
-
-  // Update global counters
-  stats.totalAttempts++;
-  if (isCorrect) {
-    stats.totalSolved++;
-  }
-
-  // Find or create topic entry
-  let topicEntry = stats.perTopic.find(
-    (t) => t.topic.toLowerCase() === topicName.toLowerCase()
-  );
-
-  if (!topicEntry) {
-    topicEntry = createEmptyTopicStats(topicName);
-    stats.perTopic.push(topicEntry);
-  }
-
-  // Update aggregate totals
-  topicEntry.attempts++;
-  if (isCorrect) {
-    topicEntry.solved++;
-  }
-
-  // Update difficulty-specific stats
-  const difficultyStats = topicEntry[difficulty];
-  difficultyStats.attempts++;
-  if (isCorrect) {
-    difficultyStats.solved++;
-  }
-
-  // Recalculate derived values
-  stats.topicsTouched = countTopicsTouched(stats.perTopic);
-  stats.masteryPercent = calculateMastery(stats);
-
-  // Persist
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ ...stats, version: STATS_VERSION })
-  );
-
-  return stats;
+  return getStats();
 }
 
 /**
- * Reset all stats to zero.
+ * Legacy resetStats for backward compatibility.
  */
 export function resetStats(): GlobalStats {
-  if (typeof window === "undefined") {
-    return createEmptyStats();
-  }
-
-  const empty = createEmptyStats();
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ ...empty, version: STATS_VERSION })
-  );
-  return empty;
+  resetStatsV2();
+  return getStats();
 }
 
 /**
- * Reset stats for a specific topic to zero.
- * @param topicId - The topic ID (e.g., "strings")
+ * Legacy resetTopicStats for backward compatibility.
  */
 export function resetTopicStats(topicId: string): GlobalStats {
-  if (typeof window === "undefined") {
-    return createEmptyStats();
-  }
-
-  const stats = getStats();
-  const topicName = DEFAULT_TOPICS.find(
-    (t) => t.toLowerCase() === topicId.toLowerCase()
+  // Try to find matching module
+  const stats = getStatsV2();
+  const moduleStats = stats.modules.find(
+    (m) =>
+      m.moduleId === topicId ||
+      m.moduleName.toLowerCase() === topicId.toLowerCase()
   );
 
-  if (!topicName) {
-    console.warn(`[statsStore] Topic not found: ${topicId}`);
-    return stats;
+  if (moduleStats) {
+    resetModuleStats(moduleStats.moduleId);
   }
 
-  const topicStats = stats.perTopic.find(
-    (t) => t.topic.toLowerCase() === topicName.toLowerCase()
-  );
-
-  if (topicStats) {
-    // Subtract from totals
-    stats.totalAttempts -= topicStats.attempts;
-    stats.totalSolved -= topicStats.solved;
-
-    // Reset the topic
-    Object.assign(topicStats, createEmptyTopicStats(topicName));
-  }
-
-  // Recalculate derived values
-  stats.topicsTouched = countTopicsTouched(stats.perTopic);
-  stats.masteryPercent = calculateMastery(stats);
-
-  // Persist
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ ...stats, version: STATS_VERSION })
-  );
-
-  return stats;
+  return getStats();
 }
 
 /**
- * Get stats for a specific topic.
+ * Legacy getTopicStats for backward compatibility.
  */
 export function getTopicStats(topicName: string): TopicStats | null {
   const stats = getStats();
@@ -326,24 +613,20 @@ export function getTopicStats(topicName: string): TopicStats | null {
 }
 
 /**
- * Get weakest topics (lowest solve rate with at least 1 attempt).
- * Used for Auto Mode topic queue generation.
+ * Legacy getWeakestTopics for backward compatibility.
  */
 export function getWeakestTopics(count: number = 3): string[] {
   const stats = getStats();
-
-  const sorted = [...stats.perTopic].sort((a, b) => {
-    // Topics with 0 attempts should be prioritized
-    if (a.attempts === 0 && b.attempts > 0) return -1;
-    if (b.attempts === 0 && a.attempts > 0) return 1;
-    if (a.attempts === 0 && b.attempts === 0) return 0;
-
-    // Calculate solve rate
-    const rateA = a.solved / a.attempts;
-    const rateB = b.solved / b.attempts;
-
-    return rateA - rateB; // Ascending (weakest first)
-  });
-
-  return sorted.slice(0, count).map((t) => t.topic);
+  return stats.perTopic
+    .filter((t) => t.attempts > 0)
+    .sort((a, b) => {
+      const rateA = a.attempts > 0 ? a.solved / a.attempts : 0;
+      const rateB = b.attempts > 0 ? b.solved / b.attempts : 0;
+      return rateA - rateB;
+    })
+    .slice(0, count)
+    .map((t) => t.topic);
 }
+
+// Export storage keys for migration
+export { STORAGE_KEY_V2, STORAGE_KEY_OLD };

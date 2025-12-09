@@ -136,9 +136,23 @@ function isModelCoolingDown(modelName: string): boolean {
  * Get the priority-ordered list of models for a task,
  * with cooling-down models pushed to the end.
  */
-export function getModelPriorityList(task: TaskType): string[] {
+import { type Difficulty } from "@/types/question";
+
+export function getModelPriorityList(
+  task: TaskType,
+  difficulty?: Difficulty
+): string[] {
   // Default to the cheapest general-purpose model if task is unknown.
-  const baseList = MODEL_PRIORITIES[task] || ["gemini-2.5-flash-lite"];
+  let baseList = MODEL_PRIORITIES[task] || ["gemini-2.5-flash-lite"];
+
+  // Adjust prioritization based on difficulty
+  if (difficulty === "beginner" && task === "question-generation") {
+    // Prefer Lite for easy questions
+    baseList = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
+  } else if (difficulty === "advanced" && task === "question-generation") {
+    // Prefer Flash (standard) for advanced questions for better reasoning
+    baseList = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  }
 
   const available: string[] = [];
   const coolingDown: string[] = [];
@@ -167,12 +181,14 @@ export function getModelPriorityList(task: TaskType): string[] {
  * @param task - The task type for model selection
  * @param prompt - The prompt string to send
  * @param parseResponse - Optional function to parse/validate the response
+ * @param difficulty - Optional difficulty level to optimize model selection
  */
 export async function callGeminiWithFallback<T>(
   apiKey: string,
   task: TaskType,
   prompt: string,
-  parseResponse?: (text: string) => T
+  parseResponse?: (text: string) => T,
+  difficulty?: Difficulty
 ): Promise<AIResult<T>> {
   // Check for API key first
   if (!apiKey || apiKey.trim().length === 0) {
@@ -184,7 +200,7 @@ export async function callGeminiWithFallback<T>(
     };
   }
 
-  const models = getModelPriorityList(task);
+  const models = getModelPriorityList(task, difficulty);
 
   for (const modelName of models) {
     try {

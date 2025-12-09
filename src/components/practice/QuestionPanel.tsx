@@ -5,8 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 interface QuestionPanelProps {
   question: Question | null;
@@ -74,6 +80,24 @@ export function QuestionPanel({ question, isLoading }: QuestionPanelProps) {
   return (
     <Card className="h-full flex flex-col border-none shadow-none">
       <CardHeader className="pb-2">
+        {/* Breadcrumbs - show if we have topic hierarchy info */}
+        {question.topic && question.topicName !== question.topic && (
+          <Breadcrumb className="mb-3">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <span className="text-xs text-muted-foreground">
+                  {question.topicName}
+                </span>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-xs">
+                  {question.topic}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        )}
         <div className="flex items-center justify-between mb-2">
           <Badge variant="outline">{question.topicName}</Badge>
           <Badge variant={getDifficultyVariant(question.difficulty)}>

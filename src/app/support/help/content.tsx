@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import {
   BookOpen,
   RocketLaunch,
@@ -13,12 +14,10 @@ import {
   Command,
   Gear,
   ListBullets,
-  TreeStructure,
   Target,
   TerminalWindow,
   Database,
   GitBranch,
-  SpinnerGap,
   CheckCircle,
   Info,
   ArrowRight,
@@ -328,7 +327,7 @@ function FeatureCard({ title, description, icon, details }: FeatureCardProps) {
 export function AboutSection() {
   return (
     <>
-      <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/20 mb-6">
+      <Card className="bg-linear-to-br from-primary/5 to-transparent border-primary/20 mb-6">
         <CardHeader>
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="outline" className="text-primary border-primary/30">

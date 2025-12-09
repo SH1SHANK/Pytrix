@@ -14,9 +14,8 @@ import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent } from "@/components/ui/accordion";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Module, Subtopic, ProblemType } from "@/types/topics";
+import type { Module, Subtopic } from "@/types/topics";
 import { getModuleStats, getSubtopicStats } from "@/lib/statsStore";
-import { cn } from "@/lib/utils";
 
 interface ModuleDetailViewProps {
   module: Module;
@@ -141,7 +140,8 @@ export function ModuleDetailView({
               </Accordion>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
-                No topics found matching "{searchQuery}" in this module.
+                No topics found matching &ldquo;{searchQuery}&rdquo; in this
+                module.
               </div>
             )}
           </div>

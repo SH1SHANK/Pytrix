@@ -1,0 +1,90 @@
+{
+  "auditDate": "2025-12-09T13:44:43+05:30",
+  "branch": "chore/cleanup-legacy-20251209",
+  "summary": {
+    "unusedDependencies": [],
+    "lucideReactUsage": false,
+    "deprecatedFiles": [
+      {
+        "path": "src/lib/ai/generateQuestion.ts",
+        "reason": "Marked DEPRECATED - replaced by questionService",
+        "priority": "high",
+        "action": "archive"
+      },
+      {
+        "path": "src/lib/ai/evaluateCode.ts",
+        "reason": "Marked DEPRECATED - replaced by API routes",
+        "priority": "high",
+        "action": "archive"
+      },
+      {
+        "path": "src/lib/ai/getHints.ts",
+        "reason": "Marked DEPRECATED - replaced by API routes",
+        "priority": "high",
+        "action": "archive"
+      },
+      {
+        "path": "src/lib/ai/revealSolution.ts",
+        "reason": "Marked DEPRECATED - replaced by API routes",
+        "priority": "high",
+        "action": "archive"
+      },
+      {
+        "path": "src/lib/ai/optimizeSolution.ts",
+        "reason": "Marked DEPRECATED - replaced by API routes",
+        "priority": "high",
+        "action": "archive"
+      }
+    ],
+    "mockDataFiles": [
+      {
+        "path": "src/lib/mockQuestions.ts",
+        "reason": "Mock data - still referenced by PracticeContext and fallback",
+        "priority": "low",
+        "action": "keep-for-now",
+        "usedBy": [
+          "src/app/PracticeContext.tsx",
+          "src/lib/ai/generateQuestion.ts",
+          "src/app/api/ai/generate-question/route.ts"
+        ]
+      }
+    ],
+    "lintIssues": [
+      {
+        "file": "src/components/automode/AutoModeStatsBarV2.tsx",
+        "line": 96,
+        "issue": "setState in useEffect",
+        "action": "fix"
+      }
+    ],
+    "manualReview": [
+      {
+        "file": "src/lib/statsStore.ts",
+        "note": "Contains legacy compatibility wrappers - keep for backward compat"
+      }
+    ]
+  },
+  "removalSequence": [
+    {
+      "commit": "A",
+      "description": "Archive deprecated AI server actions",
+      "files": [
+        "src/lib/ai/generateQuestion.ts",
+        "src/lib/ai/evaluateCode.ts",
+        "src/lib/ai/getHints.ts",
+        "src/lib/ai/revealSolution.ts",
+        "src/lib/ai/optimizeSolution.ts"
+      ]
+    },
+    {
+      "commit": "B",
+      "description": "Fix setState in effect issue",
+      "files": ["src/components/automode/AutoModeStatsBarV2.tsx"]
+    },
+    {
+      "commit": "C",
+      "description": "Remove unused STATS_VERSION constant",
+      "files": ["src/lib/statsStore.ts"]
+    }
+  ]
+}

@@ -27,7 +27,7 @@ export function AutoModeStatsBar({ saveFile }: AutoModeStatsBarProps) {
           <Target className="h-4 w-4 text-primary" />
           <span className="text-muted-foreground">Topic:</span>
           <Badge variant="default" className="font-semibold">
-            {currentTopic}
+            {currentTopic.problemTypeName}
           </Badge>
         </div>
 
@@ -49,7 +49,7 @@ export function AutoModeStatsBar({ saveFile }: AutoModeStatsBarProps) {
         <div className="flex items-center gap-2 text-muted-foreground">
           <CaretRight className="h-4 w-4" />
           <span>Next:</span>
-          <Badge variant="outline">{nextTopic}</Badge>
+          <Badge variant="outline">{nextTopic.problemTypeName}</Badge>
         </div>
 
         {/* Total Completed */}

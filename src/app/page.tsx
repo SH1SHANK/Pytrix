@@ -2,6 +2,7 @@
 
 import { StatsRow } from "@/components/dashboard/StatsRow";
 import { TopicGrid } from "@/components/dashboard/TopicGrid";
+import { ModuleStatsGrid } from "@/components/dashboard/ModuleStatsGrid";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,6 +85,16 @@ export default function Home() {
             </AlertDialog>
           </div>
           <StatsRow />
+        </section>
+
+        <Separator />
+
+        {/* Module Progress Section (Hierarchical Stats) */}
+        <section>
+          <h2 className="text-2xl font-semibold tracking-tight mb-4">
+            Module Progress
+          </h2>
+          <ModuleStatsGrid showEmptyModules={false} />
         </section>
 
         <Separator />

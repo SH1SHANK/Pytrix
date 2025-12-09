@@ -1,26 +1,48 @@
 /**
- * Auto Mode Service - Save file management + topic queue generation
+ * Auto Mode Service - Save file management + topic-aware queue generation
  *
  * Handles creating, loading, and updating Auto Mode runs.
- * Designed for localStorage now, replaceable with backend later.
+ * Uses topic hierarchy for smarter queueing with weak-area bias.
  */
 
-import { getWeakestTopics } from "./statsStore";
-import { TOPICS } from "./mockQuestions";
+import { getStats, type TopicStats } from "./statsStore";
+import {
+  getAllModules,
+  type Module,
+  type Subtopic,
+  type ProblemType,
+} from "./topicsStore";
 
 // ============================================
 // TYPE DEFINITIONS
 // ============================================
 
+/**
+ * Queue entry with full topic hierarchy.
+ */
+export interface TopicQueueEntry {
+  moduleId: string;
+  subtopicId: string;
+  problemTypeId: string;
+  moduleName: string;
+  subtopicName: string;
+  problemTypeName: string;
+}
+
+/**
+ * Auto Mode save file structure.
+ */
 export interface AutoModeSaveFile {
   id: string;
   name: string;
   createdAt: number;
   lastUpdatedAt: number;
-  topicQueue: string[];
+  topicQueue: TopicQueueEntry[];
   currentIndex: number;
   completedQuestions: number;
-  perTopicCounts: Record<string, number>;
+  perTopicCounts: Record<string, number>; // keyed by problemTypeId
+  recentProblemTypes: string[]; // last N problemTypeIds to avoid repeats
+  prefetchSize: number; // configurable buffer size (default 2)
 }
 
 // ============================================
@@ -29,6 +51,8 @@ export interface AutoModeSaveFile {
 
 const STORAGE_KEY = "pypractice-savefiles";
 const QUESTIONS_PER_TOPIC = 3; // Questions before rotating to next topic
+const DEFAULT_PREFETCH_SIZE = 2;
+const RECENT_AVOID_COUNT = 5; // Avoid last N problem types
 
 // ============================================
 // HELPER FUNCTIONS
@@ -39,28 +63,182 @@ function generateId(): string {
 }
 
 /**
- * Generate a topic queue with weakest topics first + randomness.
+ * Calculate mastery percentage for a module based on stats.
+ * Falls back to 0% if no stats available.
  */
-function generateTopicQueue(): string[] {
-  const allTopics = TOPICS.map((t) => t.name);
-  const weakest = getWeakestTopics(3);
+function getModuleMastery(
+  moduleName: string,
+  topicStats: TopicStats[]
+): number {
+  // Match by module name (legacy compatibility)
+  const stat = topicStats.find(
+    (s) => s.topic.toLowerCase() === moduleName.toLowerCase()
+  );
 
-  // Start with weakest topics
-  const queue = [...weakest];
+  if (!stat || stat.attempts === 0) return 0;
+  return Math.round((stat.solved / stat.attempts) * 100);
+}
 
-  // Add remaining topics with some shuffle
-  const remaining = allTopics.filter((t) => !weakest.includes(t));
+/**
+ * Calculate mastery for a subtopic based on stats.
+ */
+function getSubtopicMastery(
+  subtopicName: string,
+  topicStats: TopicStats[]
+): number {
+  // Match by subtopic name
+  const stat = topicStats.find(
+    (s) => s.topic.toLowerCase() === subtopicName.toLowerCase()
+  );
 
-  // Simple shuffle
-  for (let i = remaining.length - 1; i > 0; i--) {
+  if (!stat || stat.attempts === 0) return 0;
+  return Math.round((stat.solved / stat.attempts) * 100);
+}
+
+/**
+ * Fisher-Yates shuffle.
+ */
+function shuffle<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+/**
+ * Check if a problem type should be avoided (recently used).
+ */
+function shouldAvoidProblemType(
+  problemTypeId: string,
+  recentList: string[]
+): boolean {
+  return recentList.includes(problemTypeId);
+}
+
+interface ModuleWithMastery {
+  module: Module;
+  mastery: number;
+}
+
+interface SubtopicWithMastery {
+  subtopic: Subtopic;
+  mastery: number;
+  module: Module;
+}
+
+interface ProblemTypeWithContext {
+  problemType: ProblemType;
+  subtopic: Subtopic;
+  module: Module;
+  mastery: number;
+}
+
+/**
+ * Generate a topic queue with weakest areas first.
+ * Algorithm:
+ * 1. Get all modules, sort by mastery ASC (untouched first)
+ * 2. For each module, get subtopics, sort by mastery ASC
+ * 3. Select problem types from weakest subtopics
+ * 4. Shuffle within same-mastery tiers
+ * 5. Avoid recently used problem types
+ */
+function generateTopicAwareQueue(
+  recentProblemTypes: string[] = []
+): TopicQueueEntry[] {
+  const modules = getAllModules();
+  const stats = getStats();
+  const topicStats = stats.perTopic;
+
+  // Step 1: Calculate module mastery and sort
+  const modulesWithMastery: ModuleWithMastery[] = modules.map((m) => ({
+    module: m,
+    mastery: getModuleMastery(m.name, topicStats),
+  }));
+
+  // Sort by mastery (untouched/weak first)
+  modulesWithMastery.sort((a, b) => a.mastery - b.mastery);
+
+  // Step 2: Build flat list of problem types with context
+  const allProblemTypes: ProblemTypeWithContext[] = [];
+
+  for (const { module, mastery: moduleMastery } of modulesWithMastery) {
+    // Get subtopics with mastery
+    const subtopicsWithMastery: SubtopicWithMastery[] = module.subtopics.map(
+      (st) => ({
+        subtopic: st,
+        mastery: getSubtopicMastery(st.name, topicStats),
+        module,
+      })
+    );
+
+    // Sort subtopics by mastery
+    subtopicsWithMastery.sort((a, b) => a.mastery - b.mastery);
+
+    // Add problem types with inherited mastery (use subtopic mastery + module mastery as tiebreaker)
+    for (const { subtopic, mastery: subtopicMastery } of subtopicsWithMastery) {
+      for (const pt of subtopic.problemTypes) {
+        allProblemTypes.push({
+          problemType: pt,
+          subtopic,
+          module,
+          mastery: subtopicMastery * 100 + moduleMastery, // Combined score for sorting
+        });
+      }
+    }
   }
 
-  queue.push(...remaining);
+  // Step 3: Sort by combined mastery score
+  allProblemTypes.sort((a, b) => a.mastery - b.mastery);
 
-  // Repeat the queue a few times for longer sessions
-  return [...queue, ...queue, ...queue];
+  // Step 4: Shuffle within mastery tiers (group by same mastery)
+  const tieredGroups: ProblemTypeWithContext[][] = [];
+  let currentTier: ProblemTypeWithContext[] = [];
+  let currentMastery = -1;
+
+  for (const pt of allProblemTypes) {
+    if (pt.mastery !== currentMastery) {
+      if (currentTier.length > 0) {
+        tieredGroups.push(shuffle(currentTier));
+      }
+      currentTier = [pt];
+      currentMastery = pt.mastery;
+    } else {
+      currentTier.push(pt);
+    }
+  }
+  if (currentTier.length > 0) {
+    tieredGroups.push(shuffle(currentTier));
+  }
+
+  // Flatten back
+  const shuffledProblemTypes = tieredGroups.flat();
+
+  // Step 5: Filter out recently used (but keep some if too few options)
+  const filtered = shuffledProblemTypes.filter(
+    (pt) => !shouldAvoidProblemType(pt.problemType.id, recentProblemTypes)
+  );
+
+  // Use filtered if we have enough, otherwise use all
+  const finalList = filtered.length >= 10 ? filtered : shuffledProblemTypes;
+
+  // Step 6: Convert to queue entries (take first 50 for reasonable session length)
+  const queue: TopicQueueEntry[] = finalList.slice(0, 50).map((pt) => ({
+    moduleId: pt.module.id,
+    subtopicId: pt.subtopic.id,
+    problemTypeId: pt.problemType.id,
+    moduleName: pt.module.name,
+    subtopicName: pt.subtopic.name,
+    problemTypeName: pt.problemType.name,
+  }));
+
+  return queue;
+}
+
+// Legacy function for backward compatibility
+function generateTopicQueue(): TopicQueueEntry[] {
+  return generateTopicAwareQueue([]);
 }
 
 // ============================================
@@ -81,7 +259,9 @@ export function getSaveFiles(): AutoModeSaveFile[] {
   }
 
   try {
-    return JSON.parse(stored) as AutoModeSaveFile[];
+    const parsed = JSON.parse(stored) as AutoModeSaveFile[];
+    // Migrate legacy save files if needed
+    return parsed.map(migrateSaveFile);
   } catch {
     console.warn("[autoModeService] Corrupted save files, resetting.");
     localStorage.removeItem(STORAGE_KEY);
@@ -90,9 +270,35 @@ export function getSaveFiles(): AutoModeSaveFile[] {
 }
 
 /**
+ * Migrate legacy save files to new format.
+ */
+function migrateSaveFile(saveFile: AutoModeSaveFile): AutoModeSaveFile {
+  // Add new fields if missing
+  if (!Array.isArray(saveFile.recentProblemTypes)) {
+    saveFile.recentProblemTypes = [];
+  }
+  if (typeof saveFile.prefetchSize !== "number") {
+    saveFile.prefetchSize = DEFAULT_PREFETCH_SIZE;
+  }
+  // Check if topicQueue is old string[] format
+  if (
+    saveFile.topicQueue.length > 0 &&
+    typeof saveFile.topicQueue[0] === "string"
+  ) {
+    // Regenerate with new format
+    saveFile.topicQueue = generateTopicQueue();
+    saveFile.currentIndex = 0;
+  }
+  return saveFile;
+}
+
+/**
  * Create a new save file.
  */
-export function createSaveFile(name: string): AutoModeSaveFile {
+export function createSaveFile(
+  name: string,
+  prefetchSize: number = DEFAULT_PREFETCH_SIZE
+): AutoModeSaveFile {
   const saveFile: AutoModeSaveFile = {
     id: generateId(),
     name: name.trim() || `Run ${new Date().toLocaleDateString()}`,
@@ -102,6 +308,8 @@ export function createSaveFile(name: string): AutoModeSaveFile {
     currentIndex: 0,
     completedQuestions: 0,
     perTopicCounts: {},
+    recentProblemTypes: [],
+    prefetchSize,
   };
 
   const existing = getSaveFiles();
@@ -168,22 +376,56 @@ export function deleteSaveFile(id: string): boolean {
 }
 
 /**
- * Get the current topic for a save file.
+ * Get the current topic queue entry for a save file.
  */
-export function getCurrentTopic(saveFile: AutoModeSaveFile): string {
+export function getCurrentTopic(saveFile: AutoModeSaveFile): TopicQueueEntry {
   if (saveFile.currentIndex >= saveFile.topicQueue.length) {
-    // Wrap around
-    return saveFile.topicQueue[0] || "Strings";
+    // Regenerate queue when exhausted
+    return saveFile.topicQueue[0] || getDefaultQueueEntry();
   }
   return saveFile.topicQueue[saveFile.currentIndex];
 }
 
 /**
- * Get the next topic in the queue (for prefetching).
+ * Get the next N topics in the queue (for prefetching).
  */
-export function getNextTopic(saveFile: AutoModeSaveFile): string {
-  const nextIndex = (saveFile.currentIndex + 1) % saveFile.topicQueue.length;
-  return saveFile.topicQueue[nextIndex] || "Strings";
+export function getNextTopics(
+  saveFile: AutoModeSaveFile,
+  count?: number
+): TopicQueueEntry[] {
+  const n = count ?? saveFile.prefetchSize;
+  const result: TopicQueueEntry[] = [];
+
+  for (let i = 1; i <= n; i++) {
+    const nextIndex = (saveFile.currentIndex + i) % saveFile.topicQueue.length;
+    if (saveFile.topicQueue[nextIndex]) {
+      result.push(saveFile.topicQueue[nextIndex]);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Legacy: Get the next topic (single).
+ */
+export function getNextTopic(saveFile: AutoModeSaveFile): TopicQueueEntry {
+  const next = getNextTopics(saveFile, 1);
+  return next[0] || getCurrentTopic(saveFile);
+}
+
+/**
+ * Get default queue entry (fallback).
+ */
+function getDefaultQueueEntry(): TopicQueueEntry {
+  return {
+    moduleId: "string-manipulation",
+    subtopicId: "basic-string-operations",
+    problemTypeId: "reverse-string",
+    moduleName: "String Manipulation",
+    subtopicName: "Basic String Operations",
+    problemTypeName: "Reverse String",
+  };
 }
 
 /**
@@ -191,8 +433,8 @@ export function getNextTopic(saveFile: AutoModeSaveFile): string {
  * Rotates after QUESTIONS_PER_TOPIC questions in current topic.
  */
 export function shouldRotateTopic(saveFile: AutoModeSaveFile): boolean {
-  const currentTopic = getCurrentTopic(saveFile);
-  const currentCount = saveFile.perTopicCounts[currentTopic] || 0;
+  const currentEntry = getCurrentTopic(saveFile);
+  const currentCount = saveFile.perTopicCounts[currentEntry.problemTypeId] || 0;
   return currentCount >= QUESTIONS_PER_TOPIC;
 }
 
@@ -201,6 +443,17 @@ export function shouldRotateTopic(saveFile: AutoModeSaveFile): boolean {
  */
 export function advanceTopic(saveFile: AutoModeSaveFile): AutoModeSaveFile {
   const newIndex = (saveFile.currentIndex + 1) % saveFile.topicQueue.length;
+
+  // If we've wrapped around, consider regenerating the queue
+  if (newIndex === 0) {
+    const newQueue = generateTopicAwareQueue(saveFile.recentProblemTypes);
+    return (
+      updateSaveFile(saveFile.id, {
+        currentIndex: 0,
+        topicQueue: newQueue,
+      }) || saveFile
+    );
+  }
 
   return (
     updateSaveFile(saveFile.id, {
@@ -214,17 +467,25 @@ export function advanceTopic(saveFile: AutoModeSaveFile): AutoModeSaveFile {
  */
 export function recordQuestionCompleted(
   saveFileId: string,
-  topicName: string
+  problemTypeId: string
 ): AutoModeSaveFile | null {
   const saveFile = loadSaveFile(saveFileId);
   if (!saveFile) return null;
 
+  // Update per-topic counts
   const newPerTopicCounts = { ...saveFile.perTopicCounts };
-  newPerTopicCounts[topicName] = (newPerTopicCounts[topicName] || 0) + 1;
+  newPerTopicCounts[problemTypeId] =
+    (newPerTopicCounts[problemTypeId] || 0) + 1;
+
+  // Update recent problem types (sliding window)
+  const newRecent = [...saveFile.recentProblemTypes, problemTypeId].slice(
+    -RECENT_AVOID_COUNT
+  );
 
   return updateSaveFile(saveFileId, {
     completedQuestions: saveFile.completedQuestions + 1,
     perTopicCounts: newPerTopicCounts,
+    recentProblemTypes: newRecent,
   });
 }
 
@@ -232,8 +493,8 @@ export function recordQuestionCompleted(
  * Get a summary of the save file for display.
  */
 export function getSaveFileSummary(saveFile: AutoModeSaveFile): string {
-  const currentTopic = getCurrentTopic(saveFile);
-  return `${saveFile.completedQuestions} questions • Currently on ${currentTopic}`;
+  const currentEntry = getCurrentTopic(saveFile);
+  return `${saveFile.completedQuestions} questions • ${currentEntry.moduleName} › ${currentEntry.subtopicName}`;
 }
 
 /**
@@ -244,12 +505,36 @@ export function getTopicProgress(saveFile: AutoModeSaveFile): {
   total: number;
   percent: number;
 } {
-  const currentTopic = getCurrentTopic(saveFile);
-  const current = saveFile.perTopicCounts[currentTopic] || 0;
+  const currentEntry = getCurrentTopic(saveFile);
+  const current = saveFile.perTopicCounts[currentEntry.problemTypeId] || 0;
   const total = QUESTIONS_PER_TOPIC;
   const percent = Math.min(100, Math.round((current / total) * 100));
 
   return { current, total, percent };
+}
+
+/**
+ * Update prefetch size for a save file.
+ */
+export function updatePrefetchSize(
+  saveFileId: string,
+  prefetchSize: number
+): AutoModeSaveFile | null {
+  return updateSaveFile(saveFileId, { prefetchSize });
+}
+
+/**
+ * Regenerate the queue for a save file (e.g., after settings change).
+ */
+export function regenerateQueue(saveFileId: string): AutoModeSaveFile | null {
+  const saveFile = loadSaveFile(saveFileId);
+  if (!saveFile) return null;
+
+  const newQueue = generateTopicAwareQueue(saveFile.recentProblemTypes);
+  return updateSaveFile(saveFileId, {
+    topicQueue: newQueue,
+    currentIndex: 0,
+  });
 }
 
 // ============================================
@@ -345,20 +630,22 @@ export function importRuns(data: unknown): {
   const updatedFiles = [...existingFiles];
 
   for (const incomingRun of data.runs) {
-    const existing = existingById.get(incomingRun.id);
+    // Migrate incoming run to new format
+    const migratedRun = migrateSaveFile(incomingRun);
+    const existing = existingById.get(migratedRun.id);
 
     if (existing) {
       // ID conflict - compare lastUpdatedAt
-      if (incomingRun.lastUpdatedAt > existing.lastUpdatedAt) {
+      if (migratedRun.lastUpdatedAt > existing.lastUpdatedAt) {
         // Incoming is newer - replace
-        const idx = updatedFiles.findIndex((f) => f.id === incomingRun.id);
+        const idx = updatedFiles.findIndex((f) => f.id === migratedRun.id);
         if (idx !== -1) {
-          updatedFiles[idx] = incomingRun;
+          updatedFiles[idx] = migratedRun;
           result.imported++;
         }
-      } else if (incomingRun.lastUpdatedAt === existing.lastUpdatedAt) {
+      } else if (migratedRun.lastUpdatedAt === existing.lastUpdatedAt) {
         // Same timestamp - regenerate ID and add as new
-        const newRun = { ...incomingRun, id: generateId() };
+        const newRun = { ...migratedRun, id: generateId() };
         updatedFiles.push(newRun);
         result.imported++;
       } else {
@@ -367,7 +654,7 @@ export function importRuns(data: unknown): {
       }
     } else {
       // No conflict - add directly
-      updatedFiles.push(incomingRun);
+      updatedFiles.push(migratedRun);
       result.imported++;
     }
   }
