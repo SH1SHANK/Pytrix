@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Command } from "@phosphor-icons/react";
-import { CommandPalette } from "./CommandPalette";
+import { CommandCenter } from "./CommandCenter";
 import {
   Tooltip,
   TooltipContent,
@@ -47,7 +47,7 @@ export function CommandPaletteButton() {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <CommandPalette open={open} onOpenChange={setOpen} />
+      <CommandCenter open={open} onOpenChange={setOpen} />
     </>
   );
 }

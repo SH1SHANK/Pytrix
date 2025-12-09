@@ -1,16 +1,16 @@
 "use client";
 
-import { CommandPalette } from "@/components/CommandPalette";
+import { CommandCenter } from "@/components/CommandCenter";
 
 /**
  * Client-side providers and global components.
- * Wraps children and adds CommandPalette with Cmd+K listener.
+ * Wraps children and adds CommandCenter with Cmd+K listener.
  */
 export function GlobalProviders({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
-      <CommandPalette />
+      <CommandCenter />
     </>
   );
 }

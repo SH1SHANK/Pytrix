@@ -60,11 +60,22 @@ const IconMap: Record<string, React.ElementType> = {
   Rocket,
 };
 
-export function CommandCenter() {
-  const [open, setOpen] = useState(false);
+interface CommandCenterProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function CommandCenter({
+  open: controlledOpen,
+  onOpenChange,
+}: CommandCenterProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const router = useRouter();
   const [query, setQuery] = useState("");
   const { theme, setTheme } = useTheme();
+
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
 
   // Memoize static lists (only modules needed for initial view)
   const staticPages = useMemo(() => getStaticPages(), []);
@@ -90,12 +101,12 @@ export function CommandCenter() {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(!open);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, []);
+  }, [open, setOpen]);
 
   // Stats integration - weakest subtopic
   const [weakestSubtopic, setWeakestSubtopic] = useState<{

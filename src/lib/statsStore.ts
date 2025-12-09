@@ -93,7 +93,7 @@ export interface RecordAttemptInput {
 
 const STORAGE_KEY_V2 = "pytrix_stats_v2";
 const STORAGE_KEY_OLD = "pypractice-stats";
-const STATS_VERSION = 3;
+// const STATS_VERSION = 3;
 
 // ============================================
 // HELPER FUNCTIONS
