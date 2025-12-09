@@ -1,8 +1,8 @@
 "use client";
 
 import { StatsRow } from "@/components/dashboard/StatsRow";
-import { TopicGrid } from "@/components/dashboard/TopicGrid";
-import { ModuleStatsGrid } from "@/components/dashboard/ModuleStatsGrid";
+import { NextStepsPanel } from "@/components/dashboard/NextStepsPanel";
+import { RecentActivityRow } from "@/components/dashboard/RecentActivityRow";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,11 +55,10 @@ export default function Home() {
         }`}
         aria-hidden={showOnboarding}
       >
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Your Progress
-            </h2>
+        {/* Global Stats Overview */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Overview</h2>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -89,22 +88,24 @@ export default function Home() {
 
         <Separator />
 
-        {/* Module Progress Section (Hierarchical Stats) */}
-        <section>
-          <h2 className="text-2xl font-semibold tracking-tight mb-4">
-            Module Progress
+        {/* Next Steps - Smart Recommendations */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">
+            What to do next
           </h2>
-          <ModuleStatsGrid showEmptyModules={false} />
+          <NextStepsPanel />
         </section>
 
         <Separator />
 
-        {/* Topics Section */}
-        <section>
-          <h2 className="text-2xl font-semibold tracking-tight mb-4">
-            Start Practicing
-          </h2>
-          <TopicGrid />
+        {/* Recent Activity */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold tracking-tight">
+              Recent Activity
+            </h2>
+          </div>
+          <RecentActivityRow />
         </section>
       </div>
     </>
