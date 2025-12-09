@@ -50,7 +50,7 @@ import {
   Rocket,
   Info,
 } from "@phosphor-icons/react";
-import { useRequireApiKey } from "@/hooks/useRequireApiKey";
+import { useApiKey } from "@/app/ApiKeyContext";
 import { getStats } from "@/lib/statsStore";
 import {
   getAllAutoRunsV2,
@@ -405,7 +405,7 @@ export default function AutoModePage() {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { isLoading: apiKeyLoading } = useRequireApiKey();
+  const { isLoading: apiKeyLoading } = useApiKey();
 
   // Load runs lazily to avoid setState in effect
   const [initialData] = useState(() => {
