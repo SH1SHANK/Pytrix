@@ -69,15 +69,17 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
     await animateSuccess();
   };
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const {
-    onClick: _onClick,
-    onDrag: _onDrag,
-    onDragStart: _onDragStart,
-    onDragEnd: _onDragEnd,
-    onAnimationStart: _onAnimationStart,
-    onAnimationEnd: _onAnimationEnd,
+    onClick,
+    onDrag,
+    onDragStart,
+    onDragEnd,
+    onAnimationStart,
+    onAnimationEnd,
     ...buttonProps
   } = props;
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   return (
     <motion.button

@@ -419,9 +419,7 @@ export default function AutoModePage() {
     };
   });
 
-  const [latestRun, setLatestRun] = useState<AutoRunV2 | null>(
-    initialData.latestRun
-  );
+  const [latestRun] = useState<AutoRunV2 | null>(initialData.latestRun);
   const [aggressiveProgression, setAggressiveProgression] = useState(
     initialData.latestRun?.aggressiveProgression ?? false
   );

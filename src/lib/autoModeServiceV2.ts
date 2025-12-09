@@ -18,9 +18,9 @@ import { getStats } from "./statsStore";
 import type { TopicQueueEntry } from "./autoModeService";
 import {
   type AutoRunV2,
-  type AutoRunConfig,
+  // type AutoRunConfig,
   type DifficultyLevel,
-  type AttemptRecord,
+  // type AttemptRecord,
   type AttemptResult,
   type AdaptiveAnalytics,
   DEFAULT_AUTO_RUN_CONFIG,
@@ -505,7 +505,7 @@ export function injectRemediationQuestions(
 export function recordAttemptV2(
   run: AutoRunV2,
   result: AttemptResult,
-  timeTakenMs: number
+  _timeTakenMs: number // eslint-disable-line @typescript-eslint/no-unused-vars
 ): AutoRunV2 {
   const entry = getCurrentQueueEntry(run);
   if (!entry) return run;

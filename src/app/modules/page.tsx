@@ -31,7 +31,7 @@ function CurriculumSkeleton() {
 
 export default function ModulesPage() {
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
+    <div className="h-dvh flex flex-col">
       {/* Hero Header */}
       <header className="border-b bg-muted/30 shrink-0">
         <div className="px-6 py-6 md:py-8">

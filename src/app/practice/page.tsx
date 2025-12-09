@@ -90,8 +90,10 @@ function PracticeWorkspace() {
   const topicId = searchParams.get("topic") || "Strings";
   const saveId = searchParams.get("saveId");
   const historyId = searchParams.get("historyId"); // For review mode
-  const moduleParam = searchParams.get("module"); // For manual mode
-  const subtopicParam = searchParams.get("subtopic"); // For manual mode
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _moduleParam = searchParams.get("module"); // For manual mode
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _subtopicParam = searchParams.get("subtopic"); // For manual mode
   const problemTypeParam = searchParams.get("problemType"); // For topic-select/manual mode
   const difficultyParam = searchParams.get(
     "difficulty"

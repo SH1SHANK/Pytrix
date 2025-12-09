@@ -55,13 +55,13 @@ import { loadUserApiConfig } from "@/lib/apiKeyStore";
 import { testApiConnection } from "@/lib/aiClient";
 import { useApiKey } from "@/app/ApiKeyContext";
 import { useSettingsStore } from "@/lib/settingsStore";
-import { useHydration } from "@/hooks/useHydration";
+// import { useHydration } from "@/hooks/useHydration";
 
 export function ApiKeysSection() {
   const { setApiKey: setContextKey, removeApiKey: removeContextKey } =
     useApiKey();
   const { apiKeyLastVerified, setApiKeyVerified } = useSettingsStore();
-  const isHydrated = useHydration();
+  // const isHydrated = useHydration();
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [hasExistingKey, setHasExistingKey] = useState(false);

@@ -93,8 +93,10 @@ export function AutoModeStatsBarV2({
   // Animate streak changes
   useEffect(() => {
     if (run.streak !== prevStreak) {
-      setIsAnimatingStreak(true);
-      setPrevStreak(run.streak);
+      setTimeout(() => {
+        setIsAnimatingStreak(true);
+        setPrevStreak(run.streak);
+      }, 0);
       const timer = setTimeout(() => setIsAnimatingStreak(false), 500);
       return () => clearTimeout(timer);
     }

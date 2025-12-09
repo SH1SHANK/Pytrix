@@ -8,7 +8,9 @@ vi.mock("@/lib/ai/modelRouter", () => ({
 }));
 
 vi.mock("@/lib/questionTemplates", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<
+    typeof import("@/lib/questionTemplates")
+  >();
   return {
     ...actual,
     generateTemplate: vi.fn(),
@@ -46,6 +48,7 @@ describe("questionService", () => {
         testCases: [{ input: "in", expectedOutput: "out", isHidden: false }],
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(generateTemplate).mockReturnValue(mockTemplate as any);
 
       const result = await getQuestion("binary-search", "beginner", {
