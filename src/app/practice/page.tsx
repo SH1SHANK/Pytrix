@@ -44,7 +44,7 @@ import Link from "next/link";
 import { QuestionPanel } from "@/components/practice/QuestionPanel";
 import { CodeEditorPanel } from "@/components/practice/CodeEditorPanel";
 import { OutputPanel } from "@/components/practice/OutputPanel";
-import { AutoModeStatsBar } from "@/components/automode/AutoModeStatsBar";
+// AutoModeStatsBar removed (replaced by V2)
 import { HelpSheet } from "@/components/help/HelpSheet";
 import { RuntimeStatusBar } from "@/components/practice/RuntimeStatusBar";
 import { Kbd } from "@/components/ui/kbd";
@@ -69,14 +69,15 @@ import {
 // Python Runtime
 import { runPython, isRuntimeReady } from "@/lib/pythonRuntime";
 
+// Auto Mode V2 Imports
 import {
-  loadSaveFile,
-  getCurrentTopic,
-  recordQuestionCompleted,
-  shouldRotateTopic,
-  advanceTopic,
-  AutoModeSaveFile,
-} from "@/lib/autoModeService";
+  loadAutoRunV2,
+  getCurrentQueueEntry,
+  recordAttemptV2,
+  advanceQueue,
+} from "@/lib/autoModeServiceV2";
+import { type AutoRunV2 } from "@/lib/autoRunTypes";
+import { AutoModeStatsBarV2 } from "@/components/automode/AutoModeStatsBarV2";
 
 // History tracking
 import { upsertHistoryEntry, getHistoryEntry } from "@/lib/historyStore";
@@ -121,8 +122,8 @@ function PracticeWorkspace() {
     null
   );
 
-  // Auto Mode state
-  const [saveFile, setSaveFile] = useState<AutoModeSaveFile | null>(null);
+  // Auto Mode V2 state
+  const [saveFile, setSaveFile] = useState<AutoRunV2 | null>(null);
 
   // Session limit tracking
 
@@ -154,15 +155,15 @@ function PracticeWorkspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question, isRunning, runResult.status, hintsUsed]);
 
-  // Load save file for Auto Mode
+  // Load save file for Auto Mode V2
   useEffect(() => {
     if (mode === "auto" && saveId) {
-      const file = loadSaveFile(saveId);
-      if (file) {
-        setSaveFile(file);
+      const run = loadAutoRunV2(saveId);
+      if (run) {
+        setSaveFile(run);
       } else {
-        toast.error("Save file not found. Redirecting...");
-        router.push("/");
+        toast.error("Auto run not found. Redirecting...");
+        router.push("/practice/auto");
       }
     }
   }, [mode, saveId, router]);
@@ -259,10 +260,15 @@ function PracticeWorkspace() {
         const targetDiff: DifficultyLevel = currentDifficulty;
         const bufferMode = mode === "auto" ? "auto" : "manual";
 
-        // For Auto Mode, get topic from save file
+        // For Auto Mode, get topic from V2 save file
         if (mode === "auto" && saveFile) {
-          const entry = getCurrentTopic(saveFile);
-          targetTopic = entry.problemTypeName;
+          const entry = getCurrentQueueEntry(saveFile);
+          // If queue is exhausted or corrupted, default to strings
+          if (entry) {
+            targetTopic = entry.problemTypeId; // Use ID for fetch
+          } else {
+            targetTopic = "reverse-string";
+          }
         }
 
         // Use buffer service - gets first question immediately, prefetches in background
@@ -404,18 +410,17 @@ function PracticeWorkspace() {
           sampleOutput: question.sampleOutput,
         });
 
-        // Update save file for Auto Mode
+        // Update Auto Mode V2 Logic
         if (mode === "auto" && saveFile) {
-          const updated = recordQuestionCompleted(saveFile.id, question.topic);
-          if (updated) {
-            setSaveFile(updated);
-
-            // Check if we should rotate to next topic
-            if (shouldRotateTopic(updated)) {
-              const rotated = advanceTopic(updated);
-              setSaveFile(rotated);
-            }
-          }
+          // Record success
+          const updated = recordAttemptV2(
+            saveFile,
+            "correct",
+            lastExecutionTimeMs || 0
+          );
+          // Advance queue regardless of rotation (V2 is strict queue based)
+          const advanced = advanceQueue(updated);
+          setSaveFile(advanced);
         }
       } else {
         // Log incorrect attempt to history
@@ -434,6 +439,16 @@ function PracticeWorkspace() {
           sampleInput: question.sampleInput,
           sampleOutput: question.sampleOutput,
         });
+
+        // Update Auto Mode V2 Logic (Failure)
+        if (mode === "auto" && saveFile) {
+          const updated = recordAttemptV2(
+            saveFile,
+            "incorrect",
+            lastExecutionTimeMs || 0
+          );
+          setSaveFile(updated);
+        }
 
         setFailedAttempts((prev) => prev + 1);
         toast.error("Incorrect. Check the feedback.");
@@ -499,15 +514,28 @@ function PracticeWorkspace() {
     const bufferMode = mode === "auto" ? "auto" : "manual";
     let targetTopic = topicId;
 
-    // For Auto Mode, handle topic rotation
+    // Auto Mode V2: strictly follows queue
     if (mode === "auto" && saveFile) {
-      // Check if we should rotate to next topic
-      if (shouldRotateTopic(saveFile)) {
-        const rotated = advanceTopic(saveFile);
-        setSaveFile(rotated);
+      // Logic: we assume user is clicking next *after* solving?
+      // Or skipping? If skipping, we might need a skip handler.
+      // Assuming this is "Next Question" button which usually appears after success.
+      // In V2, success update already advances queue.
+      // So here we just need to get the NEW current topic.
+      // But wait, if handleNext is manual skip...
+      // If runResult.status === 'correct', we likely already advanced queue in handleRun.
+      // If we are skipping, we should call advanceQueue explicitly.
+
+      // Check if we are already advanced (handled in handleRun?)
+      // Actually previous code only advanced if shouldRotateTopic.
+      // In V2, every question is a step.
+      // If handleRun executed and was correct, it CALLED advanceQueue.
+      // So saveFile is ALREADY pointing to next question.
+      // WE just need to read it.
+
+      const entry = getCurrentQueueEntry(saveFile);
+      if (entry) {
+        targetTopic = entry.problemTypeId;
       }
-      const entry = getCurrentTopic(saveFile);
-      targetTopic = entry.problemTypeName;
     }
 
     // Use buffered question - instant if available
@@ -588,9 +616,11 @@ function PracticeWorkspace() {
     if (mode === "auto" && saveFile) {
       setIsLoading(true);
       try {
-        const entry = getCurrentTopic(saveFile);
+        const entry = getCurrentQueueEntry(saveFile);
+        if (!entry) throw new Error("Queue exhausted");
+
         const newQ = await generateQuestion(
-          entry.problemTypeName,
+          entry.problemTypeId,
           currentDifficulty
         );
 
@@ -617,8 +647,10 @@ function PracticeWorkspace() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Auto Mode Stats Bar */}
-      {mode === "auto" && saveFile && <AutoModeStatsBar saveFile={saveFile} />}
+      {/* Auto Mode Stats Bar V2 */}
+      {mode === "auto" && saveFile && (
+        <AutoModeStatsBarV2 run={saveFile} onRunUpdate={setSaveFile} />
+      )}
 
       {/* Top Bar */}
       <header className="h-14 border-b flex items-center px-4 justify-between bg-card text-card-foreground">

@@ -448,6 +448,24 @@ export function advanceQueue(run: AutoRunV2): AutoRunV2 {
 }
 
 /**
+ * Get next N topics from queue (for preview)
+ */
+export function getNextTopics(
+  run: AutoRunV2,
+  count: number = 3
+): TopicQueueEntry[] {
+  const result: TopicQueueEntry[] = [];
+  const start = run.currentIndex + 1;
+  const end = Math.min(start + count, run.topicQueue.length);
+
+  for (let i = start; i < end; i++) {
+    result.push(run.topicQueue[i]);
+  }
+
+  return result;
+}
+
+/**
  * Inject remediation questions into near-term queue.
  */
 export function injectRemediationQuestions(

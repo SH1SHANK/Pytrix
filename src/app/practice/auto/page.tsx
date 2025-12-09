@@ -159,7 +159,7 @@ function AdaptiveLearningCards({ run }: { run: AutoRunV2 | null }) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Card A: Streak-Based Progression */}
       <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-orange-500/10 to-transparent rounded-bl-full" />
+        <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-bl from-orange-500/10 to-transparent rounded-bl-full" />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             <Fire weight="duotone" className="h-5 w-5 text-orange-500" />
@@ -188,7 +188,7 @@ function AdaptiveLearningCards({ run }: { run: AutoRunV2 | null }) {
 
       {/* Card B: Weakness Detection */}
       <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-red-500/10 to-transparent rounded-bl-full" />
+        <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-bl from-red-500/10 to-transparent rounded-bl-full" />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             <Target weight="duotone" className="h-5 w-5 text-red-500" />
@@ -212,7 +212,7 @@ function AdaptiveLearningCards({ run }: { run: AutoRunV2 | null }) {
 
       {/* Card C: Question Buffering */}
       <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-full" />
+        <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-bl from-blue-500/10 to-transparent rounded-bl-full" />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             <Hourglass weight="duotone" className="h-5 w-5 text-blue-500" />
@@ -238,7 +238,7 @@ function AdaptiveLearningCards({ run }: { run: AutoRunV2 | null }) {
 
       {/* Card D: Personalized Trajectory */}
       <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-green-500/10 to-transparent rounded-bl-full" />
+        <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-bl from-green-500/10 to-transparent rounded-bl-full" />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             <TrendUp weight="duotone" className="h-5 w-5 text-green-500" />
@@ -497,7 +497,7 @@ export default function AutoModePage() {
       <PastInsights run={latestRun} />
 
       {/* Action Zone */}
-      <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
+      <Card className="bg-linear-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
         <CardContent className="pt-6 pb-6">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button

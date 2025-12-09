@@ -1,19 +1,18 @@
 "use client";
 
 /**
- * Auto Mode Stats Bar v2
+ * Auto Mode Stats Bar v2.1
  *
- * Enhanced stats bar showing:
- * - Module → Subtopic breadcrumb
- * - Streak indicator with animation
- * - Difficulty badge per subtopic
- * - Progress in run
- * - Quick controls (Slow Down, Settings)
+ * Enhanced "HUD" stats bar with:
+ * - Glassmorphism UI
+ * - Session Timer
+ * - Animated Streak Counter with Flame
+ * - Next Topic Preview
+ * - Difficulty Badges
  */
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +21,7 @@ import {
 import { type AutoRunV2, type DifficultyLevel } from "@/lib/autoRunTypes";
 import {
   getCurrentQueueEntry,
+  getNextTopics,
   getSubtopicDifficulty,
   slowDown,
 } from "@/lib/autoModeServiceV2";
@@ -33,9 +33,12 @@ import {
   Rocket,
   Pause,
   GearSix,
+  Clock,
+  ListDashes,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface AutoModeStatsBarV2Props {
   run: AutoRunV2;
@@ -43,9 +46,10 @@ interface AutoModeStatsBarV2Props {
   onOpenSettings?: () => void;
 }
 
-/**
- * Get icon for difficulty level.
- */
+// ----------------------------------------------------------------------
+// SUB-COMPONENTS
+// ----------------------------------------------------------------------
+
 function DifficultyIcon({
   difficulty,
   className,
@@ -56,191 +60,262 @@ function DifficultyIcon({
   switch (difficulty) {
     case "beginner":
       return (
-        <Lightning weight="duotone" className={cn("h-3 w-3", className)} />
+        <Lightning weight="duotone" className={cn("h-3.5 w-3.5", className)} />
       );
     case "intermediate":
-      return <Brain weight="duotone" className={cn("h-3 w-3", className)} />;
+      return (
+        <Brain weight="duotone" className={cn("h-3.5 w-3.5", className)} />
+      );
     case "advanced":
-      return <Rocket weight="duotone" className={cn("h-3 w-3", className)} />;
+      return (
+        <Rocket weight="duotone" className={cn("h-3.5 w-3.5", className)} />
+      );
   }
 }
 
-/**
- * Get difficulty badge variant.
- */
-function getDifficultyVariant(
-  difficulty: DifficultyLevel
-): "default" | "secondary" | "destructive" {
-  switch (difficulty) {
-    case "beginner":
-      return "secondary";
-    case "intermediate":
-      return "default";
-    case "advanced":
-      return "destructive";
-  }
+// function SessionTimer() { // Removed unused startTime prop
+function SessionTimer() {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    // Calculate initial elapsed based on run start time (simplified to session start)
+    // Actually, for a specific "session", we might want to track connection time.
+    // For now, let's just track time since component mount as "Session".
+    const mountTime = Date.now();
+    const timer = setInterval(() => {
+      setElapsed(Date.now() - mountTime);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const mins = Math.floor(elapsed / 60000);
+  const secs = Math.floor((elapsed % 60000) / 1000);
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
+      <Clock className="h-3 w-3" />
+      <span>
+        {mins.toString().padStart(2, "0")}:{secs.toString().padStart(2, "0")}
+      </span>
+    </div>
+  );
 }
 
+function QueuePreview({ run }: { run: AutoRunV2 }) {
+  const nextTopics = getNextTopics(run, 1);
+  const next = nextTopics[0];
+
+  if (!next) return null;
+
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 pl-2 pr-3 py-1 rounded-full border border-border/50">
+      <ListDashes className="h-3.5 w-3.5 opacity-70" />
+      <span className="opacity-50 mr-1">Next:</span>
+      <span className="font-medium truncate max-w-[120px]">
+        {next.subtopicName}
+      </span>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// MAIN COMPONENT
+// ----------------------------------------------------------------------
 export function AutoModeStatsBarV2({
   run,
   onRunUpdate,
   onOpenSettings,
 }: AutoModeStatsBarV2Props) {
   const entry = getCurrentQueueEntry(run);
-  const [isAnimatingStreak, setIsAnimatingStreak] = useState(false);
-  const [prevStreak, setPrevStreak] = useState(run.streak);
+  const difficulty = entry
+    ? getSubtopicDifficulty(run, entry.subtopicId)
+    : "beginner";
 
-  // Animate streak changes
+  // Animation states
+  const [prevStreak, setPrevStreak] = useState(run.streak);
+  const [streakChanged, setStreakChanged] = useState(false);
+
   useEffect(() => {
     if (run.streak !== prevStreak) {
       setTimeout(() => {
-        setIsAnimatingStreak(true);
+        setStreakChanged(true);
         setPrevStreak(run.streak);
       }, 0);
-      const timer = setTimeout(() => setIsAnimatingStreak(false), 500);
+      const timer = setTimeout(() => setStreakChanged(false), 1000);
       return () => clearTimeout(timer);
     }
   }, [run.streak, prevStreak]);
-
-  if (!entry) return null;
-
-  const difficulty = getSubtopicDifficulty(run, entry.subtopicId);
-  const progress = run.miniCurriculumComplete
-    ? {
-        current: run.completedQuestions,
-        total: run.completedQuestions + 10,
-        label: "Ongoing",
-      }
-    : {
-        current: run.currentIndex + 1,
-        total: run.topicQueue.length,
-        label: "Mini-Curriculum",
-      };
 
   const handleSlowDown = () => {
     const updated = slowDown(run);
     onRunUpdate(updated);
   };
 
+  if (!entry) return null;
+
+  // Streak styles
+  const isHighStreak = run.streak >= 3;
+  const isGodlike = run.streak >= 10;
+
+  const streakColor = isGodlike
+    ? "text-purple-500"
+    : isHighStreak
+    ? "text-orange-500"
+    : "text-muted-foreground";
+
+  const streakBg = isGodlike
+    ? "bg-purple-500/10 border-purple-500/20"
+    : isHighStreak
+    ? "bg-orange-500/10 border-orange-500/20"
+    : "bg-muted/50 border-transparent";
+
   return (
-    <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b px-4 py-2.5">
-      <div className="flex items-center justify-between gap-4">
-        {/* Left: Breadcrumb */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-medium truncate">
-            {entry.moduleName}
-          </span>
-          <CaretRight className="h-3 w-3 text-muted-foreground shrink-0" />
-          <span className="text-sm text-muted-foreground truncate">
-            {entry.subtopicName}
-          </span>
-        </div>
-
-        {/* Center: Streak + Difficulty + Progress */}
-        <div className="flex items-center gap-4">
-          {/* Streak */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className={cn(
-                  "flex items-center gap-1.5 px-2 py-1 rounded-full",
-                  run.streak > 0
-                    ? "bg-orange-500/10 text-orange-500"
-                    : "bg-muted text-muted-foreground",
-                  isAnimatingStreak && "animate-pulse"
-                )}
-              >
-                <Fire
-                  weight={run.streak > 0 ? "fill" : "regular"}
-                  className={cn("h-4 w-4", run.streak >= 3 && "animate-bounce")}
-                />
-                <span className="text-sm font-semibold">{run.streak}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {run.streak > 0
-                  ? `${run.streak} correct in a row!`
-                  : "Get questions right to build a streak"}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-
+    <div className="sticky top-0 z-40 w-full backdrop-blur-md bg-background/80 border-b border-border/40 shadow-sm transition-all duration-300">
+      <div className="h-14 px-4 flex items-center justify-between gap-4 max-w-[1600px] mx-auto">
+        {/* LEFT: Context & Difficulty */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {/* Difficulty Badge */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge
-                variant={getDifficultyVariant(difficulty)}
-                className="flex items-center gap-1"
+                variant="outline"
+                className={cn(
+                  "h-7 pl-1.5 pr-2.5 gap-1.5 transition-colors",
+                  difficulty === "beginner" &&
+                    "border-blue-500/20 text-blue-600 bg-blue-500/5 hover:bg-blue-500/10",
+                  difficulty === "intermediate" &&
+                    "border-yellow-500/20 text-yellow-600 bg-yellow-500/5 hover:bg-yellow-500/10",
+                  difficulty === "advanced" &&
+                    "border-red-500/20 text-red-600 bg-red-500/5 hover:bg-red-500/10"
+                )}
               >
                 <DifficultyIcon difficulty={difficulty} />
-                <span className="capitalize">{difficulty}</span>
+                <span className="capitalize font-medium">{difficulty}</span>
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Current difficulty for {entry.subtopicName}</p>
+              <p>Current Difficulty Level</p>
             </TooltipContent>
           </Tooltip>
 
-          {/* Progress */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              {progress.label}:
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-1.5 text-sm truncate opacity-80">
+            <span className="font-medium text-foreground/80 hidden md:inline">
+              {entry.moduleName}
             </span>
-            <div className="flex items-center gap-1.5">
-              <Progress
-                value={(progress.current / progress.total) * 100}
-                className="w-16 h-1.5"
-              />
-              <span className="text-xs font-medium">
-                {progress.current}/{progress.total}
-              </span>
-            </div>
+            <CaretRight className="h-3 w-3 text-muted-foreground hidden md:inline" />
+            <span className="font-semibold text-foreground">
+              {entry.subtopicName}
+            </span>
           </div>
         </div>
 
-        {/* Right: Controls */}
-        <div className="flex items-center gap-2">
-          {/* Aggressive Mode Indicator */}
-          {run.aggressiveProgression && (
-            <Badge variant="outline" className="text-xs">
-              Fast Mode
-            </Badge>
-          )}
+        {/* CENTER: HUD Stats */}
+        <div className="flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
+          {/* Session Timer */}
+          <div className="hidden md:block">
+            <SessionTimer />
+          </div>
 
-          {/* Slow Down Button */}
+          {/* MAIN STREAK INDICATOR */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  "relative group flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all duration-300",
+                  streakBg,
+                  streakChanged && "scale-110"
+                )}
+              >
+                <motion.div
+                  animate={isHighStreak ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                >
+                  <Fire
+                    weight={run.streak > 0 ? "fill" : "regular"}
+                    className={cn(
+                      "h-5 w-5 transition-colors",
+                      streakColor,
+                      isGodlike && "drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]"
+                    )}
+                  />
+                </motion.div>
+
+                <div className="flex flex-col items-start leading-none">
+                  <span
+                    className={cn(
+                      "text-xs font-bold uppercase tracking-wider opacity-70",
+                      streakColor
+                    )}
+                  >
+                    Streak
+                  </span>
+                  <span
+                    className={cn(
+                      "text-lg font-black font-mono leading-none",
+                      streakColor
+                    )}
+                  >
+                    {run.streak}
+                  </span>
+                </div>
+
+                {/* Particle effects for high streaks could go here */}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {isGodlike
+                  ? "UNSTOPPABLE!"
+                  : isHighStreak
+                  ? "On Fire!"
+                  : "Build your streak"}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* RIGHT: Controls & Preview */}
+        <div className="flex items-center gap-3 flex-1 justify-end">
+          {/* Up Next Preview */}
+          <div className="hidden lg:block">
+            <QueuePreview run={run} />
+          </div>
+
+          <div className="h-6 w-px bg-border/50 mx-1" />
+
+          {/* Slow Down (only visible if struggling or high difficulty) */}
+          {/* Alternatively, always visible but subtle */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                size="sm"
                 variant="ghost"
-                className="h-7 px-2"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={handleSlowDown}
               >
-                <Pause weight="bold" className="h-3.5 w-3.5 mr-1" />
-                Slow Down
+                <Pause className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Reset streak and add easier questions</p>
-            </TooltipContent>
+            <TooltipContent>Slow Down (Reset Difficulty)</TooltipContent>
           </Tooltip>
 
           {/* Settings */}
-          {onOpenSettings && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 w-7 p-0"
-              onClick={onOpenSettings}
-            >
-              <GearSix weight="bold" className="h-4 w-4" />
-            </Button>
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={onOpenSettings}
+              >
+                <GearSix className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Settings</TooltipContent>
+          </Tooltip>
         </div>
       </div>
-
-      {/* Promotion/Demotion Toast Area (handled by parent) */}
     </div>
   );
 }
