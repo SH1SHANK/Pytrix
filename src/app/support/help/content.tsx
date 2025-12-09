@@ -10,6 +10,21 @@ import {
   ChartBar,
   Note,
   IconProps,
+  Command,
+  Gear,
+  ListBullets,
+  TreeStructure,
+  Target,
+  TerminalWindow,
+  Database,
+  GitBranch,
+  SpinnerGap,
+  CheckCircle,
+  Info,
+  ArrowRight,
+  Bug,
+  Sun,
+  Moon,
 } from "@phosphor-icons/react";
 import { ReactNode, ForwardRefExoticComponent, RefAttributes } from "react";
 import Link from "next/link";
@@ -30,17 +45,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  CheckCircle,
-  Info,
-  ArrowRight,
-  Bug,
-  TerminalWindow,
-  Database,
-  Target,
-  GitBranch,
-  SpinnerGap,
-} from "@phosphor-icons/react";
 
 // ============================================
 // TYPE DEFINITIONS
@@ -49,12 +53,15 @@ import {
 export type HelpSectionId =
   | "about"
   | "getting-started"
-  | "core-features"
+  | "curriculum"
+  | "practice-modes"
+  | "command-center"
+  | "stats"
   | "api-llm"
   | "limits"
-  | "stats"
-  | "shortcuts"
+  | "settings"
   | "privacy"
+  | "shortcuts"
   | "known-issues"
   | "faq";
 
@@ -93,63 +100,84 @@ export const HELP_SECTIONS: HelpSection[] = [
     title: "Getting Started",
     icon: RocketLaunch,
     description:
-      "Step-by-step setup: configure your API key, understand the dashboard, and solve your first problem.",
+      "Step-by-step setup: get your API key, configure the app, and start your first practice session.",
   },
   {
-    id: "core-features",
-    title: "Core Features",
+    id: "curriculum",
+    title: "Curriculum & Modules",
+    icon: ListBullets,
+    description:
+      "Understanding the Module → Subtopic → Archetype hierarchy and how to navigate the content library.",
+  },
+  {
+    id: "practice-modes",
+    title: "Practice Modes",
     icon: Lightning,
     description:
-      "Deep dive into Manual Practice, Auto Mode, difficulty levels, optimal AI solutions, and the Python runtime.",
+      "Deep dive into Manual Practice for precision and Auto Mode for adaptive, flow-state learning.",
+  },
+  {
+    id: "command-center",
+    title: "Command Center",
+    icon: Command,
+    description:
+      "Master the global command palette (⌘K) for fast navigation, search, and power actions.",
+  },
+  {
+    id: "stats",
+    title: "Stats & Progress",
+    icon: ChartBar,
+    description:
+      "How we measure your mastery, track your history, and help you visualize your improvement over time.",
   },
   {
     id: "api-llm",
     title: "API & LLM Usage",
     icon: Cpu,
     description:
-      "How Pytrix talks to the Gemini API, what is sent, what is received, and how your key is used at runtime.",
+      "How the BYOK (Bring Your Own Key) model works, data privacy, and understanding token usage.",
   },
   {
     id: "limits",
     title: "Free Tier & Limits",
     icon: Warning,
     description:
-      "How free tiers, quotas, and rate limits work, and how Pytrix helps you stay within your usage budget.",
+      "Managing quotas, avoiding rate limits, and dealing with 'Resource Exhausted' errors.",
   },
   {
-    id: "stats",
-    title: "Stats & History",
-    icon: ChartBar,
+    id: "settings",
+    title: "Settings & Customization",
+    icon: Gear,
     description:
-      "What each metric means (attempts, mastery, API usage) and how to review your past questions and runs.",
-  },
-  {
-    id: "shortcuts",
-    title: "Keyboard Shortcuts",
-    icon: Keyboard,
-    description:
-      "All the hotkeys that make navigation, running code, and switching views faster and smoother.",
+      "Configuring themes, editor fonts, difficulty defaults, and managing your API key.",
   },
   {
     id: "privacy",
     title: "Privacy & Security",
     icon: ShieldCheck,
     description:
-      "Where your data lives, how your API key is stored, and what Pytrix does—and does not—send to external APIs.",
+      "Where your data lives (spoiler: on your device) and what is sent to Google.",
+  },
+  {
+    id: "shortcuts",
+    title: "Keyboard Shortcuts",
+    icon: Keyboard,
+    description:
+      "All the hotkeys to navigate Pytrix like a pro without lifting your hands from the keyboard.",
   },
   {
     id: "known-issues",
     title: "Known Limitations",
     icon: Note,
     description:
-      "Current browser-based constraints, occasional AI quirks, and areas for future improvement.",
+      "Current constraints of browser-based Python and occasional AI quirks.",
   },
   {
     id: "faq",
     title: "FAQ & Troubleshooting",
     icon: Question,
     description:
-      "Common questions, error explanations, and quick fixes for problems with keys, limits, or question generation.",
+      "Quick answers to common questions about keys, code execution, and bug reporting.",
   },
 ];
 
@@ -160,9 +188,9 @@ export const HELP_SECTIONS: HelpSection[] = [
 export const SHORTCUTS_DATA: Record<string, ShortcutItem[]> = {
   general: [
     {
-      action: "Open Command Palette",
+      action: "Open Command Center",
       keys: ["⌘", "K"],
-      description: "Quick access to all commands and navigation",
+      description: "Search modules, navigate, or run commands",
     },
     {
       action: "Toggle Sidebar",
@@ -174,41 +202,24 @@ export const SHORTCUTS_DATA: Record<string, ShortcutItem[]> = {
     {
       action: "Run & Check Code",
       keys: ["⌘", "Enter"],
-      description: "Execute code with Pyodide and AI validation",
+      description: "Execute code and validate with AI",
     },
     {
       action: "Save Code",
       keys: ["⌘", "S"],
-      description: "Save current code to history",
+      description: "Save snapshot to history (auto-saved on run)",
     },
   ],
   navigation: [
     {
       action: "Go to Dashboard",
       keys: ["⌘", "K", "→", "Home"],
-      description: "Navigate to main dashboard",
+      description: "Via Command Center",
     },
     {
-      action: "Go to Manual Practice",
-      keys: ["⌘", "K", "→", "Manual"],
-      description: "Start topic-specific practice",
-    },
-    {
-      action: "Go to Auto Mode",
-      keys: ["⌘", "K", "→", "Auto"],
-      description: "Start adaptive practice session",
-    },
-    {
-      action: "Go to History",
-      keys: ["⌘", "K", "→", "History"],
-      description: "View past questions and attempts",
-    },
-  ],
-  practice: [
-    {
-      action: "Reset Topic Stats",
-      keys: ["Right-click", "Topic Card"],
-      description: "Clear progress for a specific topic",
+      action: "Quick Practice",
+      keys: ["⌘", "K", "→", "Auto/Manual"],
+      description: "Start a session instantly",
     },
   ],
 };
@@ -220,47 +231,27 @@ export const SHORTCUTS_DATA: Record<string, ShortcutItem[]> = {
 export const FAQ_DATA: FAQItem[] = [
   {
     q: "Why do I need my own API key?",
-    a: "Pytrix runs entirely in your browser and connects directly to Google's Gemini API. To keep your data private and your usage under your control, requests are made with your own API key instead of a shared server key. This also means the app can remain free and serverless.",
+    a: "Pytrix is a client-side application with no backend server costs. By bringing your own (free) Google Gemini key, you get unlimited learning without a subscription, and you maintain full control over your data.",
   },
   {
-    q: "How is my API key stored?",
-    a: "Your key is stored locally in your browser's localStorage. It is never sent to a Pytrix backend server or any third party except Google Gemini. You can remove it at any time from Settings → API & Keys.",
+    q: "Is my API key safe?",
+    a: "Yes. It is stored only in your browser's Local Storage. It is never sent to any Pytrix server. It is only sent directly to Google's API for the sole purpose of generating questions and feedback.",
   },
   {
-    q: "What happens if I hit rate limits or free-tier quotas?",
-    a: "The Gemini API may return errors like 'Resource Exhausted' or HTTP 429. This means you've made too many requests or used up your free quota for a short period. Wait a few minutes, reduce rapid question regeneration, or avoid repeatedly calling 'Check with AI'.",
+    q: "What happens if I hit the rate limit?",
+    a: "You might see a '429 Resource Exhausted' error. This is normal on the free tier if you generate many questions quickly. Just wait a minute and try again. Pytrix's Auto Mode buffers questions to help prevent this.",
   },
   {
-    q: "Can I use Pytrix offline?",
-    a: "Once loaded, the Python runtime (Pyodide) can execute your code offline. However, generating new questions, hints, or AI-optimized solutions always requires an internet connection and available API quota.",
+    q: "Does Pytrix work offline?",
+    a: "Partially. The Python runtime (Pyodide) works offline once loaded, so you can run your code. However, generating *new* questions or getting AI feedback requires an active internet connection to reach Google Gemini.",
   },
   {
-    q: "How does Auto Mode pick topics and difficulties?",
-    a: "Auto Mode looks at your per-topic stats—attempts, correctness, and inferred mastery. It prefers topics where you've practiced less or solved fewer problems, and can adjust difficulty based on your recent performance to keep you in a productive challenge zone.",
+    q: "Can I customize the Auto Mode difficulty?",
+    a: "Auto Mode manages difficulty automatically, but you can set a 'Preferred Starting Difficulty' in Settings to bias the initial questions towards Beginner, Intermediate, or Advanced.",
   },
   {
-    q: "What exactly is tracked in Stats & History?",
-    a: "For each attempt, Pytrix tracks the topic, difficulty, mode (Manual or Auto), whether you passed, your code snapshot, and timestamp. Aggregated stats like 'Problems Solved', mastery percentage, and per-difficulty counts are computed from this history in your browser.",
-  },
-  {
-    q: "Are the AI questions and solutions always correct?",
-    a: "LLMs are powerful but not perfect. Most of the time questions and solutions are solid, but occasionally you may see edge cases or sub-optimal code. Treat them like a smart assistant, not a ground-truth judge—if something looks suspicious, investigate and learn from it.",
-  },
-  {
-    q: "How do I reset my progress?",
-    a: "From the Dashboard, use the 'Reset Stats' button to clear your stored stats and mastery. You can also clear individual topics via their context menu (right-click), or wipe everything (including your key) by clearing Pytrix data from your browser's storage.",
-  },
-  {
-    q: "Why does the first question take a while to load?",
-    a: "Pyodide (the in-browser Python runtime) loads on first use, which can take 5-10 seconds depending on your connection. After that, all Python execution is instant. The initial Gemini API call also needs to connect, but subsequent questions are typically faster due to buffering.",
-  },
-  {
-    q: "What Python libraries are available in Pyodide?",
-    a: "Pyodide includes the Python standard library plus many popular packages like numpy, pandas (basic), and more. However, some packages with C extensions or system dependencies may not work. Most DSA and beginner Python code will run fine.",
-  },
-  {
-    q: "Can I contribute questions or improve the AI prompts?",
-    a: "Yes! Pytrix is open source. You can suggest improvements, report bugs, or contribute code via GitHub. Check the Bug Report page for links to the repository.",
+    q: "How do I clear my data?",
+    a: "Go to Settings -> Danger Zone to clear specific data (like history or stats) or perform a full reset to wipe everything including your API key.",
   },
 ];
 
@@ -330,21 +321,14 @@ function FeatureCard({ title, description, icon, details }: FeatureCardProps) {
 }
 
 // ============================================
-// SECTION COMPONENT MAPPING (export placeholder)
-// ============================================
-
-export const HELP_SECTION_COMPONENTS: Record<HelpSectionId, React.FC> =
-  {} as Record<HelpSectionId, React.FC>;
-
-// ============================================
-// SECTION CONTENT COMPONENTS
+// SECTION COMPONENTS
 // ============================================
 
 // --- About Section ---
 export function AboutSection() {
   return (
     <>
-      <Card className="bg-linear-to-br from-primary/5 to-transparent border-primary/20 mb-6">
+      <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/20 mb-6">
         <CardHeader>
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="outline" className="text-primary border-primary/30">
@@ -355,9 +339,9 @@ export function AboutSection() {
             Master Python with AI-Powered Practice
           </CardTitle>
           <CardDescription className="text-base mt-2 max-w-2xl">
-            A privacy-first, verified practice environment designed for students
-            and developers who want to sharpen their Python skills with
-            intelligent, adaptive feedback—all running in your browser.
+            Pytrix is a browser-based, privacy-first practice platform that uses
+            AI to generate infinite coding problems tailored to your skill
+            level. It runs Python locally and adapts to your progress.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 mt-4">
@@ -367,23 +351,10 @@ export function AboutSection() {
               className="w-6 h-6 text-yellow-500 shrink-0"
             />
             <div>
-              <h4 className="font-semibold text-sm">Adaptive Learning</h4>
+              <h4 className="font-semibold text-sm">Adaptive Auto Mode</h4>
               <p className="text-sm text-muted-foreground">
-                Auto Mode adapts to your skill level in real-time, targeting
-                your weakest topics.
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <ShieldCheck
-              weight="duotone"
-              className="w-6 h-6 text-green-500 shrink-0"
-            />
-            <div>
-              <h4 className="font-semibold text-sm">Privacy First</h4>
-              <p className="text-sm text-muted-foreground">
-                Your code runs in your browser. All stats stay local. You own
-                your data.
+                Automatically identifies your weak spots and builds a
+                personalized practice queue.
               </p>
             </div>
           </div>
@@ -393,9 +364,22 @@ export function AboutSection() {
               className="w-6 h-6 text-blue-500 shrink-0"
             />
             <div>
-              <h4 className="font-semibold text-sm">Real Python Runtime</h4>
+              <h4 className="font-semibold text-sm">Local Python Runtime</h4>
               <p className="text-sm text-muted-foreground">
-                Powered by Pyodide (WebAssembly), not fake simulations.
+                Executes code instantly in your browser using Pyodide
+                (WebAssembly).
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <ShieldCheck
+              weight="duotone"
+              className="w-6 h-6 text-green-500 shrink-0"
+            />
+            <div>
+              <h4 className="font-semibold text-sm">Privacy by Design</h4>
+              <p className="text-sm text-muted-foreground">
+                Your API key and history never leave your device.
               </p>
             </div>
           </div>
@@ -405,97 +389,30 @@ export function AboutSection() {
               className="w-6 h-6 text-purple-500 shrink-0"
             />
             <div>
-              <h4 className="font-semibold text-sm">Infinite Questions</h4>
+              <h4 className="font-semibold text-sm">Uncapped Potential</h4>
               <p className="text-sm text-muted-foreground">
-                Google Gemini generates fresh problems tailored to your needs.
+                No fixed curriculum. Infinite variations of any problem type.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Core Philosophy</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Pytrix is built on the idea that <strong>doing</strong> is better
-            than reading. Instead of static tutorials, we give you a live Python
-            environment and an &quot;Infinite Problem Generator&quot; powered by
-            Google Gemini. You bring the API key, you own the practice, and you
-            control the pace.
-          </p>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Who is this for?</h3>
-          <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-            <li>
-              <strong>Students</strong> preparing for exams or building
-              foundational skills
-            </li>
-            <li>
-              <strong>Job seekers</strong> practicing DSA and Python interview
-              questions
-            </li>
-            <li>
-              <strong>Developers</strong> sharpening their problem-solving speed
-              and syntax fluency
-            </li>
-            <li>
-              <strong>Educators</strong> looking for a self-guided practice tool
-              for students
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-2">
-            What makes it different?
-          </h3>
-          <div className="grid gap-3 md:grid-cols-2">
-            <Card className="border-dashed">
-              <CardContent className="pt-6">
-                <h4 className="font-semibold text-sm mb-1">
-                  No Server, No Tracking
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  All data lives in your browser. Your API key never leaves your
-                  device.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-dashed">
-              <CardContent className="pt-6">
-                <h4 className="font-semibold text-sm mb-1">
-                  Real Python Execution
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Pyodide runs actual Python 3.11+ in WebAssembly, not a sandbox
-                  simulation.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-dashed">
-              <CardContent className="pt-6">
-                <h4 className="font-semibold text-sm mb-1">
-                  AI That Learns You
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Auto Mode adapts based on your weak spots, not random
-                  shuffling.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-dashed">
-              <CardContent className="pt-6">
-                <h4 className="font-semibold text-sm mb-1">Free & Open</h4>
-                <p className="text-xs text-muted-foreground">
-                  Open source. Free tier friendly. No subscription required.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">What Pytrix is NOT</h3>
+        <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+          <li>
+            It is <strong>not</strong> a hosted competitive programming platform
+            (like LeetCode's server).
+          </li>
+          <li>
+            It is <strong>not</strong> a static tutorial site; you learn by
+            doing.
+          </li>
+          <li>
+            It is <strong>not</strong> storing your data on a cloud database.
+          </li>
+        </ul>
       </div>
     </>
   );
@@ -507,10 +424,10 @@ export function GettingStartedSection() {
     <div className="space-y-8">
       <Alert className="border-blue-500/20 bg-blue-500/5">
         <Info className="h-4 w-4 text-blue-500" />
-        <AlertTitle>First Time Here?</AlertTitle>
+        <AlertTitle>Initial Setup</AlertTitle>
         <AlertDescription>
-          Follow these steps to set up Pytrix and start solving Python problems
-          in minutes.
+          Pytrix requires a valid Google Gemini API key to function. The
+          dashboard will remain blurred/locked until a key is configured.
         </AlertDescription>
       </Alert>
 
@@ -518,7 +435,7 @@ export function GettingStartedSection() {
         <StepCard
           step={1}
           title="Get Your Free Gemini API Key"
-          description="Visit Google AI Studio and generate a free API key. This powers all question generation and AI feedback."
+          description="Visit Google AI Studio to generate a free API key. This empowers Pytrix to create questions and provide feedback."
           action={
             <Button variant="outline" size="sm" asChild>
               <a
@@ -526,7 +443,7 @@ export function GettingStartedSection() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Get API Key
+                Get Key from Google
                 <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
@@ -535,12 +452,12 @@ export function GettingStartedSection() {
 
         <StepCard
           step={2}
-          title="Configure Your API Key"
-          description="Paste your API key in the Settings page. It will be stored securely in your browser's local storage."
+          title="Configure Pytrix"
+          description="Enter your API key in the Pytrix settings. It is validated and stored locally in your browser."
           action={
             <Button variant="outline" size="sm" asChild>
-              <Link href="/support/settings#api-keys">
-                Open API Settings
+              <Link href="/support/settings?tab=api">
+                Enter API Key
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -549,152 +466,139 @@ export function GettingStartedSection() {
 
         <StepCard
           step={3}
-          title="Explore the Dashboard"
-          description="Your central hub. See your progress stats, browse 12 Python topics, and choose where to start."
-        />
-
-        <StepCard
-          step={4}
-          title="Try Manual Practice"
-          description="Pick a specific topic (e.g., Lists or Dictionaries) and a difficulty level (Beginner/Intermediate/Advanced). Perfect for targeted learning."
-          action={
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/practice/manual">
-                Start Manual Practice
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          }
-        />
-
-        <StepCard
-          step={5}
-          title="Experience Auto Mode"
-          description="The ultimate flow state. Auto Mode intelligently selects questions based on your weakest topics and prefetches the next problem while you work."
-          action={
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/practice/auto">
-                Launch Auto Mode
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          }
-        />
-
-        <StepCard
-          step={6}
-          title="Review Your Progress"
-          description="Check your stats, mastery percentage, and API usage. Revisit past questions from the History page."
-          action={
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/insights/stats">
-                View Stats
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          }
+          title="Choose Your Path"
+          description="Start with 'Manual Practice' to drill specific topics, or launch 'Auto Mode' for a guided, adaptive session."
         />
       </div>
     </div>
   );
 }
 
-// --- Core Features Section ---
-export function CoreFeaturesSection() {
+// --- Curriculum Section (NEW) ---
+export function CurriculumSection() {
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Pytrix organizes Python concepts into a structured but flexible
+        hierarchy.
+      </p>
+
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card className="border-dashed">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-primary" />
+              1. Modules
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              High-level categories like "Strings", "Lists", or "OOP". Pytrix
+              includes a core set of modules covering standard Python topics.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-dashed">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ListBullets className="w-4 h-4 text-primary" />
+              2. Subtopics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              Specific concepts within a module. E.g., inside "Strings", you
+              find "Slicing", "Formatting", and "Methods".
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-dashed">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary" />
+              3. Archetypes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              Concrete problem patterns. E.g., "Reverse a string" or "Find max
+              in list". You can practice a specific pattern endlessly.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Alert>
+        <Info className="w-4 h-4" />
+        <AlertTitle>Smart Search</AlertTitle>
+        <AlertDescription>
+          Use the <strong>Command Center (⌘K)</strong> to instantly find any
+          Module, Subtopic, or Archetype. Pytrix's search is granular—you can
+          jump straight to "List Comprehensions" without navigating menus.
+        </AlertDescription>
+      </Alert>
+    </div>
+  );
+}
+
+// --- Practice Modes Section (Refactored) ---
+export function PracticeModesSection() {
   return (
     <div className="space-y-8">
       <div className="grid gap-6 md:grid-cols-2">
         <FeatureCard
           title="Manual Practice"
           icon={<Target weight="duotone" className="w-6 h-6" />}
-          description="Select from 12 Python topics (Strings, Lists, Tuples, Sets, Dictionaries, Functions, Errors, OOP, Classes, Modules, Files, Pandas) and 3 difficulty levels. Perfect for focused, topic-specific drilling."
+          description="Complete control. Select exactly what you want to practice."
           details={[
-            "Choose topic + difficulty combination",
-            "Generate unlimited questions with 'Get New Question'",
-            "Run code locally with Pyodide",
-            "Check correctness with AI validation",
-            "Request hints or reveal optimal solutions",
+            "Drill specific Modules, Subtopics, or Archetypes",
+            "Force a Difficulty (Beginner/Intermediate/Advanced)",
+            "Deep linking support—share a specific problem setup",
+            "Great for: Homework, targeted revision, debugging specific skills",
           ]}
         />
 
         <FeatureCard
           title="Auto Mode"
           icon={<Lightning weight="duotone" className="w-6 h-6" />}
-          description="An adaptive practice session that keeps you in the flow zone. Auto Mode analyzes your stats and queues up questions from your weakest topics, automatically."
+          description="Flow state. Let Pytrix decide what you need."
           details={[
-            "Creates topic queue based on your weak spots",
-            "Buffers next question while you solve current one",
-            "Automatically advances after successful submission",
-            "Saves progress in named sessions",
-            "Export/import runs for backup",
-          ]}
-        />
-
-        <FeatureCard
-          title="In-Browser Python Runtime"
-          icon={<TerminalWindow weight="duotone" className="w-6 h-6" />}
-          description="Powered by Pyodide, a full Python interpreter compiled to WebAssembly. Your code runs locally, instantly, with no server roundtrip."
-          details={[
-            "Python 3.11+ with standard library",
-            "Common packages: numpy, pandas basics",
-            "Stdout/stderr capture for debugging",
-            "Timeout protection against infinite loops",
-            "No network latency for execution",
-          ]}
-        />
-
-        <FeatureCard
-          title="AI Feedback & Hints"
-          icon={<Cpu weight="duotone" className="w-6 h-6" />}
-          description="When you're stuck or get an error, Pytrix's AI analyzes your specific code and provides contextual hints, error explanations, or optimal solutions."
-          details={[
-            "Run & Check: validates against AI expectations",
-            "Get Hint: progressive nudges without spoilers",
-            "Reveal Solution: see optimal, commented code",
-            "Optimize Solution: AI refactors your working code",
-            "Model fallback: flash-lite → flash → pro",
+            "Analyzes which topics you are weakest in",
+            "Builds a dynamic queue of mixed topics",
+            "Increases difficulty after streaks of correct answers",
+            "Smart Buffering: Loads the next question while you code",
+            "Great for: Daily practice, general fluency, warming up",
           ]}
         />
       </div>
 
       <div className="mt-8">
-        <h3 className="text-lg font-semibold mb-4">
-          Question Generation & Buffering
-        </h3>
+        <h3 className="text-lg font-semibold mb-4">Adaptive Intelligence</h3>
         <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <SpinnerGap
-                  weight="duotone"
-                  className="w-5 h-5 text-primary shrink-0 mt-0.5"
-                />
-                <div>
-                  <h4 className="font-semibold text-sm mb-1">
-                    Smart Buffering
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    In Auto Mode, Pytrix prefetches the next question while
-                    you&apos;re working on the current one. This eliminates
-                    waiting time and keeps you in flow state.
-                  </p>
-                </div>
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex gap-3">
+              <GitBranch className="w-5 h-5 text-primary mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-sm">
+                  Streak-Based Progression
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  In Auto Mode, answering 2-3 questions correctly in a row
+                  triggers a difficulty increase. Struggling with a concept will
+                  lower the difficulty or offer remediation.
+                </p>
               </div>
-              <div className="flex gap-3">
-                <GitBranch
-                  weight="duotone"
-                  className="w-5 h-5 text-primary shrink-0 mt-0.5"
-                />
-                <div>
-                  <h4 className="font-semibold text-sm mb-1">
-                    Adaptive Difficulty
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Questions are generated with AI-driven constraints matching
-                    your selected difficulty. Beginner = simple syntax, Advanced
-                    = multi-step algorithms.
-                  </p>
-                </div>
+            </div>
+            <div className="flex gap-3">
+              <Database className="w-5 h-5 text-primary mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-sm">Session Resume</h4>
+                <p className="text-sm text-muted-foreground">
+                  Auto Mode sessions are saved automatically. You can close the
+                  tab and resume your "Run" later from where you left off.
+                </p>
               </div>
             </div>
           </CardContent>
@@ -704,223 +608,52 @@ export function CoreFeaturesSection() {
   );
 }
 
-// --- API & LLM Section ---
-export function ApiLlmSection() {
+// --- Command Center Section (NEW) ---
+export function CommandCenterSection() {
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Pytrix uses a <strong>Bring Your Own Key (BYOK)</strong> architecture.
-        The application code runs entirely in your browser and communicates
-        directly with Google&apos;s Gemini API using your personal API key.
+      <p className="text-sm text-muted-foreground">
+        The <strong>Command Center</strong> is the power-user's heart of Pytrix.
+        Access it anywhere with <Kbd>⌘</Kbd>
+        <Kbd>K</Kbd> (Mac) or <Kbd>Ctrl</Kbd>
+        <Kbd>K</Kbd> (Windows).
       </p>
 
-      <Card className="bg-muted/50 border-dashed">
-        <CardHeader>
-          <CardTitle className="text-base">Data Flow</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col md:flex-row items-center gap-4 text-sm font-medium">
-          <div className="bg-background p-3 rounded-md border shadow-sm">
-            You (Browser)
-          </div>
-          <ArrowRight className="hidden md:block text-muted-foreground" />
-          <div className="bg-background p-3 rounded-md border shadow-sm">
-            Next.js API Route (Proxy)
-          </div>
-          <ArrowRight className="hidden md:block text-muted-foreground" />
-          <div className="bg-background p-3 rounded-md border shadow-sm">
-            Google Gemini API
-          </div>
-          <ArrowRight className="hidden md:block text-muted-foreground" />
-          <div className="bg-background p-3 rounded-md border shadow-sm">
-            Pytrix Display
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid md:grid-cols-2 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">What is sent?</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Features</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-              <li>Topic selection & difficulty constraints</li>
-              <li>Your code (only when you request checking/help)</li>
-              <li>System prompts defining AI behavior</li>
-              <li>Your API key via X-API-Key header (to proxy only)</li>
-            </ul>
+          <CardContent className="text-sm space-y-2 text-muted-foreground">
+            <p>
+              • <strong>Navigation:</strong> Jump to Dashboard, Stats, or
+              Settings.
+            </p>
+            <p>
+              • <strong>Deep Search:</strong> Type "List" to see the Module
+              "Lists", Subtopics like "List Slicing", and Archetypes like
+              "Filter a List".
+            </p>
+            <p>
+              • <strong>Quick Actions:</strong> Toggle Theme, clear history, or
+              reset state.
+            </p>
+            <p>
+              • <strong>Smart Suggestions:</strong> Shows "Practice Weakest
+              Subtopic" based on your actual stats.
+            </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">What is NOT sent?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-              <li>Your personal stats or history database</li>
-              <li>Your browser data or cookies</li>
-              <li>Other users&apos; data (app is fully client-side)</li>
-              <li>API key is never stored server-side</li>
-            </ul>
-          </CardContent>
+        <Card className="bg-muted/50 flex items-center justify-center p-6">
+          <div className="text-center space-y-2">
+            <div className="flex justify-center gap-1">
+              <Kbd className="text-lg px-3 py-1.5">⌘</Kbd>
+              <Kbd className="text-lg px-3 py-1.5">K</Kbd>
+            </div>
+            <p className="text-xs text-muted-foreground">Try it now!</p>
+          </div>
         </Card>
       </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Model Router & Fallback</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Pytrix uses a cost-aware model router to balance quality and quota
-          usage:
-        </p>
-        <div className="space-y-2">
-          <div className="flex items-start gap-3">
-            <Badge variant="secondary" className="mt-0.5">
-              1st
-            </Badge>
-            <div>
-              <p className="font-semibold text-sm">gemini-2.5-flash-lite</p>
-              <p className="text-xs text-muted-foreground">
-                Fast, lightweight, perfect for question generation and hints
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Badge variant="secondary" className="mt-0.5">
-              2nd
-            </Badge>
-            <div>
-              <p className="font-semibold text-sm">gemini-2.5-flash</p>
-              <p className="text-xs text-muted-foreground">
-                More capable, used for complex evaluations if lite fails
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Badge variant="secondary" className="mt-0.5">
-              3rd
-            </Badge>
-            <div>
-              <p className="font-semibold text-sm">gemini-2.5-pro</p>
-              <p className="text-xs text-muted-foreground">
-                Highest quality, fallback for edge cases or premium operations
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- Limits Section ---
-export function LimitsSection() {
-  return (
-    <div className="space-y-6">
-      <Alert variant="default" className="border-yellow-500/20 bg-yellow-500/5">
-        <Warning className="h-4 w-4 text-yellow-500" />
-        <AlertTitle>Using the Free Tier</AlertTitle>
-        <AlertDescription>
-          Google AI Studio provides a generous free tier, but it has rate limits
-          (Requests Per Minute) and daily quotas. Pytrix helps you stay within
-          them.
-        </AlertDescription>
-      </Alert>
-
-      <div className="space-y-4">
-        <h3 className="text-base font-semibold">Free Tier Quotas</h3>
-        <div className="grid gap-3">
-          <Card className="border-dashed">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold text-sm">gemini-2.5-flash-lite</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    ~1500 calls/day, ~1M tokens/day
-                  </p>
-                </div>
-                <Badge variant="outline">Most Used</Badge>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-dashed">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold text-sm">gemini-2.5-flash</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    ~500 calls/day, ~500K tokens/day
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-dashed">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold text-sm">gemini-2.5-pro</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    ~50 calls/day, ~100K tokens/day
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-base font-semibold">Tips to Avoid Rate Limits</h3>
-        <div className="space-y-3">
-          <div className="flex gap-3 items-start">
-            <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-            <div className="text-sm text-muted-foreground">
-              <strong className="text-foreground">Buffer questions:</strong> In
-              Auto Mode, Pytrix prefetches the next question while you&apos;re
-              solving the current one. This smooths out request spikes.
-            </div>
-          </div>
-          <div className="flex gap-3 items-start">
-            <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-            <div className="text-sm text-muted-foreground">
-              <strong className="text-foreground">
-                Use &quot;Run&quot; first:
-              </strong>{" "}
-              The internal &quot;Run Code&quot; button uses the local browser
-              Python runtime. It&apos;s free and instant. Only use &quot;Check
-              with AI&quot; if you need validation.
-            </div>
-          </div>
-          <div className="flex gap-3 items-start">
-            <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-            <div className="text-sm text-muted-foreground">
-              <strong className="text-foreground">
-                Don&apos;t spam Regenerate:
-              </strong>{" "}
-              Hitting the regenerate button repeatedly will quickly exhaust your
-              RPM quota.
-            </div>
-          </div>
-          <div className="flex gap-3 items-start">
-            <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-            <div className="text-sm text-muted-foreground">
-              <strong className="text-foreground">Monitor usage:</strong> Check
-              the API Usage page to see your daily consumption and model
-              distribution.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Alert className="border-red-500/20 bg-red-500/5">
-        <Warning className="h-4 w-4 text-red-500" />
-        <AlertTitle>Common Error: HTTP 429</AlertTitle>
-        <AlertDescription>
-          If you see &quot;Too Many Requests&quot; or &quot;Resource
-          Exhausted,&quot; you&apos;ve hit Google&apos;s rate limit. Wait 60
-          seconds and try again. Consider slowing down question generation.
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }
@@ -930,153 +663,221 @@ export function StatsSection() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
-        Pytrix tracks every attempt locally in your browser. These stats power
-        the adaptive Auto Mode and help you visualize your progress.
+        Pytrix tracks metrics locally to visualize your growth.
       </p>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Mastery %</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              A weighted score of how many topics you&apos;ve attempted and your
-              verified success rate. Formula: (solved / attempts) × 100.
+              A composite score derived from your success rate and difficulty
+              level across all topics.
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Topics Touched</CardTitle>
+            <CardTitle className="text-base">Weakest Topics</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              The number of unique Python concepts (out of 12) you&apos;ve
-              practiced at least once. Higher = broader coverage.
+              Identifies modules where you have high failure rates or low
+              attempt counts. Auto Mode targets these.
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Problems Solved</CardTitle>
+            <CardTitle className="text-base">History Log</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Total count of questions marked correct by AI validation. Includes
-              Manual and Auto Mode.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Total Attempts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Every time you click &quot;Run &amp; Check&quot; counts as an
-              attempt, whether correct or not.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Per-Difficulty Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Separate tracking for Beginner, Intermediate, and Advanced
-              problems. Helps identify where you excel.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              A chronological log of every question, your code snapshot, and the
-              result. Stored in your browser, revisit anytime.
+              Every code execution is logged. You can review past solutions and
+              AI feedback from the History page.
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="space-y-4 mt-8">
-        <h3 className="text-lg font-semibold">How Auto Mode Uses Stats</h3>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <Database
-                  weight="duotone"
-                  className="w-5 h-5 text-primary shrink-0 mt-0.5"
-                />
-                <div>
-                  <h4 className="font-semibold text-sm mb-1">Weakest Topics</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Auto Mode calls{" "}
-                    <code className="text-xs">getWeakestTopics()</code> to
-                    identify topics with fewer attempts or lower success rates,
-                    prioritizing them in the queue.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Lightning
-                  weight="duotone"
-                  className="w-5 h-5 text-primary shrink-0 mt-0.5"
-                />
-                <div>
-                  <h4 className="font-semibold text-sm mb-1">
-                    Adaptive Rotation
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    After 3 questions from a topic, Auto Mode rotates to the
-                    next in queue. This prevents grinding and ensures balanced
-                    exposure.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Alert>
+        <Database className="w-4 h-4" />
+        <AlertTitle>Aggregation</AlertTitle>
+        <AlertDescription>
+          Stats are aggregated from the bottom up. Solving "List Slicing"
+          improves your stats for the "Lists" module and your overall global
+          mastery.
+        </AlertDescription>
+      </Alert>
+    </div>
+  );
+}
 
-      <div className="space-y-4 mt-8">
-        <h3 className="text-lg font-semibold">API Usage Tracking</h3>
-        <p className="text-sm text-muted-foreground">
-          Every AI call is logged with model name, input/output tokens, and
-          timestamp. View detailed breakdowns in the{" "}
-          <Link
-            href="/insights/api-usage"
-            className="text-primary hover:underline"
-          >
-            API Usage
-          </Link>{" "}
-          page.
+// --- API & LLM Section ---
+export function ApiLlmSection() {
+  return (
+    <div className="space-y-6">
+      <div className="prose prose-sm text-muted-foreground">
+        <p>
+          Pytrix acts as a <strong>Local Client</strong> for the Gemini API.
         </p>
+        <ul className="list-disc pl-4 space-y-1">
+          <li>
+            <strong>You</strong> provide the key.
+          </li>
+          <li>
+            <strong>Google</strong> provides the intelligence.
+          </li>
+          <li>
+            <strong>Pytrix</strong> provides the interface and runtime.
+          </li>
+        </ul>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardContent className="pt-6 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Calls:</span>
-              <span className="font-semibold">Tracked per model</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Input Tokens:</span>
-              <span className="font-semibold">Summed daily</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Output Tokens:</span>
-              <span className="font-semibold">Summed daily</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Rate Limit Hits:</span>
-              <span className="font-semibold">Auto-tracked for alerts</span>
+          <CardHeader>
+            <CardTitle className="text-base">What is sent?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+              <li>Topic constraints (e.g., "Create a list problem")</li>
+              <li>User Code (only when you click "Check with AI")</li>
+              <li>Your API Key (in transit only, for authentication)</li>
+            </ul>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">What is NOT sent?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+              <li>Your dashboard stats or history</li>
+              <li>Personal identity information</li>
+              <li>Browser cookies or local files</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// --- Limits Section ---
+export function LimitsSection() {
+  return (
+    <div className="space-y-4">
+      <Alert variant="destructive" className="border-red-500/20 bg-red-500/5">
+        <Warning className="h-4 w-4 text-red-500" />
+        <AlertTitle>Rate Limits</AlertTitle>
+        <AlertDescription>
+          Google's free tier has a Request Per Minute (RPM) limit. If you click
+          "Get Question" too fast, you may see a 429 error. Pytrix tries to
+          handle this gracefully, but if it happens, just wait 60 seconds.
+        </AlertDescription>
+      </Alert>
+
+      <h3 className="text-base font-semibold mt-4">
+        Tips for smooth practice:
+      </h3>
+      <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-2">
+        <li>
+          Use <strong>Run Code</strong> (⌘+Enter) frequently. It uses the local
+          runtime and costs 0 API tokens.
+        </li>
+        <li>
+          Only use <strong>Check with AI</strong> when you are ready to submit
+          or stuck.
+        </li>
+        <li>
+          Auto Mode creates a buffer to mask network latency and API limits.
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+// --- Settings Section (NEW) ---
+export function SettingsSection() {
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Customize your experience in{" "}
+        <Link href="/support/settings" className="text-primary underline">
+          Settings
+        </Link>
+        .
+      </p>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Appearance</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Sun className="w-4 h-4" /> / <Moon className="w-4 h-4" />
+              <span>Switch between Light and Dark mode.</span>
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Editor</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Change font size, enabling ligatures, or editor wrapping
+            preferences.
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">API Key</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Update or remove your stored Google Gemini API key.
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Danger Zone</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Reset all stats, clear history, or wipe application state
+            completely.
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// --- Privacy Section ---
+export function PrivacySection() {
+  return (
+    <div className="space-y-6">
+      <Alert className="border-green-500/20 bg-green-500/5">
+        <ShieldCheck className="h-4 w-4 text-green-500" />
+        <AlertTitle>Local Storage Only</AlertTitle>
+        <AlertDescription>
+          Pytrix has no backend database. If you clear your browser
+          cookies/data, your Pytrix progress is wiped.
+        </AlertDescription>
+      </Alert>
+
+      <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+        <p>
+          We designed Pytrix to be privacy-preserving by default. We do not
+          track you. We do not use analytics cookies.
+        </p>
+        <p>
+          The only external connection is to{" "}
+          <strong>generativelanguage.googleapis.com</strong> (Google Gemini) to
+          generate questions.
+        </p>
       </div>
     </div>
   );
@@ -1118,214 +919,37 @@ export function ShortcutsSection() {
   );
 }
 
-// --- Privacy Section ---
-export function PrivacySection() {
-  return (
-    <div className="space-y-6">
-      <Alert className="border-green-500/20 bg-green-500/5">
-        <ShieldCheck className="h-4 w-4 text-green-500" />
-        <AlertTitle>Local First</AlertTitle>
-        <AlertDescription>
-          We do not control where your data lives. It lives on your device, in
-          your browser, under your control.
-        </AlertDescription>
-      </Alert>
-
-      <div className="space-y-4">
-        <div>
-          <h3 className="font-semibold text-base mb-2">Where is my data?</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Everything—your API key, your stats, your history logs—is stored in
-            your browser&apos;s{" "}
-            <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-              localStorage
-            </code>
-            . If you clear your browser data, you lose your Pytrix data. No
-            remote server has a copy.
-          </p>
-        </div>
-        <div>
-          <h3 className="font-semibold text-base mb-2">
-            How is my API key handled?
-          </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Your key is stored in{" "}
-            <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-              apiKeyStore.ts
-            </code>{" "}
-            and passed to Next.js API routes via the{" "}
-            <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-              X-API-Key
-            </code>{" "}
-            header. The API route uses it to call Gemini, then discards it. The
-            key is never logged, never stored server-side, never sent to anyone
-            but Google.
-          </p>
-        </div>
-        <div>
-          <h3 className="font-semibold text-base mb-2">
-            Why do I need to bring my own key?
-          </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            This architecture ensures we don&apos;t need a backend database to
-            store keys or user accounts. It keeps the app free, private, and
-            fast. You control your quota, you pay nothing (on free tier), and
-            you can revoke access anytime.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="font-semibold text-base">What data does Google see?</h3>
-        <Card>
-          <CardContent className="pt-6">
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                <span>
-                  Google sees your API requests (prompts, code submissions) to
-                  generate responses.
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                <span>
-                  Google logs usage for billing/quotas but does NOT use free
-                  tier data to train models (per their terms).
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                <span>
-                  Google does NOT see your stats, history, or other Pytrix
-                  metadata.
-                </span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Alert className="border-yellow-500/20 bg-yellow-500/5">
-        <Warning className="h-4 w-4 text-yellow-500" />
-        <AlertTitle>Browser Storage Limits</AlertTitle>
-        <AlertDescription>
-          localStorage typically has a 5-10MB limit per domain. If you solve
-          hundreds of problems, history may grow large. Consider exporting your
-          data periodically.
-        </AlertDescription>
-      </Alert>
-    </div>
-  );
-}
-
 // --- Known Issues Section ---
 export function KnownIssuesSection() {
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">
-        Pytrix is a browser-based app with some inherent limitations. Here are
-        known issues and areas for future improvement:
-      </p>
-
       <div className="space-y-4">
         <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-base">
-              AI-Generated Questions May Be Imperfect
-            </CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Pyodide Load Time</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              LLMs are powerful but not infallible. Occasionally, a generated
-              question may have unclear wording, incorrect test cases, or
-              suboptimal solutions. Use the &quot;Get New Question&quot; button
-              to regenerate if needed.
+              The first time you run code, the Python runtime must download
+              (~10-20MB). This can take a few seconds. Subsequent runs are
+              instant.
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-base">
-              Pyodide Takes Time to Load
-            </CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">AI Hallucinations</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              The first Python execution in a session can take 5-10 seconds as
-              Pyodide downloads (~30MB). After that, all execution is instant.
-              This is a one-time cost per page load.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-base">
-              Browser Storage is Ephemeral
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              If you clear your browser cache or use Incognito mode, all stats
-              and history are lost. Consider exporting your data regularly or
-              using a persistent browser profile.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-base">
-              Limited Python Package Support
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Pyodide supports many packages, but not all. Packages with C
-              extensions or system dependencies may fail. Most standard library
-              and pure-Python packages work fine.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-base">No Multi-Device Sync</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Because data is stored locally, your progress doesn&apos;t sync
-              across devices. Future versions may add optional cloud backup.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-base">
-              Rate Limits Can Be Hit Quickly
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Free tier rate limits are generous but finite. Rapid question
-              generation or repeated AI checks can exhaust your quota. Be
-              mindful of usage.
+              Rarely, the AI might generate a question with a subtly incorrect
+              solution. If a question seems impossible or wrong, you can skip it
+              or regenerate.
             </p>
           </CardContent>
         </Card>
       </div>
-
-      <Alert className="border-blue-500/20 bg-blue-500/5">
-        <Info className="h-4 w-4 text-blue-500" />
-        <AlertTitle>Help Us Improve</AlertTitle>
-        <AlertDescription>
-          Found a bug or have a feature request? Open an issue on GitHub or use
-          the Bug Report form.
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }
@@ -1350,9 +974,7 @@ export function FaqSection() {
       </Accordion>
 
       <div className="mt-8 pt-8 border-t text-center space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Still have questions? Need help with an error?
-        </p>
+        <p className="text-sm text-muted-foreground">Still have questions?</p>
         <div className="flex flex-wrap justify-center gap-3">
           <Button variant="outline" asChild>
             <Link href="/support/bug-report">
@@ -1361,9 +983,9 @@ export function FaqSection() {
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/support/settings#api-keys">
+            <Link href="/support/settings?tab=api">
               <ShieldCheck weight="duotone" className="mr-2 h-4 w-4" />
-              Configure API Key
+              Check API Settings
             </Link>
           </Button>
         </div>
@@ -1372,14 +994,22 @@ export function FaqSection() {
   );
 }
 
-// Update HELP_SECTION_COMPONENTS mapping
-HELP_SECTION_COMPONENTS.about = AboutSection;
-HELP_SECTION_COMPONENTS["getting-started"] = GettingStartedSection;
-HELP_SECTION_COMPONENTS["core-features"] = CoreFeaturesSection;
-HELP_SECTION_COMPONENTS["api-llm"] = ApiLlmSection;
-HELP_SECTION_COMPONENTS.limits = LimitsSection;
-HELP_SECTION_COMPONENTS.stats = StatsSection;
-HELP_SECTION_COMPONENTS.shortcuts = ShortcutsSection;
-HELP_SECTION_COMPONENTS.privacy = PrivacySection;
-HELP_SECTION_COMPONENTS["known-issues"] = KnownIssuesSection;
-HELP_SECTION_COMPONENTS.faq = FaqSection;
+// ============================================
+// COMPONENT MAPPING
+// ============================================
+
+export const HELP_SECTION_COMPONENTS: Record<HelpSectionId, React.FC> = {
+  about: AboutSection,
+  "getting-started": GettingStartedSection,
+  curriculum: CurriculumSection,
+  "practice-modes": PracticeModesSection,
+  "command-center": CommandCenterSection,
+  stats: StatsSection,
+  "api-llm": ApiLlmSection,
+  limits: LimitsSection,
+  settings: SettingsSection,
+  privacy: PrivacySection,
+  shortcuts: ShortcutsSection,
+  "known-issues": KnownIssuesSection,
+  faq: FaqSection,
+};
