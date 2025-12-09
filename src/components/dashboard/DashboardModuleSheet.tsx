@@ -19,30 +19,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Play,
-  CheckCircle,
-  Lightning,
-  Brain,
-  Rocket,
-  CaretRight,
-} from "@phosphor-icons/react";
+import { Play, Lightning, Brain, Rocket } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import type { Module, Subtopic, ProblemType } from "@/lib/topicsStore";
-import type { ModuleStats, SubtopicStats } from "@/lib/statsStore";
-import { pickWeakestSubtopic } from "@/lib/statsStore";
+import type { Module } from "@/lib/topicsStore";
+import type { ModuleStats } from "@/lib/statsStore";
+import { getModuleStats } from "@/lib/statsStore";
 
 interface DashboardModuleSheetProps {
   module: Module | null;
   moduleStats: ModuleStats | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function getMasteryColor(percent: number) {
-  if (percent >= 80) return "bg-green-500";
-  if (percent >= 40) return "bg-yellow-500";
-  return "bg-red-500"; // Changed to red for low mastery to matching existing logic
 }
 
 export function DashboardModuleSheet({
@@ -68,18 +55,23 @@ export function DashboardModuleSheet({
 
   const handlePracticeModule = () => {
     if (!module) return;
-    const weakest = pickWeakestSubtopic(module.id);
-    const targetSubtopic = weakest?.subtopicId || module.subtopics[0]?.id;
+    // Get weakest subtopics for this module
+    const moduleStatsData = getModuleStats(module.id);
+    const weakestInModule = moduleStatsData?.subtopics
+      .filter((s) => s.attempts > 0)
+      .sort((a, b) => a.masteryPercent - b.masteryPercent)[0];
+
+    const targetSubtopic =
+      weakestInModule?.subtopicId || module.subtopics[0]?.id;
 
     if (targetSubtopic) {
       handlePracticeSubtopic(targetSubtopic);
     }
   };
 
-  if (!module) return null;
-
-  // Merge definition with stats
+  // Merge definition with stats - must be called unconditionally
   const subtopicRows = useMemo(() => {
+    if (!module) return [];
     return module.subtopics.map((sub) => {
       const stats = moduleStats?.subtopics.find((s) => s.subtopicId === sub.id);
       return {
@@ -88,6 +80,8 @@ export function DashboardModuleSheet({
       };
     });
   }, [module, moduleStats]);
+
+  if (!module) return null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -125,11 +119,7 @@ export function DashboardModuleSheet({
                   {moduleStats.solved} / {moduleStats.attempts} Solved
                 </span>
               </div>
-              <Progress
-                value={moduleStats.masteryPercent}
-                className="h-2"
-                indicatorClassName={getMasteryColor(moduleStats.masteryPercent)}
-              />
+              <Progress value={moduleStats.masteryPercent} className="h-2" />
             </div>
           )}
         </SheetHeader>
