@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { PracticeModulesView } from "@/components/practice/PracticeModulesView";
 import { PracticeByProblemTypeView } from "@/components/practice/PracticeByProblemTypeView";
-import { useRequireApiKey } from "@/hooks/useRequireApiKey";
+import { useApiKey } from "@/app/ApiKeyContext";
 import type { Difficulty } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ function getInitialViewMode(): ViewMode {
 }
 
 export default function ManualPracticePage() {
-  const { isLoading: apiKeyLoading } = useRequireApiKey();
+  const { isLoading: apiKeyLoading } = useApiKey();
 
   // View mode (modules or problem-type)
   const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
