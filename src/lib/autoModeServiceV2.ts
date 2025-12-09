@@ -27,6 +27,7 @@ import {
   STORAGE_KEY_V2,
   STORAGE_KEY_ANALYTICS,
 } from "./autoRunTypes";
+import { getArchetypeExposure, isConsecutiveRepeat } from "./diversityService";
 
 // ============================================
 // STORAGE HELPERS
@@ -161,8 +162,20 @@ export function generateWeaknessBasedQueue(
     }
   }
 
-  // Sort by mastery (untouched first)
-  allEntries.sort((a, b) => a.mastery - b.mastery);
+  // Get archetype exposure for diversity-aware sorting
+  const exposure = getArchetypeExposure();
+
+  // Sort by mastery (untouched first), then by least-used archetypes
+  allEntries.sort((a, b) => {
+    // Primary: sort by mastery (lower = less practiced = higher priority)
+    if (a.mastery !== b.mastery) {
+      return a.mastery - b.mastery;
+    }
+    // Secondary: sort by exposure (lower = less seen = higher priority)
+    const expA = exposure.get(a.entry.problemTypeId) || 0;
+    const expB = exposure.get(b.entry.problemTypeId) || 0;
+    return expA - expB;
+  });
 
   // Shuffle within same-mastery tiers
   const result: TopicQueueEntry[] = [];
@@ -440,6 +453,21 @@ export function advanceQueue(run: AutoRunV2): AutoRunV2 {
     // Regenerate weakness-based queue
     run.topicQueue = generateWeaknessBasedQueue(run.recentProblemTypes);
     run.currentIndex = 0;
+  }
+
+  // Prevent consecutive repetition of same archetype
+  const current = getCurrentQueueEntry(run);
+  if (current && isConsecutiveRepeat(current.problemTypeId)) {
+    // Find next different archetype
+    for (let i = run.currentIndex + 1; i < run.topicQueue.length; i++) {
+      if (run.topicQueue[i].problemTypeId !== current.problemTypeId) {
+        // Swap current with this different one
+        const temp = run.topicQueue[run.currentIndex];
+        run.topicQueue[run.currentIndex] = run.topicQueue[i];
+        run.topicQueue[i] = temp;
+        break;
+      }
+    }
   }
 
   run.lastUpdatedAt = Date.now();

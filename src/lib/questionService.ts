@@ -22,6 +22,14 @@ import {
   type Subtopic,
 } from "@/lib/topicsStore";
 import type { Difficulty as TemplateDifficulty } from "@/types/question";
+import { createFingerprint } from "@/lib/questionFingerprint";
+import {
+  getAvoidList,
+  formatAvoidListForPrompt,
+  recordFingerprint,
+  shouldRegenerateQuestion,
+  DIVERSITY_CONFIG,
+} from "@/lib/diversityService";
 
 // ============================================================================
 // Types
@@ -41,6 +49,8 @@ export interface GetQuestionOptions {
   variation?: string;
   /** Include reference solution (default: true) */
   includeReferenceSolution?: boolean;
+  /** Skip diversity checks (for explicit repetition) */
+  skipDiversityCheck?: boolean;
 }
 
 /**
@@ -180,10 +190,16 @@ function generateOutputDescription(template: QuestionTemplate): string {
  */
 function buildLLMPrompt(
   template: QuestionTemplate,
-  options: GetQuestionOptions
+  options: GetQuestionOptions,
+  diversityConstraints?: string
 ): string {
   const additionalContext = options.additionalContext
     ? `\nAdditional requirements: ${options.additionalContext}`
+    : "";
+
+  // Add diversity constraints if provided
+  const avoidSection = diversityConstraints
+    ? `\nAvoid: ${diversityConstraints}`
     : "";
 
   // Use compact prompt if available (it should be for all new templates)
@@ -207,7 +223,7 @@ ${template.constraints.map((c: string) => `- ${c}`).join("\n")}
 **Edge cases to cover:**
 ${template.edgeCases.map((ec: EdgeCase) => `- ${ec.description}`).join("\n")}`;
 
-  return `${corePrompt}
+  return `${corePrompt}${avoidSection}
 ${additionalContext}
 
 Return ONLY a raw JSON object (no markdown) with this exact schema:
@@ -306,7 +322,12 @@ export async function getQuestion(
   difficulty: Difficulty,
   options: GetQuestionOptions = {}
 ): Promise<QuestionResult> {
-  const { useLLM = true, apiKey, includeReferenceSolution = true } = options;
+  const {
+    useLLM = true,
+    apiKey,
+    includeReferenceSolution = true,
+    skipDiversityCheck = false,
+  } = options;
 
   // Map Difficulty to TemplateDifficulty
   const templateDifficulty: TemplateDifficulty = difficulty;
@@ -325,6 +346,13 @@ export async function getQuestion(
   // Step 2: If LLM is disabled or no API key, return template-based question
   if (!useLLM || !apiKey) {
     const question = templateToQuestion(template);
+
+    // Record fingerprint for template-based questions too
+    if (!skipDiversityCheck) {
+      const fingerprint = createFingerprint(question, problemTypeId);
+      recordFingerprint(fingerprint);
+    }
+
     return {
       success: true,
       question,
@@ -332,53 +360,119 @@ export async function getQuestion(
     };
   }
 
-  // Step 3: Try LLM enhancement
+  // Step 3: Pre-generation - build avoid list for diversity
+  const avoidList = getAvoidList(template.moduleId, template.subtopicId);
+  const diversityConstraints = formatAvoidListForPrompt(avoidList);
+
+  // Step 4: Try LLM enhancement with regeneration support
+  let attemptNumber = 0;
+  const maxAttempts = skipDiversityCheck
+    ? 1
+    : DIVERSITY_CONFIG.MAX_REGENERATION_ATTEMPTS + 1;
+
   try {
     // Dynamic import to avoid bundling server-only code
     const { callGeminiWithFallback } = await import("@/lib/ai/modelRouter");
 
-    const prompt = buildLLMPrompt(template, options);
+    while (attemptNumber < maxAttempts) {
+      // Add stricter diversity constraints on retries
+      const currentConstraints =
+        attemptNumber > 0
+          ? `${diversityConstraints} (MUST be different approach from previous)`
+          : diversityConstraints;
 
-    const result = await callGeminiWithFallback<LLMQuestionData>(
-      apiKey,
-      "question-generation",
-      prompt,
-      parseLLMResponse,
-      difficulty
-    );
+      const prompt = buildLLMPrompt(template, options, currentConstraints);
 
-    if (result.success && result.data) {
-      const question = llmDataToQuestion(
-        result.data,
-        template,
-        includeReferenceSolution
+      const result = await callGeminiWithFallback<LLMQuestionData>(
+        apiKey,
+        "question-generation",
+        prompt,
+        parseLLMResponse,
+        difficulty
       );
+
+      if (result.success && result.data) {
+        const question = llmDataToQuestion(
+          result.data,
+          template,
+          includeReferenceSolution
+        );
+
+        // Step 5: Post-generation - check diversity
+        const fingerprint = createFingerprint(question, problemTypeId);
+
+        if (
+          !skipDiversityCheck &&
+          shouldRegenerateQuestion(fingerprint, attemptNumber)
+        ) {
+          console.log(
+            `[QuestionService] Question too similar, attempt ${
+              attemptNumber + 1
+            }/${maxAttempts}`
+          );
+          attemptNumber++;
+          continue;
+        }
+
+        // Record successful fingerprint
+        recordFingerprint(fingerprint);
+
+        return {
+          success: true,
+          question,
+          source: "llm",
+          modelUsed: result.modelUsed,
+          usage: result.usage,
+        };
+      }
+
+      // LLM failed, fall back to template
+      console.warn(
+        "[QuestionService] LLM failed, using template fallback:",
+        result.message
+      );
+      const question = templateToQuestion(template);
+
+      if (!skipDiversityCheck) {
+        const fingerprint = createFingerprint(question, problemTypeId);
+        recordFingerprint(fingerprint);
+      }
 
       return {
         success: true,
         question,
-        source: "llm",
-        modelUsed: result.modelUsed,
-        usage: result.usage,
+        source: "fallback",
+        error: result.message,
       };
     }
 
-    // LLM failed, fall back to template
+    // Exhausted regeneration attempts - return last generated question anyway
     console.warn(
-      "[QuestionService] LLM failed, using template fallback:",
-      result.message
+      "[QuestionService] Max regeneration attempts reached, using last question"
     );
     const question = templateToQuestion(template);
+
+    if (!skipDiversityCheck) {
+      const fingerprint = createFingerprint(question, problemTypeId);
+      recordFingerprint(fingerprint);
+    }
+
     return {
       success: true,
       question,
       source: "fallback",
-      error: result.message,
+      error: "Max diversity regeneration attempts exceeded",
     };
   } catch (error) {
     // Unexpected error, fall back to template
     console.error("[QuestionService] Unexpected error:", error);
     const question = templateToQuestion(template);
+
+    if (!skipDiversityCheck) {
+      const fingerprint = createFingerprint(question, problemTypeId);
+      recordFingerprint(fingerprint);
+    }
+
     return {
       success: true,
       question,
