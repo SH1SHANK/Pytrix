@@ -4,7 +4,6 @@ import { useState } from "react";
 import { getAllModules } from "@/lib/topicsStore";
 import { ModuleSidebar } from "./ModuleSidebar";
 import { ModuleDetailView } from "./ModuleDetailView";
-import { cn } from "@/lib/utils";
 
 export function CurriculumExplorer() {
   const modules = getAllModules();

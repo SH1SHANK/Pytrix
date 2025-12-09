@@ -137,7 +137,7 @@ export function CommandCenter() {
   return (
     <>
       {/* Removed trigger button since it's global shortcut, but could add a hidden one or use context */}
-      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+      <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
           placeholder="Type a command or search topic..."
           value={query}

@@ -511,8 +511,7 @@ function generateTemplateId(
  */
 function generateTitle(
   problemType: ProblemType,
-  difficulty: Difficulty,
-  _pattern: Partial<TemplatePattern>
+  difficulty: Difficulty
 ): string {
   const difficultyPrefix =
     difficulty === "beginner"
@@ -597,7 +596,7 @@ export function generateTemplate(
   // Generate all components
   const sampleInputs = generateSampleInputs(difficulty, pattern);
   const sampleOutputs = generateSampleOutputs(difficulty, pattern);
-  const title = generateTitle(problemType, difficulty, pattern);
+  const title = generateTitle(problemType, difficulty);
   const promptTemplate = generatePromptTemplate(
     problemType,
     difficulty,
