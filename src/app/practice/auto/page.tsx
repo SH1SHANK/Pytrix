@@ -401,6 +401,10 @@ function SettingsPanel({
 // MAIN PAGE
 // ============================================
 
+import { RunListPanel } from "@/components/automode/RunListPanel";
+
+// ... existing imports
+
 export default function AutoModePage() {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -408,23 +412,33 @@ export default function AutoModePage() {
   const { isLoading: apiKeyLoading } = useApiKey();
 
   // Load runs lazily to avoid setState in effect
-  const [initialData] = useState(() => {
+  const [runData, setRunData] = useState(() => {
     if (typeof window === "undefined") {
-      return { runs: [], latestRun: null };
+      return { runs: [] as AutoRunV2[], latestRun: null as AutoRunV2 | null };
     }
     const runs = getAllAutoRunsV2();
     return {
       runs,
-      latestRun: runs.length > 0 ? runs[0] : null,
+      latestRun: runs.length > 0 ? runs[0] : null, // First is newest due to sort
     };
   });
 
-  const [latestRun] = useState<AutoRunV2 | null>(initialData.latestRun);
+  const refreshRuns = () => {
+    const runs = getAllAutoRunsV2();
+    setRunData({
+      runs,
+      latestRun: runs.length > 0 ? runs[0] : null,
+    });
+  };
+
+  const { runs, latestRun } = runData;
+  const activeRun = runs.find((r) => r.status === "active") || latestRun;
+
   const [aggressiveProgression, setAggressiveProgression] = useState(
-    initialData.latestRun?.aggressiveProgression ?? false
+    activeRun?.aggressiveProgression ?? false
   );
   const [remediationMode, setRemediationMode] = useState(
-    initialData.latestRun?.remediationMode ?? true
+    activeRun?.remediationMode ?? true
   );
 
   const handleStartNewRun = () => {
@@ -436,8 +450,8 @@ export default function AutoModePage() {
   };
 
   const handleContinueRun = () => {
-    if (latestRun) {
-      router.push(`/practice?mode=auto&saveId=${latestRun.id}`);
+    if (activeRun) {
+      router.push(`/practice?mode=auto&saveId=${activeRun.id}`);
     }
   };
 
@@ -464,7 +478,7 @@ export default function AutoModePage() {
           <h1 className="text-3xl font-bold tracking-tight">
             Adaptive Auto Mode
           </h1>
-          {latestRun && (
+          {activeRun && (
             <Badge variant="secondary" className="text-xs">
               Run Active
             </Badge>
@@ -488,13 +502,10 @@ export default function AutoModePage() {
       </div>
 
       {/* Curriculum Path Preview */}
-      <CurriculumPathPreview run={latestRun} />
+      <CurriculumPathPreview run={activeRun} />
 
       {/* Adaptive Learning Cards */}
-      <AdaptiveLearningCards run={latestRun} />
-
-      {/* Past Insights */}
-      <PastInsights run={latestRun} />
+      <AdaptiveLearningCards run={activeRun} />
 
       {/* Action Zone */}
       <Card className="bg-linear-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
@@ -508,7 +519,7 @@ export default function AutoModePage() {
               <Play weight="fill" className="mr-2 h-5 w-5" />
               Start New Adaptive Run
             </Button>
-            {latestRun && (
+            {activeRun && (
               <Button
                 size="lg"
                 variant="outline"
@@ -526,6 +537,13 @@ export default function AutoModePage() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Run Management Panel */}
+      <RunListPanel
+        runs={runs}
+        activeRunId={activeRun?.id || null}
+        onRunsChanged={refreshRuns}
+      />
 
       {/* Settings Panel */}
       <SettingsPanel

@@ -158,7 +158,9 @@ export function ApiUsageCard() {
                 <div key={q.model} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-mono truncate max-w-[120px]">
-                      {q.model.replace("gemini-2.5-", "")}
+                      {q.model
+                        .replace("gemini-2.0-", "")
+                        .replace("gemini-1.5-", "")}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className={getStatusColor(q.callsPercent)}>

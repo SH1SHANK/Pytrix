@@ -21,22 +21,20 @@ import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 /**
  * Available Gemini Models (cost-aware)
  *
- * We focus on the 2.5 family:
- * - gemini-2.5-flash-lite → cheapest, best for high-volume tasks
- * - gemini-2.5-flash      → best price-performance, good reasoning
- * - gemini-2.5-pro        → powerful, use sparingly for rare, high-value calls
+ * We focus on the 2.0 family:
+ * - gemini-2.0-flash-lite → cheapest, best for high-volume tasks
+ * - gemini-2.0-flash      → best price-performance, good reasoning
  *
  * 1.5 models are kept as legacy options but are not used by the router by default.
  *
  * Model names must match exactly what the Gemini API exposes.
  */
 export const AVAILABLE_MODELS = {
-  // 2.5 family (primary)
-  "gemini-2.5-flash-lite": "gemini-2.5-flash-lite",
-  "gemini-2.5-flash": "gemini-2.5-flash",
-  "gemini-2.5-pro": "gemini-2.5-pro",
+  // 2.0 family (primary)
+  "gemini-2.0-flash-lite": "gemini-2.0-flash-lite-preview-02-05",
+  "gemini-2.0-flash": "gemini-2.0-flash",
 
-  // Legacy / optional 1.5 models (not used in router by default)
+  // Legacy / optional 1.5 models
   "gemini-1.5-flash": "gemini-1.5-flash",
   "gemini-1.5-pro": "gemini-1.5-pro",
 } as const;
@@ -104,7 +102,9 @@ export async function testApiKey(apiKey: string): Promise<{
   try {
     const genAI = createGeminiClient(apiKey);
     // Make a minimal API call to validate the key
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-lite-preview-02-05",
+    });
     await model.generateContent("Hello");
     return { valid: true };
   } catch (error) {

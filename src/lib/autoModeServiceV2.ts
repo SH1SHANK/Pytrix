@@ -37,10 +37,6 @@ function generateId(): string {
   return `run-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
 }
 
-function getRunStorageKey(runId: string): string {
-  return `${STORAGE_KEY_V2}_${runId}`;
-}
-
 // ============================================
 // MINI-CURRICULUM GENERATION
 // ============================================
@@ -211,8 +207,132 @@ function shuffleArray<T>(arr: T[]): void {
 }
 
 // ============================================
-// RUN LIFECYCLE
+// LOG MIGRATION (Individual Keys -> Array)
 // ============================================
+
+/**
+ * Migration helper: Move single-key runs into the main runs array.
+ * This runs on service read if needed.
+ */
+function migrateRunsIfNeeded(existingRuns: AutoRunV2[]): AutoRunV2[] {
+  if (typeof window === "undefined") return existingRuns;
+
+  const migratedRuns: AutoRunV2[] = [];
+  const keysToRemove: string[] = [];
+
+  // Look for keys matching old pattern: pytrix_auto_run_v2_{id}
+  // The prefix was `pytrix_auto_run_v2` (singular) + `_` + id
+  // Note: STORAGE_KEY_V2 is now plural "pytrix_auto_runs_v2".
+  const OLD_PREFIX = "pytrix_auto_run_v2_";
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith(OLD_PREFIX)) {
+      try {
+        const val = localStorage.getItem(key);
+        if (val) {
+          const run = JSON.parse(val) as AutoRunV2;
+          // Ensure it has status
+          if (!run.status) run.status = "active";
+          migratedRuns.push(run);
+          keysToRemove.push(key);
+        }
+      } catch (e) {
+        console.error("Failed to migrate run", key, e);
+      }
+    }
+  }
+
+  if (migratedRuns.length > 0) {
+    // Merge with existing runs (deduplicate by ID just in case)
+    const combined = [...existingRuns];
+    for (const run of migratedRuns) {
+      if (!combined.some((r) => r.id === run.id)) {
+        combined.push(run);
+      }
+    }
+
+    // Save new combined array
+    localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(combined));
+
+    // Cleanup old keys
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+
+    console.log(
+      `[autoModeServiceV2] Migrated ${migratedRuns.length} runs to V2 array storage.`
+    );
+    return combined;
+  }
+
+  return existingRuns;
+}
+
+// ============================================
+// CORE CRUD
+// ============================================
+
+/**
+ * Get all runs (cached read + write-through migration).
+ */
+export function getAllAutoRunsV2(): AutoRunV2[] {
+  if (typeof window === "undefined") return [];
+
+  const stored = localStorage.getItem(STORAGE_KEY_V2);
+  let runs: AutoRunV2[] = [];
+
+  if (stored) {
+    try {
+      runs = JSON.parse(stored) as AutoRunV2[];
+    } catch {
+      console.warn("[autoModeServiceV2] Corrupted runs list, resetting.");
+      runs = [];
+    }
+  }
+
+  // Attempt migration of legacy single-key runs
+  runs = migrateRunsIfNeeded(runs);
+
+  // Sort by last updated (newest first)
+  return runs.sort((a, b) => b.lastUpdatedAt - a.lastUpdatedAt);
+}
+
+/**
+ * Save the entire list of runs.
+ */
+function saveAllRuns(runs: AutoRunV2[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(runs));
+}
+
+/**
+ * Load a specific run by ID.
+ */
+export function loadAutoRunV2(runId: string): AutoRunV2 | null {
+  const runs = getAllAutoRunsV2();
+  const run = runs.find((r) => r.id === runId);
+
+  if (!run) return null;
+
+  // Apply decay logic on load (if stale)
+  return applyDecay(run);
+}
+
+/**
+ * Save (Update) a single run.
+ */
+export function saveRun(run: AutoRunV2): void {
+  const runs = getAllAutoRunsV2();
+  const index = runs.findIndex((r) => r.id === run.id);
+
+  if (index >= 0) {
+    runs[index] = run;
+    saveAllRuns(runs);
+  } else {
+    // If likely a new run or missing, just push it
+    runs.push(run);
+    saveAllRuns(runs);
+  }
+}
 
 /**
  * Create a new Auto Run v2.
@@ -232,6 +352,7 @@ export function createAutoRunV2(
     name: name?.trim() || `Run ${new Date().toLocaleDateString()}`,
     createdAt: now,
     lastUpdatedAt: now,
+    status: "active",
 
     topicQueue: generateMiniCurriculum(),
     currentIndex: 0,
@@ -256,70 +377,28 @@ export function createAutoRunV2(
 }
 
 /**
- * Load a run by ID.
- */
-export function loadAutoRunV2(runId: string): AutoRunV2 | null {
-  if (typeof window === "undefined") return null;
-
-  const key = getRunStorageKey(runId);
-  const stored = localStorage.getItem(key);
-
-  if (!stored) return null;
-
-  try {
-    const run = JSON.parse(stored) as AutoRunV2;
-    // Apply decay if needed
-    return applyDecay(run);
-  } catch {
-    console.warn(`[autoModeServiceV2] Corrupted run: ${runId}`);
-    return null;
-  }
-}
-
-/**
- * Get all run IDs from localStorage.
- */
-export function getAllAutoRunIds(): string[] {
-  if (typeof window === "undefined") return [];
-
-  const ids: string[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key?.startsWith(`${STORAGE_KEY_V2}_`)) {
-      const id = key.replace(`${STORAGE_KEY_V2}_`, "");
-      ids.push(id);
-    }
-  }
-  return ids;
-}
-
-/**
- * Get all runs.
- */
-export function getAllAutoRunsV2(): AutoRunV2[] {
-  return getAllAutoRunIds()
-    .map(loadAutoRunV2)
-    .filter((r): r is AutoRunV2 => r !== null)
-    .sort((a, b) => b.lastUpdatedAt - a.lastUpdatedAt);
-}
-
-/**
- * Save a run to localStorage.
- */
-export function saveRun(run: AutoRunV2): void {
-  if (typeof window === "undefined") return;
-  const key = getRunStorageKey(run.id);
-  localStorage.setItem(key, JSON.stringify(run));
-}
-
-/**
  * Delete a run.
  */
 export function deleteAutoRunV2(runId: string): boolean {
-  if (typeof window === "undefined") return false;
-  const key = getRunStorageKey(runId);
-  if (localStorage.getItem(key)) {
-    localStorage.removeItem(key);
+  const runs = getAllAutoRunsV2();
+  const filtered = runs.filter((r) => r.id !== runId);
+
+  if (filtered.length !== runs.length) {
+    saveAllRuns(filtered);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Update run name.
+ */
+export function updateRunName(runId: string, newName: string): boolean {
+  const run = loadAutoRunV2(runId);
+  if (run) {
+    run.name = newName.trim();
+    run.lastUpdatedAt = Date.now();
+    saveRun(run);
     return true;
   }
   return false;
@@ -677,6 +756,44 @@ function incrementAnalytics(key: keyof AdaptiveAnalytics): void {
 }
 
 export { getAnalytics };
+
+// ============================================
+// EXPORT / IMPORT LOGIC
+// ============================================
+
+export function exportRunToJSON(run: AutoRunV2): string {
+  // Sanitize if necessary
+  return JSON.stringify(run, null, 2);
+}
+
+export interface ImportError {
+  error: string;
+}
+
+export function importRunFromJSON(jsonString: string): AutoRunV2 | ImportError {
+  try {
+    const data = JSON.parse(jsonString);
+    // Basic validation
+    if (data.version !== 2 || !data.id || !Array.isArray(data.topicQueue)) {
+      return { error: "Invalid run file format (v2 required)." };
+    }
+
+    // Check for ID conflict, if generic, maybe regenerate?
+    // For now, if ID exists, we'll append -imported-${timestamp}
+    const runs = getAllAutoRunsV2();
+    if (runs.some((r) => r.id === data.id)) {
+      data.id = `${data.id}-imported-${Date.now()}`;
+      data.name = `${data.name} (Imported)`;
+    }
+
+    const run = data as AutoRunV2;
+    run.status = "paused"; // Don't auto-start
+    saveRun(run);
+    return run;
+  } catch (e) {
+    return { error: "Failed to parse JSON file." };
+  }
+}
 
 // ============================================
 // HELPER EXPORTS

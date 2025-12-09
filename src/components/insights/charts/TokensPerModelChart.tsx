@@ -22,9 +22,9 @@ interface TokensPerModelChartProps {
 }
 
 const MODEL_COLORS: Record<string, string> = {
-  "gemini-2.5-flash-lite": "#60a5fa", // blue
-  "gemini-2.5-flash": "#34d399", // green
-  "gemini-2.5-pro": "#a78bfa", // purple
+  "gemini-2.0-flash-lite": "#60a5fa", // blue
+  "gemini-2.0-flash": "#34d399", // green
+  "gemini-1.5-pro": "#a78bfa", // purple
 };
 
 export function TokensPerModelChart({ data }: TokensPerModelChartProps) {

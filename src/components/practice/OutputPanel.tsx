@@ -128,7 +128,7 @@ export function OutputPanel({
           </TabsList>
         </div>
 
-        <TabsContent value="output" className="flex-1 p-0 m-0 relative h-full">
+        <TabsContent value="output" className="flex-1 p-0 m-0 relative min-h-0">
           <ScrollArea className="h-full p-4">
             {runResult.status === "not_run" ? (
               <div className="flex flex-col items-center justify-center h-40 text-muted-foreground text-sm">
@@ -233,7 +233,7 @@ export function OutputPanel({
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="solution" className="flex-1 p-0 m-0 h-full">
+        <TabsContent value="solution" className="flex-1 p-0 m-0 min-h-0">
           <ScrollArea className="h-full p-4">
             {isRevealed || runResult.status === "correct" ? (
               <div>
@@ -252,7 +252,7 @@ export function OutputPanel({
 
         {/* Optimized Solution Tab */}
         {optimizedResult && (
-          <TabsContent value="optimized" className="flex-1 p-0 m-0 h-full">
+          <TabsContent value="optimized" className="flex-1 p-0 m-0 min-h-0">
             <ScrollArea className="h-full p-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">

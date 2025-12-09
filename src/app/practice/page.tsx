@@ -256,7 +256,7 @@ function PracticeWorkspace() {
       setIsLoading(true);
 
       try {
-        let targetTopic = topicId;
+        let targetTopic = problemTypeParam || topicId;
         const targetDiff: DifficultyLevel = currentDifficulty;
         const bufferMode = mode === "auto" ? "auto" : "manual";
 
@@ -319,7 +319,7 @@ function PracticeWorkspace() {
     return () => {
       isMounted = false;
     };
-  }, [mode, topicId, saveFile, currentDifficulty]);
+  }, [mode, topicId, saveFile, currentDifficulty, problemTypeParam]);
 
   const handleRun = async () => {
     if (!question) return;
@@ -405,7 +405,7 @@ function PracticeWorkspace() {
           wasSubmitted: true,
           wasCorrect: true,
           executedAt: Date.now(),
-          runId: saveId || null,
+          runId: saveFile?.id || saveId || null,
           sampleInput: question.sampleInput,
           sampleOutput: question.sampleOutput,
         });
@@ -593,7 +593,9 @@ function PracticeWorkspace() {
       // Manual mode regenerate
       setIsLoading(true);
       try {
-        const newQ = await generateQuestion(topicId, currentDifficulty);
+        // Use problemTypeParam if available (specific archetype), otherwise fallback to topicId
+        const targetTopic = problemTypeParam || topicId;
+        const newQ = await generateQuestion(targetTopic, currentDifficulty);
         setQuestion(newQ);
         setCode(
           newQ.starterCode ||
@@ -646,7 +648,7 @@ function PracticeWorkspace() {
   // if (isLoading || !question) removed to allow Skeleton rendering
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Auto Mode Stats Bar V2 */}
       {mode === "auto" && saveFile && (
         <AutoModeStatsBarV2 run={saveFile} onRunUpdate={setSaveFile} />

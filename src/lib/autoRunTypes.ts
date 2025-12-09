@@ -80,6 +80,8 @@ export interface AutoRunV2 {
   createdAt: number;
   /** Last activity timestamp */
   lastUpdatedAt: number;
+  /** Run status */
+  status: "active" | "paused" | "completed";
 
   // ---- Curriculum ----
   /** Current topic queue */
@@ -164,6 +166,6 @@ export interface AdaptiveAnalytics {
 // STORAGE KEYS
 // ============================================
 
-export const STORAGE_KEY_V2 = "pytrix_auto_run_v2";
+export const STORAGE_KEY_V2 = "pytrix_auto_runs_v2";
 export const STORAGE_KEY_STATS_V2 = "pytrix_stats_v2";
 export const STORAGE_KEY_ANALYTICS = "pytrix_auto_analytics";

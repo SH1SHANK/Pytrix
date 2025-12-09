@@ -2,9 +2,9 @@
  * Model Router - Intelligent Fallback System
  *
  * Cost-aware version:
- * - Prefer gemini-2.5-flash-lite for most tasks (cheapest, still strong).
- * - Use gemini-2.5-flash when we need more reasoning but still relatively cheap.
- * - Use gemini-2.5-pro only for rare, high-value tasks (e.g., reveal-solution).
+ * - Prefer gemini-2.0-flash-lite for most tasks (cheapest, still strong).
+ * - Use gemini-2.0-flash when we need more reasoning but still relatively cheap.
+ * - Use gemini-1.5-pro only for rare, high-value tasks if needed.
  *
  * All AI calls should go through `callGeminiWithFallback()`.
  *
@@ -58,35 +58,34 @@ export interface AIResult<T = unknown> {
  * First model in list = preferred, subsequent = fallbacks.
  *
  * Strategy:
- * - Default to gemini-2.5-flash-lite for high-volume tasks
+ * - Default to gemini-2.0-flash-lite for high-volume tasks
  *   (cheapest, free in free tier).
- * - Use gemini-2.5-flash when we want stronger reasoning.
- * - Reserve gemini-2.5-pro for rare, high-value calls only
- *   (e.g., reveal-solution).
+ * - Use gemini-2.0-flash when we want stronger reasoning.
+ * - Reserve higher tier models for rare, high-value calls only.
  */
 const MODEL_PRIORITIES: Record<TaskType, string[]> = {
   // Many calls, structured text, not insanely hard reasoning.
-  "question-generation": ["gemini-2.5-flash-lite", "gemini-2.5-flash"],
+  "question-generation": ["gemini-2.0-flash-lite", "gemini-2.0-flash"],
 
   // Needs decent reasoning about code, but we still want to avoid Pro
   // for most traffic. Pro can be added as a third option if needed.
   "code-feedback": [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    // "gemini-2.5-pro", // uncomment if you want an extra high-quality fallback
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    // "gemini-1.5-pro", // uncomment if you want an extra high-quality fallback
   ],
 
   // Lots of calls, very low risk to use the cheapest model.
-  hint: ["gemini-2.5-flash-lite", "gemini-2.5-flash"],
+  hint: ["gemini-2.0-flash-lite", "gemini-2.0-flash"],
 
   // Very lightweight metadata decisions: cheapest model is ideal.
-  "auto-mode": ["gemini-2.5-flash-lite", "gemini-2.5-flash"],
+  "auto-mode": ["gemini-2.0-flash-lite", "gemini-2.0-flash"],
 
   // Rare, user-triggered, high value: OK to use Pro here.
   "reveal-solution": [
-    "gemini-2.5-pro",
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash", // 2.0 Flash is very capable
+    "gemini-1.5-pro", // Fallback to 1.5 Pro
+    "gemini-2.0-flash-lite",
   ],
 };
 
@@ -143,15 +142,15 @@ export function getModelPriorityList(
   difficulty?: Difficulty
 ): string[] {
   // Default to the cheapest general-purpose model if task is unknown.
-  let baseList = MODEL_PRIORITIES[task] || ["gemini-2.5-flash-lite"];
+  let baseList = MODEL_PRIORITIES[task] || ["gemini-2.0-flash-lite"];
 
   // Adjust prioritization based on difficulty
   if (difficulty === "beginner" && task === "question-generation") {
     // Prefer Lite for easy questions
-    baseList = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
+    baseList = ["gemini-2.0-flash-lite", "gemini-2.0-flash"];
   } else if (difficulty === "advanced" && task === "question-generation") {
     // Prefer Flash (standard) for advanced questions for better reasoning
-    baseList = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+    baseList = ["gemini-2.0-flash", "gemini-2.0-flash-lite"];
   }
 
   const available: string[] = [];

@@ -37,9 +37,9 @@ export const MODEL_QUOTAS: Record<
   string,
   { maxCalls: number; maxTokens: number }
 > = {
-  "gemini-2.5-flash-lite": { maxCalls: 1500, maxTokens: 1_000_000 },
-  "gemini-2.5-flash": { maxCalls: 500, maxTokens: 500_000 },
-  "gemini-2.5-pro": { maxCalls: 50, maxTokens: 100_000 },
+  "gemini-2.0-flash-lite": { maxCalls: 1500, maxTokens: 1_000_000 },
+  "gemini-2.0-flash": { maxCalls: 500, maxTokens: 500_000 },
+  "gemini-1.5-pro": { maxCalls: 50, maxTokens: 100_000 },
 };
 
 // Warning threshold (percentage)

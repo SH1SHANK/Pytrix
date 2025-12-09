@@ -22,6 +22,8 @@ import {
 import { Question, Difficulty } from "@/lib/types";
 import { MOCK_QUESTIONS } from "@/lib/mockQuestions";
 
+import { generateTemplate } from "@/lib/questionTemplates";
+
 interface GeneratedQuestionData {
   id?: string;
   topic: string;
@@ -62,7 +64,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = `
+    // Try to get a specific template for this topic (archetype)
+    const template = generateTemplate(topic, difficulty);
+
+    let prompt = "";
+
+    if (template) {
+      // Use specific template to guide the LLM
+      prompt = `
+You are an expert Python programming tutor.
+Generate a new, unique coding practice question based on the following template structure:
+
+Task: Create a ${template.difficulty} practice problem for "${
+        template.problemTypeName
+      }".
+Context: ${template.promptTemplate}
+Constraints: ${template.constraints.join(", ")}
+Sample Input: ${template.sampleInputs[0]}
+Sample Output: ${template.sampleOutputs[0]}
+
+The question should follow this structure but use specific values or a slightly different scenario to ensure variety.
+Do NOT copy the template example exactly. Create a VARIATION of this problem type.
+
+Return ONLY a raw JSON object with this exact schema (no markdown formatting):
+{
+  "id": "gen-${Date.now()}", 
+  "topic": "${template.problemTypeName}",
+  "difficulty": "${difficulty}",
+  "title": "A short descriptive title (e.g. ${template.title})",
+  "description": "Clear problem statement describing the task. Use markdown for code formatting.",
+  "inputDescription": "Description of input format",
+  "outputDescription": "Description of output format",
+  "constraints": ["Constraint 1", "Constraint 2"],
+  "sampleInput": "Example input",
+  "sampleOutput": "Example output",
+  "starterCode": "${template.starterCode
+    .replace(/\n/g, "\\n")
+    .replace(/"/g, '\\"')}",
+  "referenceSolution": "Efficient Python solution code"
+}
+
+Ensure the question is solvable and the reference solution is correct.
+`;
+    } else {
+      // Generic prompt (fallback)
+      prompt = `
 You are an expert Python programming tutor.
 Generate a distinct, unique coding practice question for the topic "${topic}" at "${difficulty}" difficulty.
 
@@ -84,6 +130,7 @@ Return ONLY a raw JSON object with this exact schema (no markdown formatting):
 
 Ensure the question is solvable and the reference solution is correct.
 `;
+    }
 
     const result: AIResult<GeneratedQuestionData> =
       await callGeminiWithFallback(
@@ -101,9 +148,10 @@ Ensure the question is solvable and the reference solution is correct.
         id:
           json.id ||
           `gen-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-        topicId: json.topic.toLowerCase(),
-        topicName: json.topic,
-        topic: json.topic,
+        // Use template IDs if available for consistency, otherwise fallback to API response
+        topicId: template ? template.problemTypeId : json.topic.toLowerCase(),
+        topicName: template ? template.problemTypeName : json.topic,
+        topic: json.topic, // Keep original AI topic field
         difficulty: json.difficulty as Difficulty,
         title: json.title,
         description: json.description,

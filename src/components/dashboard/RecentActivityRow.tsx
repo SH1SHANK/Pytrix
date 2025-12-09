@@ -57,6 +57,14 @@ export function RecentActivityRow() {
                 >
                   {entry.questionTitle}
                 </h4>
+                {entry.mode === "auto" && (
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] h-4 px-1 mb-1 w-fit"
+                  >
+                    Auto Run
+                  </Badge>
+                )}
                 <p className="text-xs text-muted-foreground">
                   {formatDistanceToNow(entry.executedAt, { addSuffix: true })}
                 </p>
