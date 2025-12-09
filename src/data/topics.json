@@ -1,0 +1,5817 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2025-12-09T06:29:29.731Z",
+  "modules": [
+    {
+      "id": "string-manipulation",
+      "name": "String Manipulation",
+      "order": 1,
+      "subtopics": [
+        {
+          "id": "basic-string-operations",
+          "name": "Basic String Operations",
+          "sectionNumber": "1.1",
+          "problemTypes": [
+            {
+              "id": "indexing-and-slicing",
+              "name": "Indexing & Slicing",
+              "description": "s[i], s[start:end], reverse with s[::-1]"
+            },
+            {
+              "id": "concatenation",
+              "name": "Concatenation",
+              "description": "+ operator, ''.join() for efficiency"
+            },
+            {
+              "id": "string-methods",
+              "name": "String Methods",
+              "description": "split(), strip(), replace(), lower(), upper(), startswith(), endswith()"
+            },
+            {
+              "id": "character-operations",
+              "name": "Character Operations",
+              "description": "ord(), chr(), isalpha(), isdigit(), isalnum()"
+            }
+          ]
+        },
+        {
+          "id": "two-pointer-techniques",
+          "name": "Two-Pointer Techniques",
+          "sectionNumber": "1.2",
+          "problemTypes": [
+            {
+              "id": "opposite-direction-pointers",
+              "name": "Opposite Direction Pointers",
+              "description": "Palindrome validation, reversing"
+            },
+            {
+              "id": "same-direction-pointers",
+              "name": "Same Direction Pointers",
+              "description": "Removing duplicates, partitioning"
+            },
+            {
+              "id": "sliding-window",
+              "name": "Sliding Window",
+              "description": "Variable/fixed-size windows for substrings"
+            }
+          ]
+        },
+        {
+          "id": "sliding-window-patterns",
+          "name": "Sliding Window Patterns",
+          "sectionNumber": "1.3",
+          "problemTypes": [
+            {
+              "id": "fixed-size-window",
+              "name": "Fixed-Size Window",
+              "description": "Maximum of all subarrays of size k"
+            },
+            {
+              "id": "variable-size-window",
+              "name": "Variable-Size Window",
+              "description": "Longest substring without repeating characters"
+            },
+            {
+              "id": "shrinking-window",
+              "name": "Shrinking Window",
+              "description": "Minimum window substring"
+            },
+            {
+              "id": "character-frequency-window",
+              "name": "Character Frequency Window",
+              "description": "Anagrams, permutations"
+            }
+          ]
+        },
+        {
+          "id": "pattern-matching",
+          "name": "Pattern Matching",
+          "sectionNumber": "1.4",
+          "problemTypes": [
+            {
+              "id": "brute-force",
+              "name": "Brute Force",
+              "description": "Naive pattern search O(nm)"
+            },
+            {
+              "id": "kmp-algorithm",
+              "name": "KMP Algorithm",
+              "description": "Linear-time pattern matching"
+            },
+            {
+              "id": "rabin-karp",
+              "name": "Rabin-Karp",
+              "description": "Rolling hash for substring search"
+            },
+            {
+              "id": "z-algorithm",
+              "name": "Z-Algorithm",
+              "description": "Linear-time pattern matching"
+            },
+            {
+              "id": "regex-matching",
+              "name": "Regex Matching",
+              "description": "Dynamic programming approach"
+            },
+            {
+              "id": "wildcard-matching",
+              "name": "Wildcard Matching",
+              "description": "DP with * and ?"
+            }
+          ]
+        },
+        {
+          "id": "palindromes",
+          "name": "Palindromes",
+          "sectionNumber": "1.5",
+          "problemTypes": [
+            {
+              "id": "validation",
+              "name": "Validation",
+              "description": "Two pointers, checking equality"
+            },
+            {
+              "id": "longest-palindromic-substring",
+              "name": "Longest Palindromic Substring",
+              "description": "Expand around center, Manacher's algorithm"
+            },
+            {
+              "id": "palindrome-partitioning",
+              "name": "Palindrome Partitioning",
+              "description": "Backtracking, DP optimization"
+            },
+            {
+              "id": "minimum-cuts",
+              "name": "Minimum Cuts",
+              "description": "DP for palindrome partitioning"
+            },
+            {
+              "id": "valid-palindrome-variations",
+              "name": "Valid Palindrome Variations",
+              "description": "Ignoring cases, non-alphanumeric"
+            }
+          ]
+        },
+        {
+          "id": "anagrams-and-permutations",
+          "name": "Anagrams & Permutations",
+          "sectionNumber": "1.6",
+          "problemTypes": [
+            {
+              "id": "anagram-detection",
+              "name": "Anagram Detection",
+              "description": "Sort comparison, frequency map"
+            },
+            {
+              "id": "group-anagrams",
+              "name": "Group Anagrams",
+              "description": "Hash by sorted string or frequency tuple"
+            },
+            {
+              "id": "find-all-anagrams",
+              "name": "Find All Anagrams",
+              "description": "Sliding window with frequency matching"
+            },
+            {
+              "id": "permutation-in-string",
+              "name": "Permutation in String",
+              "description": "Sliding window verification"
+            }
+          ]
+        },
+        {
+          "id": "subsequences-and-substrings",
+          "name": "Subsequences & Substrings",
+          "sectionNumber": "1.7",
+          "problemTypes": [
+            {
+              "id": "longest-common-subsequence-lcs",
+              "name": "Longest Common Subsequence (LCS)",
+              "description": "DP solution"
+            },
+            {
+              "id": "longest-common-substring",
+              "name": "Longest Common Substring",
+              "description": "DP with contiguous requirement"
+            },
+            {
+              "id": "distinct-subsequences",
+              "name": "Distinct Subsequences",
+              "description": "Count variations using DP"
+            },
+            {
+              "id": "shortest-common-supersequence",
+              "name": "Shortest Common Supersequence",
+              "description": "Combining strings optimally"
+            },
+            {
+              "id": "is-subsequence",
+              "name": "Is Subsequence",
+              "description": "Two-pointer greedy approach"
+            }
+          ]
+        },
+        {
+          "id": "string-transformation",
+          "name": "String Transformation",
+          "sectionNumber": "1.8",
+          "problemTypes": [
+            {
+              "id": "string-compression",
+              "name": "String Compression",
+              "description": "Run-length encoding"
+            },
+            {
+              "id": "string-decompression",
+              "name": "String Decompression",
+              "description": "Decode compressed strings"
+            },
+            {
+              "id": "integer-to-string",
+              "name": "Integer to String",
+              "description": "Base conversion, Roman numerals"
+            },
+            {
+              "id": "string-to-integer-atoi",
+              "name": "String to Integer (atoi)",
+              "description": "Parsing with edge cases"
+            },
+            {
+              "id": "encode-decode",
+              "name": "Encode/Decode",
+              "description": "Design encoding schemes"
+            }
+          ]
+        },
+        {
+          "id": "string-hashing",
+          "name": "String Hashing",
+          "sectionNumber": "1.9",
+          "problemTypes": [
+            {
+              "id": "polynomial-rolling-hash",
+              "name": "Polynomial Rolling Hash",
+              "description": "Efficient substring comparison"
+            },
+            {
+              "id": "hash-collisions",
+              "name": "Hash Collisions",
+              "description": "Handling with multiple hash functions"
+            },
+            {
+              "id": "substring-hash",
+              "name": "Substring Hash",
+              "description": "Computing hashes for all substrings"
+            }
+          ]
+        },
+        {
+          "id": "lexicographic-problems",
+          "name": "Lexicographic Problems",
+          "sectionNumber": "1.10",
+          "problemTypes": [
+            {
+              "id": "next-permutation",
+              "name": "Next Permutation",
+              "description": "In-place lexicographic ordering"
+            },
+            {
+              "id": "next-greater-element",
+              "name": "Next Greater Element",
+              "description": "Lexicographic comparisons"
+            },
+            {
+              "id": "smallest-string",
+              "name": "Smallest String",
+              "description": "Greedy selection"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Valid Palindrome",
+        "Longest Palindromic Substring",
+        "Group Anagrams",
+        "Valid Anagram",
+        "Longest Substring Without Repeating Characters",
+        "Minimum Window Substring",
+        "Implement strStr() (KMP)",
+        "Regular Expression Matching",
+        "String Compression/Decompression",
+        "Decode String (nested brackets)",
+        "Longest Common Subsequence",
+        "Edit Distance",
+        "Word Break",
+        "Word Break II",
+        "Palindrome Partitioning",
+        "Valid Parentheses",
+        "Generate Parentheses"
+      ],
+      "overview": "Strings are immutable sequences in Python. Most string problems involve pattern matching, transformation, parsing, or frequency analysis.",
+      "pythonConsiderations": [
+        "Strings are immutable: use list for in-place modifications",
+        "''.join(list) is O(n), repeated += is O(n²)",
+        "Use collections.Counter for frequency maps",
+        "String slicing creates new strings (memory cost)",
+        "ord('a') returns 97, useful for array indexing",
+        "F-strings for formatting: f\"{var}\"",
+        "--"
+      ]
+    },
+    {
+      "id": "arrays-and-lists-python-lists",
+      "name": "Arrays & Lists (Python Lists)",
+      "order": 2,
+      "subtopics": [
+        {
+          "id": "basic-operations",
+          "name": "Basic Operations",
+          "sectionNumber": "2.1",
+          "problemTypes": [
+            {
+              "id": "indexing",
+              "name": "Indexing",
+              "description": "arr[i], negative indexing arr[-1]"
+            },
+            {
+              "id": "slicing",
+              "name": "Slicing",
+              "description": "arr[start:end:step]"
+            },
+            {
+              "id": "mutation",
+              "name": "Mutation",
+              "description": "append(), insert(), remove(), pop()"
+            },
+            {
+              "id": "list-comprehension",
+              "name": "List Comprehension",
+              "description": "[x*2 for x in arr if x > 0]"
+            }
+          ]
+        },
+        {
+          "id": "searching",
+          "name": "Searching",
+          "sectionNumber": "2.2",
+          "problemTypes": [
+            {
+              "id": "linear-search",
+              "name": "Linear Search",
+              "description": "O(n) sequential scan"
+            },
+            {
+              "id": "binary-search",
+              "name": "Binary Search",
+              "description": "O(log n) on sorted arrays"
+            },
+            {
+              "id": "binary-search-variations",
+              "name": "Binary Search Variations",
+              "description": "Lower bound, upper bound, rotated arrays"
+            },
+            {
+              "id": "search-in-rotated-sorted-array",
+              "name": "Search in Rotated Sorted Array",
+              "description": "Modified binary search"
+            },
+            {
+              "id": "find-peak-element",
+              "name": "Find Peak Element",
+              "description": "Binary search on unimodal arrays"
+            }
+          ]
+        },
+        {
+          "id": "sorting",
+          "name": "Sorting",
+          "sectionNumber": "2.3",
+          "problemTypes": [
+            {
+              "id": "built-in-sort",
+              "name": "Built-in Sort",
+              "description": "sorted(), list.sort(), Timsort O(n log n)"
+            },
+            {
+              "id": "custom-comparators",
+              "name": "Custom Comparators",
+              "description": "key=lambda x: ..., functools.cmp_to_key"
+            },
+            {
+              "id": "counting-sort",
+              "name": "Counting Sort",
+              "description": "O(n+k) for limited range"
+            },
+            {
+              "id": "merge-sort",
+              "name": "Merge Sort",
+              "description": "Stable O(n log n), divide and conquer"
+            },
+            {
+              "id": "quick-sort",
+              "name": "Quick Sort",
+              "description": "Average O(n log n), in-place partitioning"
+            },
+            {
+              "id": "quick-select",
+              "name": "Quick Select",
+              "description": "O(n) average for k-th element"
+            }
+          ]
+        },
+        {
+          "id": "two-pointer-techniques",
+          "name": "Two-Pointer Techniques",
+          "sectionNumber": "2.4",
+          "problemTypes": [
+            {
+              "id": "opposite-ends",
+              "name": "Opposite Ends",
+              "description": "Two Sum in sorted array, container with most water"
+            },
+            {
+              "id": "fast-slow-pointers",
+              "name": "Fast-Slow Pointers",
+              "description": "Removing duplicates, partitioning"
+            },
+            {
+              "id": "three-pointers",
+              "name": "Three Pointers",
+              "description": "Dutch National Flag, 3Sum problems"
+            },
+            {
+              "id": "merge-two-sorted-arrays",
+              "name": "Merge Two Sorted Arrays",
+              "description": "Two pointers from start"
+            }
+          ]
+        },
+        {
+          "id": "sliding-window",
+          "name": "Sliding Window",
+          "sectionNumber": "2.5",
+          "problemTypes": [
+            {
+              "id": "fixed-window",
+              "name": "Fixed Window",
+              "description": "Maximum sum of k elements"
+            },
+            {
+              "id": "variable-window",
+              "name": "Variable Window",
+              "description": "Longest subarray with sum ≤ k"
+            },
+            {
+              "id": "window-minimum-maximum",
+              "name": "Window Minimum/Maximum",
+              "description": "Using deque for optimization"
+            },
+            {
+              "id": "kadane-s-algorithm",
+              "name": "Kadane's Algorithm",
+              "description": "Maximum subarray sum"
+            }
+          ]
+        },
+        {
+          "id": "prefix-sums-and-cumulative-arrays",
+          "name": "Prefix Sums & Cumulative Arrays",
+          "sectionNumber": "2.6",
+          "problemTypes": [
+            {
+              "id": "1d-prefix-sum",
+              "name": "1D Prefix Sum",
+              "description": "Range sum queries in O(1)"
+            },
+            {
+              "id": "2d-prefix-sum",
+              "name": "2D Prefix Sum",
+              "description": "Matrix range queries"
+            },
+            {
+              "id": "difference-array",
+              "name": "Difference Array",
+              "description": "Range update optimization"
+            },
+            {
+              "id": "subarray-sum-equals-k",
+              "name": "Subarray Sum Equals K",
+              "description": "Hash map with prefix sums"
+            }
+          ]
+        },
+        {
+          "id": "intervals-and-ranges",
+          "name": "Intervals & Ranges",
+          "sectionNumber": "2.7",
+          "problemTypes": [
+            {
+              "id": "merge-intervals",
+              "name": "Merge Intervals",
+              "description": "Sorting and merging overlaps"
+            },
+            {
+              "id": "insert-interval",
+              "name": "Insert Interval",
+              "description": "Adding to sorted interval list"
+            },
+            {
+              "id": "interval-intersection",
+              "name": "Interval Intersection",
+              "description": "Finding overlaps"
+            },
+            {
+              "id": "meeting-rooms",
+              "name": "Meeting Rooms",
+              "description": "Checking conflicts, minimum rooms needed"
+            },
+            {
+              "id": "non-overlapping-intervals",
+              "name": "Non-overlapping Intervals",
+              "description": "Greedy removal"
+            }
+          ]
+        },
+        {
+          "id": "in-place-manipulation",
+          "name": "In-Place Manipulation",
+          "sectionNumber": "2.8",
+          "problemTypes": [
+            {
+              "id": "remove-element",
+              "name": "Remove Element",
+              "description": "Two pointers without extra space"
+            },
+            {
+              "id": "move-zeros",
+              "name": "Move Zeros",
+              "description": "Partitioning in-place"
+            },
+            {
+              "id": "rotate-array",
+              "name": "Rotate Array",
+              "description": "Reversal algorithm"
+            },
+            {
+              "id": "next-permutation",
+              "name": "Next Permutation",
+              "description": "In-place rearrangement"
+            },
+            {
+              "id": "array-deduplication",
+              "name": "Array Deduplication",
+              "description": "Removing duplicates in sorted array"
+            }
+          ]
+        },
+        {
+          "id": "partitioning-and-rearrangement",
+          "name": "Partitioning & Rearrangement",
+          "sectionNumber": "2.9",
+          "problemTypes": [
+            {
+              "id": "partition-by-pivot",
+              "name": "Partition by Pivot",
+              "description": "Quick sort partitioning"
+            },
+            {
+              "id": "dutch-national-flag",
+              "name": "Dutch National Flag",
+              "description": "Three-way partitioning"
+            },
+            {
+              "id": "wiggle-sort",
+              "name": "Wiggle Sort",
+              "description": "Creating alternating pattern"
+            },
+            {
+              "id": "segregate-even-odd",
+              "name": "Segregate Even/Odd",
+              "description": "Two-pointer partitioning"
+            }
+          ]
+        },
+        {
+          "id": "subarray-problems",
+          "name": "Subarray Problems",
+          "sectionNumber": "2.10",
+          "problemTypes": [
+            {
+              "id": "maximum-subarray-sum",
+              "name": "Maximum Subarray Sum",
+              "description": "Kadane's algorithm"
+            },
+            {
+              "id": "maximum-product-subarray",
+              "name": "Maximum Product Subarray",
+              "description": "Tracking min and max"
+            },
+            {
+              "id": "minimum-size-subarray-sum",
+              "name": "Minimum Size Subarray Sum",
+              "description": "Sliding window"
+            },
+            {
+              "id": "subarray-sum-divisible-by-k",
+              "name": "Subarray Sum Divisible by K",
+              "description": "Hash map with modulo"
+            },
+            {
+              "id": "continuous-subarray-sum",
+              "name": "Continuous Subarray Sum",
+              "description": "Prefix sum + hash map"
+            }
+          ]
+        },
+        {
+          "id": "matrix-2d-arrays",
+          "name": "Matrix (2D Arrays)",
+          "sectionNumber": "2.11",
+          "problemTypes": [
+            {
+              "id": "matrix-traversal",
+              "name": "Matrix Traversal",
+              "description": "Row-major, column-major, diagonal"
+            },
+            {
+              "id": "spiral-matrix",
+              "name": "Spiral Matrix",
+              "description": "Directional traversal"
+            },
+            {
+              "id": "rotate-matrix",
+              "name": "Rotate Matrix",
+              "description": "In-place 90° rotation"
+            },
+            {
+              "id": "set-matrix-zeros",
+              "name": "Set Matrix Zeros",
+              "description": "O(1) space marking"
+            },
+            {
+              "id": "search-2d-matrix",
+              "name": "Search 2D Matrix",
+              "description": "Binary search variations"
+            },
+            {
+              "id": "diagonal-traverse",
+              "name": "Diagonal Traverse",
+              "description": "Zigzag pattern"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Two Sum",
+        "Three Sum",
+        "Four Sum",
+        "Best Time to Buy and Sell Stock (all variations)",
+        "Container With Most Water",
+        "Trapping Rain Water",
+        "Product of Array Except Self",
+        "Rotate Array",
+        "Find Minimum in Rotated Sorted Array",
+        "Search in Rotated Sorted Array",
+        "Merge Intervals",
+        "Insert Interval",
+        "Maximum Subarray (Kadane's)",
+        "Spiral Matrix",
+        "Rotate Image",
+        "Set Matrix Zeroes",
+        "Longest Consecutive Sequence"
+      ],
+      "overview": "Python lists are dynamic arrays supporting O(1) indexing and amortized O(1) append. Core structure for most algorithmic problems.",
+      "pythonConsiderations": [
+        "Lists are references: shallow copy with arr[:] or arr.copy()",
+        "Deep copy needs copy.deepcopy()",
+        "List comprehensions faster than loops",
+        "enumerate() for index-value pairs",
+        "Negative indices: arr[-1] is last element",
+        "bisect module for binary search: bisect_left(), bisect_right()",
+        "*arr unpacks list elements",
+        "--"
+      ]
+    },
+    {
+      "id": "hash-maps-dictionaries",
+      "name": "Hash Maps / Dictionaries",
+      "order": 3,
+      "subtopics": [
+        {
+          "id": "basic-operations",
+          "name": "Basic Operations",
+          "sectionNumber": "3.1",
+          "problemTypes": [
+            {
+              "id": "creation",
+              "name": "Creation",
+              "description": "{}, dict(), dict comprehension"
+            },
+            {
+              "id": "access",
+              "name": "Access",
+              "description": "d[key], d.get(key, default)"
+            },
+            {
+              "id": "insertion",
+              "name": "Insertion",
+              "description": "d[key] = value"
+            },
+            {
+              "id": "deletion",
+              "name": "Deletion",
+              "description": "del d[key], d.pop(key)"
+            },
+            {
+              "id": "iteration",
+              "name": "Iteration",
+              "description": "d.items(), d.keys(), d.values()"
+            }
+          ]
+        },
+        {
+          "id": "frequency-counting",
+          "name": "Frequency Counting",
+          "sectionNumber": "3.2",
+          "problemTypes": [
+            {
+              "id": "character-frequency",
+              "name": "Character Frequency",
+              "description": "Count occurrences in strings"
+            },
+            {
+              "id": "element-frequency",
+              "name": "Element Frequency",
+              "description": "Most common elements"
+            },
+            {
+              "id": "top-k-frequent",
+              "name": "Top K Frequent",
+              "description": "Using heap or bucket sort"
+            },
+            {
+              "id": "counter-class",
+              "name": "Counter Class",
+              "description": "collections.Counter for counting"
+            }
+          ]
+        },
+        {
+          "id": "grouping-problems",
+          "name": "Grouping Problems",
+          "sectionNumber": "3.3",
+          "problemTypes": [
+            {
+              "id": "group-anagrams",
+              "name": "Group Anagrams",
+              "description": "Hash by sorted string"
+            },
+            {
+              "id": "group-by-property",
+              "name": "Group by Property",
+              "description": "Custom hash function"
+            },
+            {
+              "id": "partition-labels",
+              "name": "Partition Labels",
+              "description": "Frequency-based grouping"
+            }
+          ]
+        },
+        {
+          "id": "two-sum-variations",
+          "name": "Two Sum Variations",
+          "sectionNumber": "3.4",
+          "problemTypes": [
+            {
+              "id": "two-sum",
+              "name": "Two Sum",
+              "description": "Hash map for complement lookup"
+            },
+            {
+              "id": "two-sum-sorted",
+              "name": "Two Sum Sorted",
+              "description": "Two pointers alternative"
+            },
+            {
+              "id": "two-sum-bst",
+              "name": "Two Sum BST",
+              "description": "In-order + hash set"
+            },
+            {
+              "id": "two-sum-data-structure",
+              "name": "Two Sum Data Structure",
+              "description": "Design class"
+            }
+          ]
+        },
+        {
+          "id": "caching-and-memoization",
+          "name": "Caching & Memoization",
+          "sectionNumber": "3.5",
+          "problemTypes": [
+            {
+              "id": "lru-cache",
+              "name": "LRU Cache",
+              "description": "Ordered dict + doubly linked list"
+            },
+            {
+              "id": "lfu-cache",
+              "name": "LFU Cache",
+              "description": "Frequency tracking with hash maps"
+            },
+            {
+              "id": "memoization-decorator",
+              "name": "Memoization Decorator",
+              "description": "functools.lru_cache"
+            },
+            {
+              "id": "custom-cache",
+              "name": "Custom Cache",
+              "description": "Implementing eviction policies"
+            }
+          ]
+        },
+        {
+          "id": "multi-key-patterns",
+          "name": "Multi-Key Patterns",
+          "sectionNumber": "3.6",
+          "problemTypes": [
+            {
+              "id": "nested-dictionaries",
+              "name": "Nested Dictionaries",
+              "description": "dict[key1][key2]"
+            },
+            {
+              "id": "tuple-keys",
+              "name": "Tuple Keys",
+              "description": "(row, col) as keys"
+            },
+            {
+              "id": "default-dict",
+              "name": "Default Dict",
+              "description": "collections.defaultdict(type)"
+            },
+            {
+              "id": "maps-of-lists",
+              "name": "Maps of Lists",
+              "description": "dict[key] = []"
+            },
+            {
+              "id": "maps-of-sets",
+              "name": "Maps of Sets",
+              "description": "dict[key] = set()"
+            }
+          ]
+        },
+        {
+          "id": "prefix-suffix-maps",
+          "name": "Prefix/Suffix Maps",
+          "sectionNumber": "3.7",
+          "problemTypes": [
+            {
+              "id": "prefix-frequency",
+              "name": "Prefix Frequency",
+              "description": "Subarray sum problems"
+            },
+            {
+              "id": "running-sum-map",
+              "name": "Running Sum Map",
+              "description": "Continuous subarray problems"
+            },
+            {
+              "id": "complement-maps",
+              "name": "Complement Maps",
+              "description": "Finding pairs with target"
+            }
+          ]
+        },
+        {
+          "id": "hash-design-problems",
+          "name": "Hash Design Problems",
+          "sectionNumber": "3.8",
+          "problemTypes": [
+            {
+              "id": "design-hashmap",
+              "name": "Design HashMap",
+              "description": "Implementing from scratch"
+            },
+            {
+              "id": "hash-function-design",
+              "name": "Hash Function Design",
+              "description": "Collision handling"
+            },
+            {
+              "id": "separate-chaining",
+              "name": "Separate Chaining",
+              "description": "Linked list at each bucket"
+            },
+            {
+              "id": "open-addressing",
+              "name": "Open Addressing",
+              "description": "Linear/quadratic probing"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Two Sum",
+        "Group Anagrams",
+        "Subarray Sum Equals K",
+        "Continuous Subarray Sum",
+        "Contains Duplicate",
+        "Contains Nearby Duplicate",
+        "Longest Substring Without Repeating Characters",
+        "Minimum Window Substring",
+        "LRU Cache",
+        "Design HashMap",
+        "Top K Frequent Elements",
+        "Valid Sudoku",
+        "Isomorphic Strings",
+        "Word Pattern"
+      ],
+      "overview": "Hash maps provide O(1) average-case lookup, insertion, and deletion. Python's `dict` is an ordered hash map (as of Python 3.7+).",
+      "pythonConsiderations": [
+        "collections.defaultdict(list) avoids key checking",
+        "collections.Counter for frequency counting",
+        "Dictionary comprehension: {k: v for k, v in ...}",
+        "dict.setdefault(key, default) returns and sets",
+        "Ordered insertion order preserved (Python 3.7+)",
+        "in operator checks keys: if key in d",
+        ".get() avoids KeyError exceptions",
+        "--"
+      ]
+    },
+    {
+      "id": "sets",
+      "name": "Sets",
+      "order": 4,
+      "subtopics": [
+        {
+          "id": "basic-operations",
+          "name": "Basic Operations",
+          "sectionNumber": "4.1",
+          "problemTypes": [
+            {
+              "id": "creation",
+              "name": "Creation",
+              "description": "set(), {1, 2, 3}"
+            },
+            {
+              "id": "add-remove",
+              "name": "Add/Remove",
+              "description": "add(), remove(), discard()"
+            },
+            {
+              "id": "membership",
+              "name": "Membership",
+              "description": "x in s"
+            },
+            {
+              "id": "set-comprehension",
+              "name": "Set Comprehension",
+              "description": "{x*2 for x in range(10)}"
+            }
+          ]
+        },
+        {
+          "id": "set-operations",
+          "name": "Set Operations",
+          "sectionNumber": "4.2",
+          "problemTypes": [
+            {
+              "id": "union",
+              "name": "Union",
+              "description": "a | b, a.union(b)"
+            },
+            {
+              "id": "intersection",
+              "name": "Intersection",
+              "description": "a & b, a.intersection(b)"
+            },
+            {
+              "id": "difference",
+              "name": "Difference",
+              "description": "a - b, a.difference(b)"
+            },
+            {
+              "id": "symmetric-difference",
+              "name": "Symmetric Difference",
+              "description": "a ^ b"
+            },
+            {
+              "id": "subset-superset",
+              "name": "Subset/Superset",
+              "description": "a <= b, a >= b"
+            }
+          ]
+        },
+        {
+          "id": "uniqueness-and-deduplication",
+          "name": "Uniqueness & Deduplication",
+          "sectionNumber": "4.3",
+          "problemTypes": [
+            {
+              "id": "remove-duplicates",
+              "name": "Remove Duplicates",
+              "description": "Convert list to set"
+            },
+            {
+              "id": "find-duplicates",
+              "name": "Find Duplicates",
+              "description": "Set for seen elements"
+            },
+            {
+              "id": "single-number",
+              "name": "Single Number",
+              "description": "XOR or set difference"
+            }
+          ]
+        },
+        {
+          "id": "graph-state-tracking",
+          "name": "Graph State Tracking",
+          "sectionNumber": "4.4",
+          "problemTypes": [
+            {
+              "id": "visited-set",
+              "name": "Visited Set",
+              "description": "Marking visited nodes in BFS/DFS"
+            },
+            {
+              "id": "path-tracking",
+              "name": "Path Tracking",
+              "description": "Current path in backtracking"
+            },
+            {
+              "id": "cycle-detection",
+              "name": "Cycle Detection",
+              "description": "Detecting revisited nodes"
+            }
+          ]
+        },
+        {
+          "id": "mathematical-set-problems",
+          "name": "Mathematical Set Problems",
+          "sectionNumber": "4.5",
+          "problemTypes": [
+            {
+              "id": "intersection-size",
+              "name": "Intersection Size",
+              "description": "Multiple arrays intersection"
+            },
+            {
+              "id": "union-size",
+              "name": "Union Size",
+              "description": "Counting unique across collections"
+            },
+            {
+              "id": "missing-number",
+              "name": "Missing Number",
+              "description": "Using set complement"
+            },
+            {
+              "id": "find-difference",
+              "name": "Find Difference",
+              "description": "Set difference operations"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Contains Duplicate",
+        "Intersection of Two Arrays",
+        "Happy Number",
+        "Longest Consecutive Sequence",
+        "Single Number",
+        "Missing Number",
+        "First Missing Positive"
+      ],
+      "overview": "Sets provide O(1) average membership testing, insertion, and deletion. Unordered collections of unique elements.",
+      "pythonConsiderations": [
+        "frozenset for immutable sets (can be dict keys)",
+        "Empty set: set() not {} (which creates dict)",
+        "Sets are unordered: no indexing",
+        "Fast membership testing: O(1) average",
+        "Use for deduplication: list(set(arr))",
+        "--"
+      ]
+    },
+    {
+      "id": "linked-lists",
+      "name": "Linked Lists",
+      "order": 5,
+      "subtopics": [
+        {
+          "id": "linked-list-types",
+          "name": "Linked List Types",
+          "sectionNumber": "5.1",
+          "problemTypes": [
+            {
+              "id": "singly-linked-list",
+              "name": "Singly Linked List",
+              "description": "One next pointer"
+            },
+            {
+              "id": "doubly-linked-list",
+              "name": "Doubly Linked List",
+              "description": "Next and prev pointers"
+            },
+            {
+              "id": "circular-linked-list",
+              "name": "Circular Linked List",
+              "description": "Last node points to first"
+            }
+          ]
+        },
+        {
+          "id": "basic-operations",
+          "name": "Basic Operations",
+          "sectionNumber": "5.2",
+          "problemTypes": [
+            {
+              "id": "traversal",
+              "name": "Traversal",
+              "description": "Following next pointers"
+            },
+            {
+              "id": "insertion",
+              "name": "Insertion",
+              "description": "Head, tail, middle insertion"
+            },
+            {
+              "id": "deletion",
+              "name": "Deletion",
+              "description": "Removing nodes, updating pointers"
+            },
+            {
+              "id": "search",
+              "name": "Search",
+              "description": "Linear search through nodes"
+            }
+          ]
+        },
+        {
+          "id": "two-pointer-techniques",
+          "name": "Two-Pointer Techniques",
+          "sectionNumber": "5.3",
+          "problemTypes": [
+            {
+              "id": "fast-slow-pointers",
+              "name": "Fast-Slow Pointers",
+              "description": "Finding middle, cycle detection"
+            },
+            {
+              "id": "floyd-s-cycle-detection",
+              "name": "Floyd's Cycle Detection",
+              "description": "Tortoise and hare"
+            },
+            {
+              "id": "finding-cycle-start",
+              "name": "Finding Cycle Start",
+              "description": "Mathematical approach"
+            },
+            {
+              "id": "k-th-node-from-end",
+              "name": "k-th Node from End",
+              "description": "Fast pointer k steps ahead"
+            }
+          ]
+        },
+        {
+          "id": "reversal",
+          "name": "Reversal",
+          "sectionNumber": "5.4",
+          "problemTypes": [
+            {
+              "id": "iterative-reversal",
+              "name": "Iterative Reversal",
+              "description": "Three-pointer approach"
+            },
+            {
+              "id": "recursive-reversal",
+              "name": "Recursive Reversal",
+              "description": "Base case and recursion"
+            },
+            {
+              "id": "reverse-in-groups",
+              "name": "Reverse in Groups",
+              "description": "Reversing k nodes at a time"
+            },
+            {
+              "id": "reverse-between-positions",
+              "name": "Reverse Between Positions",
+              "description": "Partial reversal"
+            }
+          ]
+        },
+        {
+          "id": "merging-and-sorting",
+          "name": "Merging & Sorting",
+          "sectionNumber": "5.5",
+          "problemTypes": [
+            {
+              "id": "merge-two-sorted-lists",
+              "name": "Merge Two Sorted Lists",
+              "description": "Two-pointer merge"
+            },
+            {
+              "id": "merge-k-sorted-lists",
+              "name": "Merge K Sorted Lists",
+              "description": "Min heap approach"
+            },
+            {
+              "id": "sort-list",
+              "name": "Sort List",
+              "description": "Merge sort on linked list"
+            },
+            {
+              "id": "insertion-sort-list",
+              "name": "Insertion Sort List",
+              "description": "Building sorted list"
+            }
+          ]
+        },
+        {
+          "id": "cycle-problems",
+          "name": "Cycle Problems",
+          "sectionNumber": "5.6",
+          "problemTypes": [
+            {
+              "id": "detect-cycle",
+              "name": "Detect Cycle",
+              "description": "Floyd's algorithm"
+            },
+            {
+              "id": "find-cycle-entry",
+              "name": "Find Cycle Entry",
+              "description": "Two-phase detection"
+            },
+            {
+              "id": "remove-cycle",
+              "name": "Remove Cycle",
+              "description": "Breaking the loop"
+            }
+          ]
+        },
+        {
+          "id": "intersection-and-duplication",
+          "name": "Intersection & Duplication",
+          "sectionNumber": "5.7",
+          "problemTypes": [
+            {
+              "id": "intersection-of-two-lists",
+              "name": "Intersection of Two Lists",
+              "description": "Length difference approach"
+            },
+            {
+              "id": "remove-duplicates",
+              "name": "Remove Duplicates",
+              "description": "Hash set or two pointers"
+            },
+            {
+              "id": "remove-nth-node-from-end",
+              "name": "Remove Nth Node from End",
+              "description": "Two-pointer approach"
+            }
+          ]
+        },
+        {
+          "id": "advanced-patterns",
+          "name": "Advanced Patterns",
+          "sectionNumber": "5.8",
+          "problemTypes": [
+            {
+              "id": "reorder-list",
+              "name": "Reorder List",
+              "description": "Split, reverse, merge"
+            },
+            {
+              "id": "palindrome-linked-list",
+              "name": "Palindrome Linked List",
+              "description": "Reverse second half"
+            },
+            {
+              "id": "add-two-numbers",
+              "name": "Add Two Numbers",
+              "description": "Digit-by-digit addition"
+            },
+            {
+              "id": "partition-list",
+              "name": "Partition List",
+              "description": "Rearranging around pivot"
+            },
+            {
+              "id": "flatten-multilevel-list",
+              "name": "Flatten Multilevel List",
+              "description": "DFS or iterative"
+            }
+          ]
+        },
+        {
+          "id": "design-problems",
+          "name": "Design Problems",
+          "sectionNumber": "5.9",
+          "problemTypes": [
+            {
+              "id": "design-linked-list",
+              "name": "Design Linked List",
+              "description": "Implementing from scratch"
+            },
+            {
+              "id": "lru-cache",
+              "name": "LRU Cache",
+              "description": "Doubly linked list + hash map"
+            },
+            {
+              "id": "skip-list",
+              "name": "Skip List",
+              "description": "Probabilistic balanced structure"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Reverse Linked List",
+        "Merge Two Sorted Lists",
+        "Merge K Sorted Lists",
+        "Linked List Cycle",
+        "Cycle II",
+        "Intersection of Two Linked Lists",
+        "Remove Nth Node From End",
+        "Palindrome Linked List",
+        "Reorder List",
+        "Sort List",
+        "Add Two Numbers",
+        "Copy List with Random Pointer",
+        "Flatten a Multilevel Doubly Linked List"
+      ],
+      "overview": "Linked lists are sequential data structures with nodes containing data and next pointers. Efficient insertions/deletions but O(n) access.",
+      "pythonConsiderations": [
+        "Define node class: class ListNode: def __init__(self, val=0, next=None)",
+        "No built-in linked list (use custom implementation)",
+        "Garbage collection handles deleted nodes",
+        "Dummy head simplifies edge cases",
+        "Check for None before accessing .next",
+        "--"
+      ]
+    },
+    {
+      "id": "stacks-and-queues",
+      "name": "Stacks & Queues",
+      "order": 6,
+      "subtopics": [
+        {
+          "id": "stack-operations",
+          "name": "Stack Operations",
+          "sectionNumber": "6.1",
+          "problemTypes": [
+            {
+              "id": "push",
+              "name": "Push",
+              "description": "stack.append(x)"
+            },
+            {
+              "id": "pop",
+              "name": "Pop",
+              "description": "stack.pop()"
+            },
+            {
+              "id": "peek",
+              "name": "Peek",
+              "description": "stack[-1]"
+            },
+            {
+              "id": "isempty",
+              "name": "isEmpty",
+              "description": "len(stack) == 0"
+            }
+          ]
+        },
+        {
+          "id": "queue-operations",
+          "name": "Queue Operations",
+          "sectionNumber": "6.2",
+          "problemTypes": [
+            {
+              "id": "enqueue",
+              "name": "Enqueue",
+              "description": "queue.append(x)"
+            },
+            {
+              "id": "dequeue",
+              "name": "Dequeue",
+              "description": "queue.popleft() (use deque)"
+            },
+            {
+              "id": "front",
+              "name": "Front",
+              "description": "queue[0]"
+            },
+            {
+              "id": "isempty",
+              "name": "isEmpty",
+              "description": "len(queue) == 0"
+            }
+          ]
+        },
+        {
+          "id": "monotonic-stack",
+          "name": "Monotonic Stack",
+          "sectionNumber": "6.3",
+          "problemTypes": [
+            {
+              "id": "next-greater-element",
+              "name": "Next Greater Element",
+              "description": "Maintaining decreasing stack"
+            },
+            {
+              "id": "next-smaller-element",
+              "name": "Next Smaller Element",
+              "description": "Maintaining increasing stack"
+            },
+            {
+              "id": "largest-rectangle-in-histogram",
+              "name": "Largest Rectangle in Histogram",
+              "description": "Stack for boundaries"
+            },
+            {
+              "id": "trapping-rain-water",
+              "name": "Trapping Rain Water",
+              "description": "Using stack for water levels"
+            },
+            {
+              "id": "maximum-width-ramp",
+              "name": "Maximum Width Ramp",
+              "description": "Stack preprocessing"
+            }
+          ]
+        },
+        {
+          "id": "expression-evaluation",
+          "name": "Expression Evaluation",
+          "sectionNumber": "6.4",
+          "problemTypes": [
+            {
+              "id": "valid-parentheses",
+              "name": "Valid Parentheses",
+              "description": "Stack matching brackets"
+            },
+            {
+              "id": "balanced-brackets",
+              "name": "Balanced Brackets",
+              "description": "Multiple types validation"
+            },
+            {
+              "id": "evaluate-postfix",
+              "name": "Evaluate Postfix",
+              "description": "Stack-based calculation"
+            },
+            {
+              "id": "evaluate-prefix",
+              "name": "Evaluate Prefix",
+              "description": "Reverse postfix approach"
+            },
+            {
+              "id": "infix-to-postfix",
+              "name": "Infix to Postfix",
+              "description": "Shunting yard algorithm"
+            },
+            {
+              "id": "basic-calculator",
+              "name": "Basic Calculator",
+              "description": "Handling operations and parentheses"
+            }
+          ]
+        },
+        {
+          "id": "stack-based-parsing",
+          "name": "Stack-Based Parsing",
+          "sectionNumber": "6.5",
+          "problemTypes": [
+            {
+              "id": "decode-string",
+              "name": "Decode String",
+              "description": "Nested bracket expansion"
+            },
+            {
+              "id": "tag-validator",
+              "name": "Tag Validator",
+              "description": "XML/HTML validation"
+            },
+            {
+              "id": "remove-k-digits",
+              "name": "Remove K Digits",
+              "description": "Greedy stack approach"
+            },
+            {
+              "id": "remove-duplicate-letters",
+              "name": "Remove Duplicate Letters",
+              "description": "Stack with seen set"
+            }
+          ]
+        },
+        {
+          "id": "sliding-window-maximum",
+          "name": "Sliding Window Maximum",
+          "sectionNumber": "6.6",
+          "problemTypes": [
+            {
+              "id": "using-deque",
+              "name": "Using Deque",
+              "description": "Maintaining window maximum indices"
+            },
+            {
+              "id": "monotonic-deque",
+              "name": "Monotonic Deque",
+              "description": "Removing useless elements"
+            }
+          ]
+        },
+        {
+          "id": "bfs-with-queue",
+          "name": "BFS with Queue",
+          "sectionNumber": "6.7",
+          "problemTypes": [
+            {
+              "id": "level-order-traversal",
+              "name": "Level-Order Traversal",
+              "description": "Tree/graph BFS"
+            },
+            {
+              "id": "shortest-path",
+              "name": "Shortest Path",
+              "description": "Unweighted graph BFS"
+            },
+            {
+              "id": "word-ladder",
+              "name": "Word Ladder",
+              "description": "BFS with transformations"
+            },
+            {
+              "id": "rotting-oranges",
+              "name": "Rotting Oranges",
+              "description": "Multi-source BFS"
+            }
+          ]
+        },
+        {
+          "id": "design-problems",
+          "name": "Design Problems",
+          "sectionNumber": "6.8",
+          "problemTypes": [
+            {
+              "id": "min-stack",
+              "name": "Min Stack",
+              "description": "Stack with O(1) minimum"
+            },
+            {
+              "id": "max-stack",
+              "name": "Max Stack",
+              "description": "Stack with O(1) maximum"
+            },
+            {
+              "id": "implement-queue-using-stacks",
+              "name": "Implement Queue using Stacks",
+              "description": "Two-stack approach"
+            },
+            {
+              "id": "implement-stack-using-queues",
+              "name": "Implement Stack using Queues",
+              "description": "Two-queue approach"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Valid Parentheses",
+        "Min Stack",
+        "Max Stack",
+        "Daily Temperatures",
+        "Next Greater Element I",
+        "II",
+        "Largest Rectangle in Histogram",
+        "Trapping Rain Water",
+        "Evaluate Reverse Polish Notation",
+        "Basic Calculator I",
+        "II",
+        "III",
+        "Decode String",
+        "Remove K Digits",
+        "Sliding Window Maximum",
+        "Implement Queue using Stacks"
+      ],
+      "overview": "Stacks (LIFO) and Queues (FIFO) are fundamental linear data structures. Python uses `list` for stacks and `collections.deque` for queues.",
+      "pythonConsiderations": [
+        "Use list for stack: append() and pop() are O(1)",
+        "Use collections.deque for queue: popleft() is O(1)",
+        "list.pop(0) is O(n), avoid for queue",
+        "queue.Queue is thread-safe but slower",
+        "Deque supports both ends: appendleft(), popright()",
+        "--"
+      ]
+    },
+    {
+      "id": "heaps-priority-queues",
+      "name": "Heaps / Priority Queues",
+      "order": 7,
+      "subtopics": [
+        {
+          "id": "heap-operations",
+          "name": "Heap Operations",
+          "sectionNumber": "7.1",
+          "problemTypes": [
+            {
+              "id": "heappush",
+              "name": "heappush",
+              "description": "heapq.heappush(heap, item) - O(log n)"
+            },
+            {
+              "id": "heappop",
+              "name": "heappop",
+              "description": "heapq.heappop(heap) - O(log n)"
+            },
+            {
+              "id": "heapify",
+              "name": "heapify",
+              "description": "heapq.heapify(list) - O(n)"
+            },
+            {
+              "id": "heappushpop",
+              "name": "heappushpop",
+              "description": "Combined push then pop"
+            },
+            {
+              "id": "heapreplace",
+              "name": "heapreplace",
+              "description": "Combined pop then push"
+            }
+          ]
+        },
+        {
+          "id": "k-th-element-problems",
+          "name": "K-th Element Problems",
+          "sectionNumber": "7.2",
+          "problemTypes": [
+            {
+              "id": "k-th-largest",
+              "name": "K-th Largest",
+              "description": "Min-heap of size k"
+            },
+            {
+              "id": "k-th-smallest",
+              "name": "K-th Smallest",
+              "description": "Max-heap of size k (negate values)"
+            },
+            {
+              "id": "find-median",
+              "name": "Find Median",
+              "description": "Two heaps (max-heap + min-heap)"
+            },
+            {
+              "id": "top-k-frequent-elements",
+              "name": "Top K Frequent Elements",
+              "description": "Heap or bucket sort"
+            }
+          ]
+        },
+        {
+          "id": "merging-problems",
+          "name": "Merging Problems",
+          "sectionNumber": "7.3",
+          "problemTypes": [
+            {
+              "id": "merge-k-sorted-lists",
+              "name": "Merge K Sorted Lists",
+              "description": "Min-heap of list heads"
+            },
+            {
+              "id": "merge-k-sorted-arrays",
+              "name": "Merge K Sorted Arrays",
+              "description": "Similar approach"
+            },
+            {
+              "id": "smallest-range",
+              "name": "Smallest Range",
+              "description": "Tracking minimums across lists"
+            }
+          ]
+        },
+        {
+          "id": "scheduling-and-intervals",
+          "name": "Scheduling & Intervals",
+          "sectionNumber": "7.4",
+          "problemTypes": [
+            {
+              "id": "meeting-rooms-ii",
+              "name": "Meeting Rooms II",
+              "description": "Min-heap for end times"
+            },
+            {
+              "id": "task-scheduler",
+              "name": "Task Scheduler",
+              "description": "Frequency-based scheduling"
+            },
+            {
+              "id": "cpu-scheduling",
+              "name": "CPU Scheduling",
+              "description": "Priority queue simulation"
+            },
+            {
+              "id": "course-schedule-iii",
+              "name": "Course Schedule III",
+              "description": "Greedy with heap"
+            }
+          ]
+        },
+        {
+          "id": "graph-algorithms",
+          "name": "Graph Algorithms",
+          "sectionNumber": "7.5",
+          "problemTypes": [
+            {
+              "id": "dijkstra-s-algorithm",
+              "name": "Dijkstra's Algorithm",
+              "description": "Min-heap for shortest paths"
+            },
+            {
+              "id": "prim-s-algorithm",
+              "name": "Prim's Algorithm",
+              "description": "Min-heap for MST"
+            },
+            {
+              "id": "a-search",
+              "name": "A\\* Search",
+              "description": "Priority queue with heuristic"
+            }
+          ]
+        },
+        {
+          "id": "streaming-data",
+          "name": "Streaming Data",
+          "sectionNumber": "7.6",
+          "problemTypes": [
+            {
+              "id": "running-median",
+              "name": "Running Median",
+              "description": "Two-heap approach"
+            },
+            {
+              "id": "sliding-window-median",
+              "name": "Sliding Window Median",
+              "description": "Lazy deletion heaps"
+            },
+            {
+              "id": "top-k-in-stream",
+              "name": "Top K in Stream",
+              "description": "Maintaining size-k heap"
+            }
+          ]
+        },
+        {
+          "id": "two-heap-pattern",
+          "name": "Two-Heap Pattern",
+          "sectionNumber": "7.7",
+          "problemTypes": [
+            {
+              "id": "max-heap-min-heap",
+              "name": "Max-Heap + Min-Heap",
+              "description": "Median finding"
+            },
+            {
+              "id": "balance-maintenance",
+              "name": "Balance Maintenance",
+              "description": "Rebalancing heaps"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "K-th Largest Element in Array",
+        "Top K Frequent Elements",
+        "Find Median from Data Stream",
+        "Merge K Sorted Lists",
+        "Meeting Rooms II",
+        "Task Scheduler",
+        "Reorganize String",
+        "Smallest Range Covering Elements from K Lists",
+        "Kth Smallest Element in Sorted Matrix",
+        "Ugly Number II"
+      ],
+      "overview": "Heaps maintain partial order for efficient minimum/maximum retrieval. Python's `heapq` implements min-heap.",
+      "pythonConsiderations": [
+        "heapq is min-heap only: negate for max-heap",
+        "Heap is a list: heap[0] is minimum",
+        "Custom comparisons: use tuple (priority, data)",
+        "For objects: implement __lt__ method",
+        "Lazy deletion: mark as deleted, skip during pop",
+        "nlargest() and nsmallest() for top-k",
+        "--"
+      ]
+    },
+    {
+      "id": "trees",
+      "name": "Trees",
+      "order": 8,
+      "subtopics": [
+        {
+          "id": "tree-types",
+          "name": "Tree Types",
+          "sectionNumber": "8.1",
+          "problemTypes": [
+            {
+              "id": "binary-tree",
+              "name": "Binary Tree",
+              "description": "At most 2 children per node"
+            },
+            {
+              "id": "binary-search-tree-bst",
+              "name": "Binary Search Tree (BST)",
+              "description": "Left < root < right"
+            },
+            {
+              "id": "balanced-trees",
+              "name": "Balanced Trees",
+              "description": "AVL, Red-Black (conceptual)"
+            },
+            {
+              "id": "complete-binary-tree",
+              "name": "Complete Binary Tree",
+              "description": "All levels filled except last"
+            },
+            {
+              "id": "perfect-binary-tree",
+              "name": "Perfect Binary Tree",
+              "description": "All internal nodes have 2 children"
+            },
+            {
+              "id": "n-ary-tree",
+              "name": "N-ary Tree",
+              "description": "Multiple children per node"
+            },
+            {
+              "id": "trie",
+              "name": "Trie",
+              "description": "Prefix tree for string storage"
+            }
+          ]
+        },
+        {
+          "id": "tree-traversal",
+          "name": "Tree Traversal",
+          "sectionNumber": "8.2",
+          "problemTypes": [
+            {
+              "id": "inorder-lnr",
+              "name": "Inorder (LNR)",
+              "description": "Left, node, right (BST gives sorted)"
+            },
+            {
+              "id": "preorder-nlr",
+              "name": "Preorder (NLR)",
+              "description": "Node, left, right"
+            },
+            {
+              "id": "postorder-lrn",
+              "name": "Postorder (LRN)",
+              "description": "Left, right, node"
+            },
+            {
+              "id": "level-order-bfs",
+              "name": "Level-Order (BFS)",
+              "description": "Level by level using queue"
+            },
+            {
+              "id": "iterative-traversals",
+              "name": "Iterative Traversals",
+              "description": "Using stack explicitly"
+            },
+            {
+              "id": "morris-traversal",
+              "name": "Morris Traversal",
+              "description": "O(1) space using threading"
+            }
+          ]
+        },
+        {
+          "id": "recursive-patterns",
+          "name": "Recursive Patterns",
+          "sectionNumber": "8.3",
+          "problemTypes": [
+            {
+              "id": "top-down-recursion",
+              "name": "Top-Down Recursion",
+              "description": "Passing info to children"
+            },
+            {
+              "id": "bottom-up-recursion",
+              "name": "Bottom-Up Recursion",
+              "description": "Returning info to parent"
+            },
+            {
+              "id": "divide-and-conquer",
+              "name": "Divide and Conquer",
+              "description": "Processing subtrees independently"
+            },
+            {
+              "id": "path-based-recursion",
+              "name": "Path-Based Recursion",
+              "description": "Tracking path state"
+            }
+          ]
+        },
+        {
+          "id": "tree-properties",
+          "name": "Tree Properties",
+          "sectionNumber": "8.4",
+          "problemTypes": [
+            {
+              "id": "height-depth",
+              "name": "Height/Depth",
+              "description": "Distance to farthest leaf"
+            },
+            {
+              "id": "diameter",
+              "name": "Diameter",
+              "description": "Longest path between leaves"
+            },
+            {
+              "id": "balanced-check",
+              "name": "Balanced Check",
+              "description": "Height difference constraint"
+            },
+            {
+              "id": "complete-tree-check",
+              "name": "Complete Tree Check",
+              "description": "Level-order validation"
+            },
+            {
+              "id": "symmetric-tree",
+              "name": "Symmetric Tree",
+              "description": "Mirror structure check"
+            },
+            {
+              "id": "same-tree",
+              "name": "Same Tree",
+              "description": "Structural and value equality"
+            }
+          ]
+        },
+        {
+          "id": "binary-search-tree-bst",
+          "name": "Binary Search Tree (BST)",
+          "sectionNumber": "8.5",
+          "problemTypes": [
+            {
+              "id": "search",
+              "name": "Search",
+              "description": "O(log n) average, O(n) worst"
+            },
+            {
+              "id": "insert",
+              "name": "Insert",
+              "description": "Maintaining BST property"
+            },
+            {
+              "id": "delete",
+              "name": "Delete",
+              "description": "Handling 0, 1, 2 child cases"
+            },
+            {
+              "id": "validate-bst",
+              "name": "Validate BST",
+              "description": "Checking order property"
+            },
+            {
+              "id": "inorder-successor-predecessor",
+              "name": "Inorder Successor/Predecessor",
+              "description": "Next/previous in sorted order"
+            },
+            {
+              "id": "lowest-common-ancestor",
+              "name": "Lowest Common Ancestor",
+              "description": "Path-based search"
+            },
+            {
+              "id": "kth-smallest",
+              "name": "Kth Smallest",
+              "description": "Inorder with counter"
+            }
+          ]
+        },
+        {
+          "id": "path-problems",
+          "name": "Path Problems",
+          "sectionNumber": "8.6",
+          "problemTypes": [
+            {
+              "id": "root-to-leaf-paths",
+              "name": "Root to Leaf Paths",
+              "description": "All paths enumeration"
+            },
+            {
+              "id": "path-sum",
+              "name": "Path Sum",
+              "description": "Finding paths with target sum"
+            },
+            {
+              "id": "path-sum-ii",
+              "name": "Path Sum II",
+              "description": "Returning all valid paths"
+            },
+            {
+              "id": "path-sum-iii",
+              "name": "Path Sum III",
+              "description": "Paths not starting at root"
+            },
+            {
+              "id": "maximum-path-sum",
+              "name": "Maximum Path Sum",
+              "description": "Considering all paths"
+            },
+            {
+              "id": "binary-tree-paths",
+              "name": "Binary Tree Paths",
+              "description": "String representation"
+            }
+          ]
+        },
+        {
+          "id": "ancestors-and-descendants",
+          "name": "Ancestors & Descendants",
+          "sectionNumber": "8.7",
+          "problemTypes": [
+            {
+              "id": "lowest-common-ancestor-lca",
+              "name": "Lowest Common Ancestor (LCA)",
+              "description": "Finding common ancestor"
+            },
+            {
+              "id": "distance-between-nodes",
+              "name": "Distance Between Nodes",
+              "description": "Path computation"
+            },
+            {
+              "id": "all-nodes-distance-k",
+              "name": "All Nodes Distance K",
+              "description": "BFS from target"
+            }
+          ]
+        },
+        {
+          "id": "construction-and-transformation",
+          "name": "Construction & Transformation",
+          "sectionNumber": "8.8",
+          "problemTypes": [
+            {
+              "id": "build-from-traversals",
+              "name": "Build from Traversals",
+              "description": "Inorder + Preorder/Postorder"
+            },
+            {
+              "id": "serialize-deserialize",
+              "name": "Serialize/Deserialize",
+              "description": "String encoding/decoding"
+            },
+            {
+              "id": "flatten-to-linked-list",
+              "name": "Flatten to Linked List",
+              "description": "Preorder flattening"
+            },
+            {
+              "id": "invert-binary-tree",
+              "name": "Invert Binary Tree",
+              "description": "Swapping children"
+            },
+            {
+              "id": "convert-sorted-array-to-bst",
+              "name": "Convert Sorted Array to BST",
+              "description": "Recursive construction"
+            }
+          ]
+        },
+        {
+          "id": "advanced-tree-operations",
+          "name": "Advanced Tree Operations",
+          "sectionNumber": "8.9",
+          "problemTypes": [
+            {
+              "id": "subtree-of-another-tree",
+              "name": "Subtree of Another Tree",
+              "description": "Pattern matching"
+            },
+            {
+              "id": "count-complete-tree-nodes",
+              "name": "Count Complete Tree Nodes",
+              "description": "Binary search on levels"
+            },
+            {
+              "id": "recover-bst",
+              "name": "Recover BST",
+              "description": "Two swapped nodes"
+            },
+            {
+              "id": "trim-bst",
+              "name": "Trim BST",
+              "description": "Removing out-of-range nodes"
+            },
+            {
+              "id": "merge-two-binary-trees",
+              "name": "Merge Two Binary Trees",
+              "description": "Overlapping sums"
+            }
+          ]
+        },
+        {
+          "id": "n-ary-trees",
+          "name": "N-ary Trees",
+          "sectionNumber": "8.10",
+          "problemTypes": [
+            {
+              "id": "traversal",
+              "name": "Traversal",
+              "description": "Preorder, postorder, level-order"
+            },
+            {
+              "id": "serialization",
+              "name": "Serialization",
+              "description": "Encoding variable children"
+            },
+            {
+              "id": "maximum-depth",
+              "name": "Maximum Depth",
+              "description": "Recursive height"
+            },
+            {
+              "id": "diameter",
+              "name": "Diameter",
+              "description": "Path through root"
+            }
+          ]
+        },
+        {
+          "id": "tries-prefix-trees",
+          "name": "Tries (Prefix Trees)",
+          "sectionNumber": "8.11",
+          "problemTypes": [
+            {
+              "id": "insert",
+              "name": "Insert",
+              "description": "Character-by-character"
+            },
+            {
+              "id": "search",
+              "name": "Search",
+              "description": "Exact word lookup"
+            },
+            {
+              "id": "prefix-search",
+              "name": "Prefix Search",
+              "description": "Checking prefix existence"
+            },
+            {
+              "id": "word-break",
+              "name": "Word Break",
+              "description": "Using trie for dictionary"
+            },
+            {
+              "id": "design-add-and-search-words",
+              "name": "Design Add and Search Words",
+              "description": "Wildcard support"
+            },
+            {
+              "id": "replace-words",
+              "name": "Replace Words",
+              "description": "Prefix replacement"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Maximum Depth of Binary Tree",
+        "Invert Binary Tree",
+        "Symmetric Tree",
+        "Validate Binary Search Tree",
+        "Lowest Common Ancestor",
+        "Binary Tree Level Order Traversal",
+        "Binary Tree Right Side View",
+        "Construct Binary Tree from Traversals",
+        "Path Sum",
+        "Path Sum II",
+        "Path Sum III",
+        "Binary Tree Maximum Path Sum",
+        "Serialize and Deserialize Binary Tree",
+        "Kth Smallest Element in BST",
+        "Flatten Binary Tree to Linked List",
+        "Implement Trie",
+        "Word Search II (Trie + Backtracking)"
+      ],
+      "overview": "Trees are hierarchical data structures with nodes containing data and child pointers. Binary trees are most common in interviews.",
+      "pythonConsiderations": [
+        "Define node: class TreeNode: def __init__(self, val=0, left=None, right=None)",
+        "Recursion depth limit: ~1000 (use sys.setrecursionlimit() cautiously)",
+        "Use deque for level-order: collections.deque()",
+        "None represents null nodes",
+        "Pass state via parameters or use nonlocal variables",
+        "--"
+      ]
+    },
+    {
+      "id": "graphs",
+      "name": "Graphs",
+      "order": 9,
+      "subtopics": [
+        {
+          "id": "graph-representation",
+          "name": "Graph Representation",
+          "sectionNumber": "9.1",
+          "problemTypes": [
+            {
+              "id": "adjacency-list",
+              "name": "Adjacency List",
+              "description": "{node: [neighbors]}"
+            },
+            {
+              "id": "adjacency-matrix",
+              "name": "Adjacency Matrix",
+              "description": "2D array of connections"
+            },
+            {
+              "id": "edge-list",
+              "name": "Edge List",
+              "description": "List of (u, v) pairs"
+            },
+            {
+              "id": "implicit-graphs",
+              "name": "Implicit Graphs",
+              "description": "Grid, state space"
+            }
+          ]
+        },
+        {
+          "id": "graph-traversal",
+          "name": "Graph Traversal",
+          "sectionNumber": "9.2",
+          "problemTypes": [
+            {
+              "id": "depth-first-search-dfs",
+              "name": "Depth-First Search (DFS)",
+              "description": "Stack-based or recursive"
+            },
+            {
+              "id": "breadth-first-search-bfs",
+              "name": "Breadth-First Search (BFS)",
+              "description": "Queue-based level exploration"
+            },
+            {
+              "id": "iterative-dfs",
+              "name": "Iterative DFS",
+              "description": "Using explicit stack"
+            },
+            {
+              "id": "recursive-dfs",
+              "name": "Recursive DFS",
+              "description": "Call stack for traversal"
+            }
+          ]
+        },
+        {
+          "id": "connectivity",
+          "name": "Connectivity",
+          "sectionNumber": "9.3",
+          "problemTypes": [
+            {
+              "id": "connected-components",
+              "name": "Connected Components",
+              "description": "DFS/BFS on unvisited nodes"
+            },
+            {
+              "id": "number-of-islands",
+              "name": "Number of Islands",
+              "description": "Grid DFS/BFS"
+            },
+            {
+              "id": "friend-circles",
+              "name": "Friend Circles",
+              "description": "Component counting"
+            },
+            {
+              "id": "strongly-connected-components",
+              "name": "Strongly Connected Components",
+              "description": "Kosaraju's, Tarjan's"
+            },
+            {
+              "id": "articulation-points",
+              "name": "Articulation Points",
+              "description": "Critical nodes"
+            },
+            {
+              "id": "bridges",
+              "name": "Bridges",
+              "description": "Critical edges"
+            }
+          ]
+        },
+        {
+          "id": "cycle-detection",
+          "name": "Cycle Detection",
+          "sectionNumber": "9.4",
+          "problemTypes": [
+            {
+              "id": "undirected-graph",
+              "name": "Undirected Graph",
+              "description": "DFS with parent tracking"
+            },
+            {
+              "id": "directed-graph",
+              "name": "Directed Graph",
+              "description": "DFS with recursion stack"
+            },
+            {
+              "id": "course-schedule",
+              "name": "Course Schedule",
+              "description": "Detecting cycles in DAG"
+            },
+            {
+              "id": "union-find",
+              "name": "Union-Find",
+              "description": "For undirected cycle detection"
+            }
+          ]
+        },
+        {
+          "id": "topological-sort",
+          "name": "Topological Sort",
+          "sectionNumber": "9.5",
+          "problemTypes": [
+            {
+              "id": "kahn-s-algorithm",
+              "name": "Kahn's Algorithm",
+              "description": "BFS with in-degree"
+            },
+            {
+              "id": "dfs-based",
+              "name": "DFS-Based",
+              "description": "Post-order traversal"
+            },
+            {
+              "id": "course-schedule-ii",
+              "name": "Course Schedule II",
+              "description": "Producing valid order"
+            },
+            {
+              "id": "alien-dictionary",
+              "name": "Alien Dictionary",
+              "description": "Building order from words"
+            }
+          ]
+        },
+        {
+          "id": "shortest-path",
+          "name": "Shortest Path",
+          "sectionNumber": "9.6",
+          "problemTypes": [
+            {
+              "id": "bfs-unweighted",
+              "name": "BFS (Unweighted)",
+              "description": "Level-order shortest path"
+            },
+            {
+              "id": "dijkstra-s-algorithm",
+              "name": "Dijkstra's Algorithm",
+              "description": "Min-heap for weighted graphs"
+            },
+            {
+              "id": "bellman-ford",
+              "name": "Bellman-Ford",
+              "description": "Handling negative weights"
+            },
+            {
+              "id": "floyd-warshall",
+              "name": "Floyd-Warshall",
+              "description": "All-pairs shortest paths"
+            },
+            {
+              "id": "a-search",
+              "name": "A\\* Search",
+              "description": "Heuristic-guided search"
+            }
+          ]
+        },
+        {
+          "id": "minimum-spanning-tree",
+          "name": "Minimum Spanning Tree",
+          "sectionNumber": "9.7",
+          "problemTypes": [
+            {
+              "id": "prim-s-algorithm",
+              "name": "Prim's Algorithm",
+              "description": "Heap-based greedy"
+            },
+            {
+              "id": "kruskal-s-algorithm",
+              "name": "Kruskal's Algorithm",
+              "description": "Union-Find with sorted edges"
+            }
+          ]
+        },
+        {
+          "id": "union-find-disjoint-set",
+          "name": "Union-Find (Disjoint Set)",
+          "sectionNumber": "9.8",
+          "problemTypes": [
+            {
+              "id": "find-with-path-compression",
+              "name": "Find with Path Compression",
+              "description": "Finding root"
+            },
+            {
+              "id": "union-by-rank-size",
+              "name": "Union by Rank/Size",
+              "description": "Merging sets"
+            },
+            {
+              "id": "connected-components",
+              "name": "Connected Components",
+              "description": "Dynamic connectivity"
+            },
+            {
+              "id": "redundant-connection",
+              "name": "Redundant Connection",
+              "description": "Cycle detection"
+            },
+            {
+              "id": "number-of-provinces",
+              "name": "Number of Provinces",
+              "description": "Component counting"
+            }
+          ]
+        },
+        {
+          "id": "bipartite-graphs",
+          "name": "Bipartite Graphs",
+          "sectionNumber": "9.9",
+          "problemTypes": [
+            {
+              "id": "two-coloring",
+              "name": "Two-Coloring",
+              "description": "BFS/DFS with colors"
+            },
+            {
+              "id": "is-graph-bipartite",
+              "name": "Is Graph Bipartite",
+              "description": "Checking 2-colorability"
+            },
+            {
+              "id": "possible-bipartition",
+              "name": "Possible Bipartition",
+              "description": "Conflict checking"
+            }
+          ]
+        },
+        {
+          "id": "grid-graphs",
+          "name": "Grid Graphs",
+          "sectionNumber": "9.10",
+          "problemTypes": [
+            {
+              "id": "matrix-as-graph",
+              "name": "Matrix as Graph",
+              "description": "4 or 8 directions"
+            },
+            {
+              "id": "number-of-islands",
+              "name": "Number of Islands",
+              "description": "Component counting"
+            },
+            {
+              "id": "max-area-of-island",
+              "name": "Max Area of Island",
+              "description": "DFS with area tracking"
+            },
+            {
+              "id": "surrounded-regions",
+              "name": "Surrounded Regions",
+              "description": "Boundary-based DFS"
+            },
+            {
+              "id": "word-search",
+              "name": "Word Search",
+              "description": "Backtracking on grid"
+            },
+            {
+              "id": "shortest-path-in-binary-matrix",
+              "name": "Shortest Path in Binary Matrix",
+              "description": "BFS"
+            }
+          ]
+        },
+        {
+          "id": "state-space-graphs",
+          "name": "State Space Graphs",
+          "sectionNumber": "9.11",
+          "problemTypes": [
+            {
+              "id": "word-ladder",
+              "name": "Word Ladder",
+              "description": "BFS on word transformations"
+            },
+            {
+              "id": "open-the-lock",
+              "name": "Open the Lock",
+              "description": "BFS with state encoding"
+            },
+            {
+              "id": "sliding-puzzle",
+              "name": "Sliding Puzzle",
+              "description": "BFS on configurations"
+            }
+          ]
+        },
+        {
+          "id": "advanced-graph-problems",
+          "name": "Advanced Graph Problems",
+          "sectionNumber": "9.12",
+          "problemTypes": [
+            {
+              "id": "clone-graph",
+              "name": "Clone Graph",
+              "description": "DFS/BFS with hash map"
+            },
+            {
+              "id": "reconstruct-itinerary",
+              "name": "Reconstruct Itinerary",
+              "description": "Euler path"
+            },
+            {
+              "id": "minimum-height-trees",
+              "name": "Minimum Height Trees",
+              "description": "Topological sort variation"
+            },
+            {
+              "id": "network-delay-time",
+              "name": "Network Delay Time",
+              "description": "Dijkstra's application"
+            },
+            {
+              "id": "cheapest-flights-k-stops",
+              "name": "Cheapest Flights K Stops",
+              "description": "Modified BFS/Dijkstra"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Number of Islands",
+        "Clone Graph",
+        "Course Schedule",
+        "Course Schedule II",
+        "Pacific Atlantic Water Flow",
+        "Graph Valid Tree",
+        "Number of Connected Components",
+        "Word Ladder",
+        "Network Delay Time",
+        "Cheapest Flights Within K Stops",
+        "Reconstruct Itinerary",
+        "Critical Connections in a Network",
+        "Is Graph Bipartite",
+        "Redundant Connection",
+        "Minimum Height Trees"
+      ],
+      "overview": "Graphs represent relationships between entities. Can be directed/undirected, weighted/unweighted, represented as adjacency list/matrix.",
+      "pythonConsiderations": [
+        "Use collections.defaultdict(list) for adjacency list",
+        "Use set for visited tracking",
+        "Use deque for BFS queue",
+        "Grid indexing: grid[row][col]",
+        "Direction arrays: dirs = [(0,1), (1,0), (0,-1), (-1,0)]",
+        "Hash tuples for coordinates: (row, col) as keys",
+        "--"
+      ]
+    },
+    {
+      "id": "recursion-and-backtracking",
+      "name": "Recursion & Backtracking",
+      "order": 10,
+      "subtopics": [
+        {
+          "id": "recursion-fundamentals",
+          "name": "Recursion Fundamentals",
+          "sectionNumber": "10.1",
+          "problemTypes": [
+            {
+              "id": "base-case",
+              "name": "Base Case",
+              "description": "Termination condition"
+            },
+            {
+              "id": "recursive-case",
+              "name": "Recursive Case",
+              "description": "Self-reference with smaller input"
+            },
+            {
+              "id": "call-stack",
+              "name": "Call Stack",
+              "description": "Function call memory"
+            },
+            {
+              "id": "tail-recursion",
+              "name": "Tail Recursion",
+              "description": "Optimization opportunity"
+            }
+          ]
+        },
+        {
+          "id": "backtracking-framework",
+          "name": "Backtracking Framework",
+          "sectionNumber": "10.2",
+          "problemTypes": [
+            {
+              "id": "choose",
+              "name": "Choose",
+              "description": "Make a choice"
+            },
+            {
+              "id": "explore",
+              "name": "Explore",
+              "description": "Recurse with choice"
+            },
+            {
+              "id": "unchoose",
+              "name": "Unchoose",
+              "description": "Undo choice (backtrack)"
+            },
+            {
+              "id": "pruning",
+              "name": "Pruning",
+              "description": "Early termination of invalid paths"
+            }
+          ]
+        },
+        {
+          "id": "permutations",
+          "name": "Permutations",
+          "sectionNumber": "10.3",
+          "problemTypes": [
+            {
+              "id": "full-permutations",
+              "name": "Full Permutations",
+              "description": "All arrangements"
+            },
+            {
+              "id": "permutations-with-duplicates",
+              "name": "Permutations with Duplicates",
+              "description": "Handling repeated elements"
+            },
+            {
+              "id": "next-permutation",
+              "name": "Next Permutation",
+              "description": "Lexicographic next"
+            },
+            {
+              "id": "permutation-sequence",
+              "name": "Permutation Sequence",
+              "description": "k-th permutation"
+            }
+          ]
+        },
+        {
+          "id": "combinations",
+          "name": "Combinations",
+          "sectionNumber": "10.4",
+          "problemTypes": [
+            {
+              "id": "combinations",
+              "name": "Combinations",
+              "description": "Choosing k elements"
+            },
+            {
+              "id": "combination-sum",
+              "name": "Combination Sum",
+              "description": "Elements summing to target"
+            },
+            {
+              "id": "combination-sum-ii",
+              "name": "Combination Sum II",
+              "description": "With duplicates"
+            },
+            {
+              "id": "combination-sum-iii",
+              "name": "Combination Sum III",
+              "description": "Fixed number of elements"
+            }
+          ]
+        },
+        {
+          "id": "subsets",
+          "name": "Subsets",
+          "sectionNumber": "10.5",
+          "problemTypes": [
+            {
+              "id": "subsets",
+              "name": "Subsets",
+              "description": "All possible subsets (power set)"
+            },
+            {
+              "id": "subsets-ii",
+              "name": "Subsets II",
+              "description": "With duplicate elements"
+            },
+            {
+              "id": "iterative-approach",
+              "name": "Iterative Approach",
+              "description": "Building subsets incrementally"
+            },
+            {
+              "id": "bit-manipulation",
+              "name": "Bit Manipulation",
+              "description": "Using binary representation"
+            }
+          ]
+        },
+        {
+          "id": "constraint-satisfaction",
+          "name": "Constraint Satisfaction",
+          "sectionNumber": "10.6",
+          "problemTypes": [
+            {
+              "id": "n-queens",
+              "name": "N-Queens",
+              "description": "Placing queens on chessboard"
+            },
+            {
+              "id": "sudoku-solver",
+              "name": "Sudoku Solver",
+              "description": "Filling valid sudoku"
+            },
+            {
+              "id": "valid-parentheses-generation",
+              "name": "Valid Parentheses Generation",
+              "description": "Generating balanced parens"
+            },
+            {
+              "id": "word-search",
+              "name": "Word Search",
+              "description": "Finding words in grid"
+            }
+          ]
+        },
+        {
+          "id": "partitioning",
+          "name": "Partitioning",
+          "sectionNumber": "10.7",
+          "problemTypes": [
+            {
+              "id": "palindrome-partitioning",
+              "name": "Palindrome Partitioning",
+              "description": "All palindrome splits"
+            },
+            {
+              "id": "partition-to-k-equal-sum-subsets",
+              "name": "Partition to K Equal Sum Subsets",
+              "description": "Subset division"
+            },
+            {
+              "id": "split-array-into-consecutive-subsequences",
+              "name": "Split Array into Consecutive Subsequences",
+              "description": "Sequence building"
+            }
+          ]
+        },
+        {
+          "id": "path-finding",
+          "name": "Path Finding",
+          "sectionNumber": "10.8",
+          "problemTypes": [
+            {
+              "id": "all-paths-from-source-to-target",
+              "name": "All Paths from Source to Target",
+              "description": "DAG traversal"
+            },
+            {
+              "id": "unique-paths",
+              "name": "Unique Paths",
+              "description": "Grid navigation"
+            },
+            {
+              "id": "letter-combinations",
+              "name": "Letter Combinations",
+              "description": "Phone number mapping"
+            },
+            {
+              "id": "binary-watch",
+              "name": "Binary Watch",
+              "description": "Time generation"
+            }
+          ]
+        },
+        {
+          "id": "decision-trees",
+          "name": "Decision Trees",
+          "sectionNumber": "10.9",
+          "problemTypes": [
+            {
+              "id": "expression-add-operators",
+              "name": "Expression Add Operators",
+              "description": "Placing operators"
+            },
+            {
+              "id": "remove-invalid-parentheses",
+              "name": "Remove Invalid Parentheses",
+              "description": "Minimum removals"
+            },
+            {
+              "id": "restore-ip-addresses",
+              "name": "Restore IP Addresses",
+              "description": "Valid IP splitting"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Subsets",
+        "Subsets II",
+        "Permutations",
+        "Permutations II",
+        "Combination Sum I",
+        "II",
+        "III",
+        "Generate Parentheses",
+        "N-Queens",
+        "N-Queens II",
+        "Sudoku Solver",
+        "Word Search",
+        "Palindrome Partitioning",
+        "Letter Combinations of Phone Number",
+        "Restore IP Addresses",
+        "Expression Add Operators"
+      ],
+      "overview": "Recursion solves problems by breaking into smaller subproblems. Backtracking explores solution space by making choices and undoing them.",
+      "pythonConsiderations": [
+        "Default recursion limit: ~1000 (use sys.setrecursionlimit())",
+        "Pass lists by reference: use path[:] for copies",
+        "Use nonlocal for modifying outer variables",
+        "functools.lru_cache for memoization",
+        "List methods modify in-place: append(), pop()",
+        "--"
+      ]
+    },
+    {
+      "id": "dynamic-programming-dp",
+      "name": "Dynamic Programming (DP)",
+      "order": 11,
+      "subtopics": [
+        {
+          "id": "dp-fundamentals",
+          "name": "DP Fundamentals",
+          "sectionNumber": "11.1",
+          "problemTypes": [
+            {
+              "id": "overlapping-subproblems",
+              "name": "Overlapping Subproblems",
+              "description": "Repeated calculations"
+            },
+            {
+              "id": "optimal-substructure",
+              "name": "Optimal Substructure",
+              "description": "Optimal solution from subproblems"
+            },
+            {
+              "id": "memoization-top-down",
+              "name": "Memoization (Top-Down)",
+              "description": "Recursive with cache"
+            },
+            {
+              "id": "tabulation-bottom-up",
+              "name": "Tabulation (Bottom-Up)",
+              "description": "Iterative table filling"
+            },
+            {
+              "id": "state-definition",
+              "name": "State Definition",
+              "description": "Identifying DP state"
+            },
+            {
+              "id": "transition",
+              "name": "Transition",
+              "description": "Relating states"
+            }
+          ]
+        },
+        {
+          "id": "1-d-dp",
+          "name": "1-D DP",
+          "sectionNumber": "11.2",
+          "problemTypes": [
+            {
+              "id": "fibonacci",
+              "name": "Fibonacci",
+              "description": "Classic example"
+            },
+            {
+              "id": "climbing-stairs",
+              "name": "Climbing Stairs",
+              "description": "Number of ways"
+            },
+            {
+              "id": "house-robber",
+              "name": "House Robber",
+              "description": "Maximum non-adjacent sum"
+            },
+            {
+              "id": "decode-ways",
+              "name": "Decode Ways",
+              "description": "String decoding count"
+            },
+            {
+              "id": "jump-game",
+              "name": "Jump Game",
+              "description": "Reachability check"
+            },
+            {
+              "id": "maximum-subarray",
+              "name": "Maximum Subarray",
+              "description": "Kadane's algorithm"
+            }
+          ]
+        },
+        {
+          "id": "2-d-dp",
+          "name": "2-D DP",
+          "sectionNumber": "11.3",
+          "problemTypes": [
+            {
+              "id": "unique-paths",
+              "name": "Unique Paths",
+              "description": "Grid navigation"
+            },
+            {
+              "id": "minimum-path-sum",
+              "name": "Minimum Path Sum",
+              "description": "Grid sum minimization"
+            },
+            {
+              "id": "longest-common-subsequence-lcs",
+              "name": "Longest Common Subsequence (LCS)",
+              "description": "String comparison"
+            },
+            {
+              "id": "edit-distance",
+              "name": "Edit Distance",
+              "description": "Minimum operations"
+            },
+            {
+              "id": "regular-expression-matching",
+              "name": "Regular Expression Matching",
+              "description": "Pattern matching"
+            },
+            {
+              "id": "wildcard-matching",
+              "name": "Wildcard Matching",
+              "description": "With \\* and ?"
+            },
+            {
+              "id": "interleaving-string",
+              "name": "Interleaving String",
+              "description": "Merging validation"
+            }
+          ]
+        },
+        {
+          "id": "knapsack-problems",
+          "name": "Knapsack Problems",
+          "sectionNumber": "11.4",
+          "problemTypes": [
+            {
+              "id": "0-1-knapsack",
+              "name": "0/1 Knapsack",
+              "description": "Include or exclude items"
+            },
+            {
+              "id": "unbounded-knapsack",
+              "name": "Unbounded Knapsack",
+              "description": "Unlimited items"
+            },
+            {
+              "id": "partition-equal-subset-sum",
+              "name": "Partition Equal Subset Sum",
+              "description": "Subset division"
+            },
+            {
+              "id": "target-sum",
+              "name": "Target Sum",
+              "description": "Assignment of signs"
+            },
+            {
+              "id": "coin-change",
+              "name": "Coin Change",
+              "description": "Minimum coins for amount"
+            },
+            {
+              "id": "coin-change-ii",
+              "name": "Coin Change II",
+              "description": "Number of ways"
+            }
+          ]
+        },
+        {
+          "id": "subsequence-problems",
+          "name": "Subsequence Problems",
+          "sectionNumber": "11.5",
+          "problemTypes": [
+            {
+              "id": "longest-increasing-subsequence-lis",
+              "name": "Longest Increasing Subsequence (LIS)",
+              "description": "O(n²) and O(n log n)"
+            },
+            {
+              "id": "longest-common-subsequence-lcs",
+              "name": "Longest Common Subsequence (LCS)",
+              "description": "Two sequences"
+            },
+            {
+              "id": "longest-palindromic-subsequence",
+              "name": "Longest Palindromic Subsequence",
+              "description": "Within string"
+            },
+            {
+              "id": "maximum-length-of-repeated-subarray",
+              "name": "Maximum Length of Repeated Subarray",
+              "description": "Contiguous common"
+            },
+            {
+              "id": "distinct-subsequences",
+              "name": "Distinct Subsequences",
+              "description": "Count of occurrences"
+            }
+          ]
+        },
+        {
+          "id": "string-dp",
+          "name": "String DP",
+          "sectionNumber": "11.6",
+          "problemTypes": [
+            {
+              "id": "palindrome-substring",
+              "name": "Palindrome Substring",
+              "description": "Longest, count"
+            },
+            {
+              "id": "palindrome-partitioning",
+              "name": "Palindrome Partitioning",
+              "description": "Minimum cuts"
+            },
+            {
+              "id": "word-break",
+              "name": "Word Break",
+              "description": "Dictionary decomposition"
+            },
+            {
+              "id": "word-break-ii",
+              "name": "Word Break II",
+              "description": "All decompositions"
+            },
+            {
+              "id": "scramble-string",
+              "name": "Scramble String",
+              "description": "Tree structure matching"
+            }
+          ]
+        },
+        {
+          "id": "interval-dp",
+          "name": "Interval DP",
+          "sectionNumber": "11.7",
+          "problemTypes": [
+            {
+              "id": "burst-balloons",
+              "name": "Burst Balloons",
+              "description": "Optimal balloon popping"
+            },
+            {
+              "id": "merge-stones",
+              "name": "Merge Stones",
+              "description": "Minimum cost merging"
+            },
+            {
+              "id": "minimum-cost-tree-from-leaf-values",
+              "name": "Minimum Cost Tree From Leaf Values",
+              "description": "Tree construction"
+            },
+            {
+              "id": "palindrome-removal",
+              "name": "Palindrome Removal",
+              "description": "Minimum steps"
+            }
+          ]
+        },
+        {
+          "id": "tree-dp",
+          "name": "Tree DP",
+          "sectionNumber": "11.8",
+          "problemTypes": [
+            {
+              "id": "binary-tree-maximum-path-sum",
+              "name": "Binary Tree Maximum Path Sum",
+              "description": "Paths through nodes"
+            },
+            {
+              "id": "house-robber-iii",
+              "name": "House Robber III",
+              "description": "Tree structure"
+            },
+            {
+              "id": "longest-univalue-path",
+              "name": "Longest Univalue Path",
+              "description": "Same value paths"
+            },
+            {
+              "id": "diameter-of-binary-tree",
+              "name": "Diameter of Binary Tree",
+              "description": "Longest path"
+            }
+          ]
+        },
+        {
+          "id": "state-machine-dp",
+          "name": "State Machine DP",
+          "sectionNumber": "11.9",
+          "problemTypes": [
+            {
+              "id": "best-time-to-buy-and-sell-stock",
+              "name": "Best Time to Buy and Sell Stock",
+              "description": "With states"
+            },
+            {
+              "id": "best-time-to-buy-and-sell-stock-with-cooldown",
+              "name": "Best Time to Buy and Sell Stock with Cooldown",
+              "description": "State transitions"
+            },
+            {
+              "id": "best-time-to-buy-and-sell-stock-with-fee",
+              "name": "Best Time to Buy and Sell Stock with Fee",
+              "description": "Transaction costs"
+            }
+          ]
+        },
+        {
+          "id": "digit-dp",
+          "name": "Digit DP",
+          "sectionNumber": "11.10",
+          "problemTypes": [
+            {
+              "id": "count-numbers-with-unique-digits",
+              "name": "Count Numbers with Unique Digits",
+              "description": "Digit constraints"
+            },
+            {
+              "id": "numbers-at-most-n-given-digit-set",
+              "name": "Numbers At Most N Given Digit Set",
+              "description": "Building numbers"
+            }
+          ]
+        },
+        {
+          "id": "bitmask-dp",
+          "name": "Bitmask DP",
+          "sectionNumber": "11.11",
+          "problemTypes": [
+            {
+              "id": "travelling-salesman-problem-tsp",
+              "name": "Travelling Salesman Problem (TSP)",
+              "description": "Visiting all nodes"
+            },
+            {
+              "id": "partition-to-k-equal-sum-subsets",
+              "name": "Partition to K Equal Sum Subsets",
+              "description": "Subset tracking"
+            },
+            {
+              "id": "shortest-path-visiting-all-nodes",
+              "name": "Shortest Path Visiting All Nodes",
+              "description": "State with visited set"
+            }
+          ]
+        },
+        {
+          "id": "game-theory-dp",
+          "name": "Game Theory DP",
+          "sectionNumber": "11.12",
+          "problemTypes": [
+            {
+              "id": "stone-game",
+              "name": "Stone Game",
+              "description": "Optimal play"
+            },
+            {
+              "id": "predict-the-winner",
+              "name": "Predict the Winner",
+              "description": "Two-player games"
+            },
+            {
+              "id": "can-i-win",
+              "name": "Can I Win",
+              "description": "Winning strategy"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Climbing Stairs",
+        "House Robber I",
+        "II",
+        "III",
+        "Coin Change",
+        "Coin Change II",
+        "Longest Increasing Subsequence",
+        "Longest Common Subsequence",
+        "Edit Distance",
+        "Unique Paths",
+        "Unique Paths II",
+        "Minimum Path Sum",
+        "Triangle (path sum)",
+        "Maximum Subarray",
+        "Jump Game",
+        "Jump Game II",
+        "Decode Ways",
+        "Word Break",
+        "Word Break II",
+        "Partition Equal Subset Sum",
+        "Target Sum",
+        "Longest Palindromic Substring",
+        "Palindrome Partitioning II",
+        "Regular Expression Matching",
+        "Wildcard Matching",
+        "Burst Balloons"
+      ],
+      "overview": "DP solves problems by breaking into overlapping subproblems, storing solutions to avoid recomputation.",
+      "pythonConsiderations": [
+        "Use lists for 1-D: dp = [0] * n",
+        "Use nested lists for 2-D: dp = [[0] * m for _ in range(n)]",
+        "Don't use [[0] * m] * n (shallow copy issue)",
+        "functools.lru_cache for top-down memoization",
+        "Use dictionaries for sparse state spaces",
+        "float('inf') for initialization",
+        "--"
+      ]
+    },
+    {
+      "id": "greedy-algorithms",
+      "name": "Greedy Algorithms",
+      "order": 12,
+      "subtopics": [
+        {
+          "id": "greedy-fundamentals",
+          "name": "Greedy Fundamentals",
+          "sectionNumber": "12.1",
+          "problemTypes": [
+            {
+              "id": "greedy-choice-property",
+              "name": "Greedy Choice Property",
+              "description": "Local optimum leads to global"
+            },
+            {
+              "id": "proof-of-correctness",
+              "name": "Proof of Correctness",
+              "description": "Exchange argument, stay ahead"
+            },
+            {
+              "id": "counterexamples",
+              "name": "Counterexamples",
+              "description": "When greedy fails"
+            }
+          ]
+        },
+        {
+          "id": "interval-problems",
+          "name": "Interval Problems",
+          "sectionNumber": "12.2",
+          "problemTypes": [
+            {
+              "id": "activity-selection",
+              "name": "Activity Selection",
+              "description": "Maximum non-overlapping"
+            },
+            {
+              "id": "merge-intervals",
+              "name": "Merge Intervals",
+              "description": "Combining overlaps"
+            },
+            {
+              "id": "non-overlapping-intervals",
+              "name": "Non-overlapping Intervals",
+              "description": "Minimum removals"
+            },
+            {
+              "id": "meeting-rooms-ii",
+              "name": "Meeting Rooms II",
+              "description": "Minimum rooms needed"
+            },
+            {
+              "id": "interval-covering",
+              "name": "Interval Covering",
+              "description": "Minimum intervals to cover"
+            }
+          ]
+        },
+        {
+          "id": "array-greedy",
+          "name": "Array Greedy",
+          "sectionNumber": "12.3",
+          "problemTypes": [
+            {
+              "id": "jump-game",
+              "name": "Jump Game",
+              "description": "Can reach end"
+            },
+            {
+              "id": "jump-game-ii",
+              "name": "Jump Game II",
+              "description": "Minimum jumps"
+            },
+            {
+              "id": "gas-station",
+              "name": "Gas Station",
+              "description": "Circuit completion"
+            },
+            {
+              "id": "candy",
+              "name": "Candy",
+              "description": "Distribution with constraints"
+            },
+            {
+              "id": "assign-cookies",
+              "name": "Assign Cookies",
+              "description": "Content children"
+            }
+          ]
+        },
+        {
+          "id": "string-greedy",
+          "name": "String Greedy",
+          "sectionNumber": "12.4",
+          "problemTypes": [
+            {
+              "id": "remove-k-digits",
+              "name": "Remove K Digits",
+              "description": "Smallest number"
+            },
+            {
+              "id": "remove-duplicate-letters",
+              "name": "Remove Duplicate Letters",
+              "description": "Lexicographically smallest"
+            },
+            {
+              "id": "partition-labels",
+              "name": "Partition Labels",
+              "description": "Maximum partition size"
+            }
+          ]
+        },
+        {
+          "id": "two-pointer-greedy",
+          "name": "Two-Pointer Greedy",
+          "sectionNumber": "12.5",
+          "problemTypes": [
+            {
+              "id": "container-with-most-water",
+              "name": "Container With Most Water",
+              "description": "Maximum area"
+            },
+            {
+              "id": "trapping-rain-water",
+              "name": "Trapping Rain Water",
+              "description": "Water between bars"
+            },
+            {
+              "id": "3sum-closest",
+              "name": "3Sum Closest",
+              "description": "Closest sum to target"
+            }
+          ]
+        },
+        {
+          "id": "scheduling",
+          "name": "Scheduling",
+          "sectionNumber": "12.6",
+          "problemTypes": [
+            {
+              "id": "task-scheduler",
+              "name": "Task Scheduler",
+              "description": "Minimum time with cooldown"
+            },
+            {
+              "id": "course-schedule-iii",
+              "name": "Course Schedule III",
+              "description": "Maximum courses"
+            },
+            {
+              "id": "minimum-number-of-arrows",
+              "name": "Minimum Number of Arrows",
+              "description": "Overlapping balloons"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Jump Game",
+        "Jump Game II",
+        "Gas Station",
+        "Candy",
+        "Non-overlapping Intervals",
+        "Merge Intervals",
+        "Partition Labels",
+        "Queue Reconstruction by Height",
+        "Lemonade Change",
+        "Task Scheduler"
+      ],
+      "overview": "Greedy makes locally optimal choices hoping to find global optimum. Works when problem has optimal substructure and greedy choice property.",
+      "pythonConsiderations": [
+        "Sort with custom key: sorted(arr, key=lambda x: ...)",
+        "Multiple criteria: key=lambda x: (x[0], -x[1])",
+        "Use heaps for greedy selection",
+        "--"
+      ]
+    },
+    {
+      "id": "binary-search",
+      "name": "Binary Search",
+      "order": 13,
+      "subtopics": [
+        {
+          "id": "standard-binary-search",
+          "name": "Standard Binary Search",
+          "sectionNumber": "13.1",
+          "problemTypes": [
+            {
+              "id": "finding-element",
+              "name": "Finding Element",
+              "description": "Exact match in sorted array"
+            },
+            {
+              "id": "lower-bound",
+              "name": "Lower Bound",
+              "description": "First element ≥ target"
+            },
+            {
+              "id": "upper-bound",
+              "name": "Upper Bound",
+              "description": "First element > target"
+            },
+            {
+              "id": "insert-position",
+              "name": "Insert Position",
+              "description": "Where to insert target"
+            }
+          ]
+        },
+        {
+          "id": "search-space-variations",
+          "name": "Search Space Variations",
+          "sectionNumber": "13.2",
+          "problemTypes": [
+            {
+              "id": "rotated-sorted-array",
+              "name": "Rotated Sorted Array",
+              "description": "Modified binary search"
+            },
+            {
+              "id": "search-in-2d-matrix",
+              "name": "Search in 2D Matrix",
+              "description": "Row then column search"
+            },
+            {
+              "id": "peak-element",
+              "name": "Peak Element",
+              "description": "Finding local maximum"
+            },
+            {
+              "id": "single-element-in-sorted-array",
+              "name": "Single Element in Sorted Array",
+              "description": "XOR patterns"
+            }
+          ]
+        },
+        {
+          "id": "binary-search-on-answer",
+          "name": "Binary Search on Answer",
+          "sectionNumber": "13.3",
+          "problemTypes": [
+            {
+              "id": "capacity-to-ship-packages",
+              "name": "Capacity To Ship Packages",
+              "description": "Minimizing capacity"
+            },
+            {
+              "id": "koko-eating-bananas",
+              "name": "Koko Eating Bananas",
+              "description": "Finding eating speed"
+            },
+            {
+              "id": "minimum-time-to-complete-trips",
+              "name": "Minimum Time to Complete Trips",
+              "description": "Time calculation"
+            },
+            {
+              "id": "split-array-largest-sum",
+              "name": "Split Array Largest Sum",
+              "description": "Minimizing maximum"
+            }
+          ]
+        },
+        {
+          "id": "matrix-binary-search",
+          "name": "Matrix Binary Search",
+          "sectionNumber": "13.4",
+          "problemTypes": [
+            {
+              "id": "search-2d-matrix",
+              "name": "Search 2D Matrix",
+              "description": "Sorted rows and columns"
+            },
+            {
+              "id": "kth-smallest-in-sorted-matrix",
+              "name": "Kth Smallest in Sorted Matrix",
+              "description": "Binary search on value range"
+            }
+          ]
+        },
+        {
+          "id": "advanced-patterns",
+          "name": "Advanced Patterns",
+          "sectionNumber": "13.5",
+          "problemTypes": [
+            {
+              "id": "median-of-two-sorted-arrays",
+              "name": "Median of Two Sorted Arrays",
+              "description": "Partition approach"
+            },
+            {
+              "id": "find-k-th-smallest-pair-distance",
+              "name": "Find K-th Smallest Pair Distance",
+              "description": "Binary search + counting"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Binary Search",
+        "Search in Rotated Sorted Array",
+        "Find First and Last Position",
+        "Search Insert Position",
+        "Find Peak Element",
+        "Sqrt(x)",
+        "Valid Perfect Square",
+        "Median of Two Sorted Arrays",
+        "Koko Eating Bananas",
+        "Capacity To Ship Packages"
+      ],
+      "overview": "Binary search efficiently finds elements in sorted data by repeatedly halving search space. O(log n) time complexity.",
+      "pythonConsiderations": [
+        "bisect_left(): Lower bound",
+        "bisect_right(): Upper bound",
+        "Avoid integer overflow (not issue in Python)",
+        "Use mid = left + (right - left) // 2 or (left + right) // 2",
+        "--"
+      ]
+    },
+    {
+      "id": "math-and-number-theory",
+      "name": "Math & Number Theory",
+      "order": 14,
+      "subtopics": [
+        {
+          "id": "basic-arithmetic",
+          "name": "Basic Arithmetic",
+          "sectionNumber": "14.1",
+          "problemTypes": [
+            {
+              "id": "gcd-lcm",
+              "name": "GCD/LCM",
+              "description": "Euclidean algorithm"
+            },
+            {
+              "id": "prime-numbers",
+              "name": "Prime Numbers",
+              "description": "Sieve of Eratosthenes"
+            },
+            {
+              "id": "prime-factorization",
+              "name": "Prime Factorization",
+              "description": "Decomposition"
+            },
+            {
+              "id": "perfect-square",
+              "name": "Perfect Square",
+              "description": "Checking and finding"
+            }
+          ]
+        },
+        {
+          "id": "modular-arithmetic",
+          "name": "Modular Arithmetic",
+          "sectionNumber": "14.2",
+          "problemTypes": [
+            {
+              "id": "modulo-operations",
+              "name": "Modulo Operations",
+              "description": "(a + b) % m, (a \\* b) % m"
+            },
+            {
+              "id": "modular-exponentiation",
+              "name": "Modular Exponentiation",
+              "description": "Fast power algorithm"
+            },
+            {
+              "id": "modular-inverse",
+              "name": "Modular Inverse",
+              "description": "Fermat's theorem, extended Euclidean"
+            }
+          ]
+        },
+        {
+          "id": "combinatorics",
+          "name": "Combinatorics",
+          "sectionNumber": "14.3",
+          "problemTypes": [
+            {
+              "id": "factorial",
+              "name": "Factorial",
+              "description": "n!"
+            },
+            {
+              "id": "combinations",
+              "name": "Combinations",
+              "description": "nCr = n! / (r! \\* (n-r)!)"
+            },
+            {
+              "id": "permutations",
+              "name": "Permutations",
+              "description": "nPr = n! / (n-r)!"
+            },
+            {
+              "id": "pascal-s-triangle",
+              "name": "Pascal's Triangle",
+              "description": "Binomial coefficients"
+            },
+            {
+              "id": "catalan-numbers",
+              "name": "Catalan Numbers",
+              "description": "Parenthesization, BSTs"
+            }
+          ]
+        },
+        {
+          "id": "number-properties",
+          "name": "Number Properties",
+          "sectionNumber": "14.4",
+          "problemTypes": [
+            {
+              "id": "even-odd",
+              "name": "Even/Odd",
+              "description": "Parity checks"
+            },
+            {
+              "id": "digits",
+              "name": "Digits",
+              "description": "Extracting, summing, counting"
+            },
+            {
+              "id": "palindrome-number",
+              "name": "Palindrome Number",
+              "description": "Reversing comparison"
+            },
+            {
+              "id": "ugly-numbers",
+              "name": "Ugly Numbers",
+              "description": "Factorization constraints"
+            },
+            {
+              "id": "happy-number",
+              "name": "Happy Number",
+              "description": "Digit square sum cycles"
+            }
+          ]
+        },
+        {
+          "id": "sequences",
+          "name": "Sequences",
+          "sectionNumber": "14.5",
+          "problemTypes": [
+            {
+              "id": "fibonacci",
+              "name": "Fibonacci",
+              "description": "Recursion, DP, matrix exponentiation"
+            },
+            {
+              "id": "arithmetic-progression",
+              "name": "Arithmetic Progression",
+              "description": "Sum formulas"
+            },
+            {
+              "id": "geometric-progression",
+              "name": "Geometric Progression",
+              "description": "Sum formulas"
+            },
+            {
+              "id": "power-of-two-three",
+              "name": "Power of Two/Three",
+              "description": "Bit manipulation, division"
+            }
+          ]
+        },
+        {
+          "id": "geometry-basic",
+          "name": "Geometry (Basic)",
+          "sectionNumber": "14.6",
+          "problemTypes": [
+            {
+              "id": "distance",
+              "name": "Distance",
+              "description": "Euclidean distance"
+            },
+            {
+              "id": "line-intersection",
+              "name": "Line Intersection",
+              "description": "Coordinate geometry"
+            },
+            {
+              "id": "convex-hull",
+              "name": "Convex Hull",
+              "description": "Graham scan, Jarvis march"
+            },
+            {
+              "id": "rectangle-overlap",
+              "name": "Rectangle Overlap",
+              "description": "Coordinate comparison"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Pow(x",
+        "n)",
+        "Sqrt(x)",
+        "Excel Sheet Column Number",
+        "Factorial Trailing Zeroes",
+        "Count Primes",
+        "Happy Number",
+        "Ugly Number",
+        "Ugly Number II",
+        "Perfect Squares",
+        "Integer to Roman",
+        "Roman to Integer",
+        "Multiply Strings",
+        "Add Binary"
+      ],
+      "overview": "Mathematical problems involving number properties, arithmetic operations, and theoretical concepts.",
+      "pythonConsiderations": [
+        "No integer overflow (arbitrary precision)",
+        "math module: gcd(), sqrt(), factorial()",
+        "pow(base, exp, mod) for modular exponentiation",
+        "divmod(a, b) returns quotient and remainder",
+        "Use Decimal for precise decimal arithmetic",
+        "--"
+      ]
+    },
+    {
+      "id": "bit-manipulation",
+      "name": "Bit Manipulation",
+      "order": 15,
+      "subtopics": [
+        {
+          "id": "bitwise-operators",
+          "name": "Bitwise Operators",
+          "sectionNumber": "15.1",
+          "problemTypes": [
+            {
+              "id": "and-and",
+              "name": "AND (&)",
+              "description": "Both bits 1"
+            },
+            {
+              "id": "or",
+              "name": "OR (|)",
+              "description": "At least one bit 1"
+            },
+            {
+              "id": "xor",
+              "name": "XOR (^)",
+              "description": "Exactly one bit 1"
+            },
+            {
+              "id": "not",
+              "name": "NOT (~)",
+              "description": "Flips bits"
+            },
+            {
+              "id": "left-shift",
+              "name": "Left Shift (<<)",
+              "description": "Multiply by 2"
+            },
+            {
+              "id": "right-shift",
+              "name": "Right Shift (>>)",
+              "description": "Divide by 2"
+            }
+          ]
+        },
+        {
+          "id": "common-bit-tricks",
+          "name": "Common Bit Tricks",
+          "sectionNumber": "15.2",
+          "problemTypes": [
+            {
+              "id": "check-i-th-bit",
+              "name": "Check i-th bit",
+              "description": "(n >> i) & 1"
+            },
+            {
+              "id": "set-i-th-bit",
+              "name": "Set i-th bit",
+              "description": "n | (1 << i)"
+            },
+            {
+              "id": "clear-i-th-bit",
+              "name": "Clear i-th bit",
+              "description": "n & ~(1 << i)"
+            },
+            {
+              "id": "toggle-i-th-bit",
+              "name": "Toggle i-th bit",
+              "description": "n ^ (1 << i)"
+            },
+            {
+              "id": "clear-lowest-set-bit",
+              "name": "Clear lowest set bit",
+              "description": "n & (n - 1)"
+            },
+            {
+              "id": "get-lowest-set-bit",
+              "name": "Get lowest set bit",
+              "description": "n & -n"
+            },
+            {
+              "id": "count-set-bits",
+              "name": "Count set bits",
+              "description": "Brian Kernighan's algorithm"
+            }
+          ]
+        },
+        {
+          "id": "xor-patterns",
+          "name": "XOR Patterns",
+          "sectionNumber": "15.3",
+          "problemTypes": [
+            {
+              "id": "single-number",
+              "name": "Single Number",
+              "description": "XOR all elements"
+            },
+            {
+              "id": "two-single-numbers",
+              "name": "Two Single Numbers",
+              "description": "XOR grouping"
+            },
+            {
+              "id": "missing-number",
+              "name": "Missing Number",
+              "description": "XOR with indices"
+            },
+            {
+              "id": "self-cancellation",
+              "name": "Self-cancellation",
+              "description": "a ^ a = 0"
+            }
+          ]
+        },
+        {
+          "id": "bit-counting",
+          "name": "Bit Counting",
+          "sectionNumber": "15.4",
+          "problemTypes": [
+            {
+              "id": "number-of-1-bits",
+              "name": "Number of 1 Bits",
+              "description": "Hamming weight"
+            },
+            {
+              "id": "counting-bits",
+              "name": "Counting Bits",
+              "description": "DP with bit patterns"
+            },
+            {
+              "id": "power-of-two",
+              "name": "Power of Two",
+              "description": "n & (n - 1) == 0"
+            }
+          ]
+        },
+        {
+          "id": "subset-generation",
+          "name": "Subset Generation",
+          "sectionNumber": "15.5",
+          "problemTypes": [
+            {
+              "id": "all-subsets",
+              "name": "All Subsets",
+              "description": "Iterate 0 to 2^n - 1"
+            },
+            {
+              "id": "subset-sum",
+              "name": "Subset Sum",
+              "description": "Bitmask DP"
+            }
+          ]
+        },
+        {
+          "id": "bitset-applications",
+          "name": "Bitset Applications",
+          "sectionNumber": "15.6",
+          "problemTypes": [
+            {
+              "id": "state-encoding",
+              "name": "State Encoding",
+              "description": "Representing state in bits"
+            },
+            {
+              "id": "visited-tracking",
+              "name": "Visited Tracking",
+              "description": "Bit flags"
+            },
+            {
+              "id": "optimization",
+              "name": "Optimization",
+              "description": "Space-efficient storage"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Single Number I",
+        "II",
+        "III",
+        "Number of 1 Bits",
+        "Counting Bits",
+        "Reverse Bits",
+        "Power of Two",
+        "Power of Four",
+        "Missing Number",
+        "Bitwise AND of Numbers Range",
+        "Maximum XOR of Two Numbers",
+        "Sum of Two Integers (without + operator)"
+      ],
+      "overview": "Bit manipulation operates directly on binary representations. Efficient for certain problems using bitwise operators.",
+      "pythonConsiderations": [
+        "Integers have unlimited precision",
+        "Negative numbers: two's complement",
+        "Bitwise NOT: ~n gives -(n+1)",
+        "No unsigned integers",
+        "bin(n) converts to binary string",
+        "int(s, 2) parses binary string",
+        "--"
+      ]
+    },
+    {
+      "id": "sorting-and-searching-algorithms",
+      "name": "Sorting & Searching Algorithms",
+      "order": 16,
+      "subtopics": [
+        {
+          "id": "comparison-based-sorting",
+          "name": "Comparison-Based Sorting",
+          "sectionNumber": "16.1",
+          "problemTypes": [
+            {
+              "id": "bubble-sort",
+              "name": "Bubble Sort",
+              "description": "O(n²), stable"
+            },
+            {
+              "id": "selection-sort",
+              "name": "Selection Sort",
+              "description": "O(n²), unstable"
+            },
+            {
+              "id": "insertion-sort",
+              "name": "Insertion Sort",
+              "description": "O(n²), stable, good for small/nearly sorted"
+            },
+            {
+              "id": "merge-sort",
+              "name": "Merge Sort",
+              "description": "O(n log n), stable, divide and conquer"
+            },
+            {
+              "id": "quick-sort",
+              "name": "Quick Sort",
+              "description": "O(n log n) average, in-place partitioning"
+            },
+            {
+              "id": "heap-sort",
+              "name": "Heap Sort",
+              "description": "O(n log n), in-place using heap"
+            }
+          ]
+        },
+        {
+          "id": "non-comparison-sorting",
+          "name": "Non-Comparison Sorting",
+          "sectionNumber": "16.2",
+          "problemTypes": [
+            {
+              "id": "counting-sort",
+              "name": "Counting Sort",
+              "description": "O(n + k), for limited range"
+            },
+            {
+              "id": "radix-sort",
+              "name": "Radix Sort",
+              "description": "O(d \\* (n + k)), digit-based"
+            },
+            {
+              "id": "bucket-sort",
+              "name": "Bucket Sort",
+              "description": "O(n + k), distribution-based"
+            }
+          ]
+        },
+        {
+          "id": "partial-sorting",
+          "name": "Partial Sorting",
+          "sectionNumber": "16.3",
+          "problemTypes": [
+            {
+              "id": "quick-select",
+              "name": "Quick Select",
+              "description": "O(n) average for k-th element"
+            },
+            {
+              "id": "top-k-elements",
+              "name": "Top K Elements",
+              "description": "Heap-based selection"
+            }
+          ]
+        },
+        {
+          "id": "custom-sorting",
+          "name": "Custom Sorting",
+          "sectionNumber": "16.4",
+          "problemTypes": [
+            {
+              "id": "custom-comparator",
+              "name": "Custom Comparator",
+              "description": "Lambda functions, key functions"
+            },
+            {
+              "id": "multi-key-sorting",
+              "name": "Multi-Key Sorting",
+              "description": "Tuple sorting"
+            },
+            {
+              "id": "stable-sort",
+              "name": "Stable Sort",
+              "description": "Maintaining relative order"
+            }
+          ]
+        },
+        {
+          "id": "searching-algorithms",
+          "name": "Searching Algorithms",
+          "sectionNumber": "16.5",
+          "problemTypes": [
+            {
+              "id": "linear-search",
+              "name": "Linear Search",
+              "description": "O(n)"
+            },
+            {
+              "id": "binary-search",
+              "name": "Binary Search",
+              "description": "O(log n) on sorted"
+            },
+            {
+              "id": "interpolation-search",
+              "name": "Interpolation Search",
+              "description": "O(log log n) for uniform distribution"
+            },
+            {
+              "id": "exponential-search",
+              "name": "Exponential Search",
+              "description": "For unbounded arrays"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Sort an Array",
+        "Sort Colors (Dutch National Flag)",
+        "Merge Sorted Array",
+        "Sort List (Linked List)",
+        "Largest Number (custom comparator)",
+        "K Closest Points to Origin",
+        "Top K Frequent Elements",
+        "Wiggle Sort",
+        "Wiggle Sort II"
+      ],
+      "overview": "Comprehensive sorting and searching techniques beyond basic implementations.",
+      "pythonConsiderations": [
+        "sorted() returns new list, list.sort() in-place",
+        "Timsort: Hybrid of merge and insertion sort",
+        "key parameter for custom sorting",
+        "functools.cmp_to_key() for comparison functions",
+        "reverse=True for descending order",
+        "Stable sorting guaranteed",
+        "--"
+      ]
+    },
+    {
+      "id": "two-pointers-and-sliding-window-advanced",
+      "name": "Two Pointers & Sliding Window (Advanced)",
+      "order": 17,
+      "subtopics": [
+        {
+          "id": "two-pointers-opposite-direction",
+          "name": "Two Pointers - Opposite Direction",
+          "sectionNumber": "17.1",
+          "problemTypes": [
+            {
+              "id": "palindrome-validation",
+              "name": "Palindrome Validation",
+              "description": "Left and right converging"
+            },
+            {
+              "id": "two-sum-in-sorted-array",
+              "name": "Two Sum in Sorted Array",
+              "description": "Adjusting sum with pointers"
+            },
+            {
+              "id": "container-with-most-water",
+              "name": "Container With Most Water",
+              "description": "Maximizing area"
+            },
+            {
+              "id": "valid-palindrome-with-deletions",
+              "name": "Valid Palindrome with Deletions",
+              "description": "Allowing k deletions"
+            },
+            {
+              "id": "reverse-string-array",
+              "name": "Reverse String/Array",
+              "description": "In-place swapping"
+            }
+          ]
+        },
+        {
+          "id": "two-pointers-same-direction",
+          "name": "Two Pointers - Same Direction",
+          "sectionNumber": "17.2",
+          "problemTypes": [
+            {
+              "id": "fast-slow-pointers",
+              "name": "Fast-Slow Pointers",
+              "description": "Different speeds"
+            },
+            {
+              "id": "remove-duplicates",
+              "name": "Remove Duplicates",
+              "description": "Write pointer behind read pointer"
+            },
+            {
+              "id": "move-zeros",
+              "name": "Move Zeros",
+              "description": "Partitioning while maintaining order"
+            },
+            {
+              "id": "partition-array",
+              "name": "Partition Array",
+              "description": "Separating by condition"
+            },
+            {
+              "id": "merge-sorted-arrays",
+              "name": "Merge Sorted Arrays",
+              "description": "Two arrays into one"
+            }
+          ]
+        },
+        {
+          "id": "three-pointers",
+          "name": "Three Pointers",
+          "sectionNumber": "17.3",
+          "problemTypes": [
+            {
+              "id": "3sum",
+              "name": "3Sum",
+              "description": "Fixed pointer + two-pointer pairs"
+            },
+            {
+              "id": "3sum-closest",
+              "name": "3Sum Closest",
+              "description": "Minimizing distance to target"
+            },
+            {
+              "id": "4sum",
+              "name": "4Sum",
+              "description": "Nested three-pointer approach"
+            },
+            {
+              "id": "dutch-national-flag",
+              "name": "Dutch National Flag",
+              "description": "Three-way partitioning"
+            },
+            {
+              "id": "sort-colors",
+              "name": "Sort Colors",
+              "description": "0s, 1s, 2s sorting"
+            }
+          ]
+        },
+        {
+          "id": "fixed-size-sliding-window",
+          "name": "Fixed-Size Sliding Window",
+          "sectionNumber": "17.4",
+          "problemTypes": [
+            {
+              "id": "maximum-sum-subarray-of-size-k",
+              "name": "Maximum Sum Subarray of Size K",
+              "description": "Simple sliding"
+            },
+            {
+              "id": "first-negative-in-window",
+              "name": "First Negative in Window",
+              "description": "Queue-based tracking"
+            },
+            {
+              "id": "count-anagrams",
+              "name": "Count Anagrams",
+              "description": "Fixed-size frequency matching"
+            },
+            {
+              "id": "sliding-window-maximum",
+              "name": "Sliding Window Maximum",
+              "description": "Deque optimization"
+            }
+          ]
+        },
+        {
+          "id": "variable-size-sliding-window",
+          "name": "Variable-Size Sliding Window",
+          "sectionNumber": "17.5",
+          "problemTypes": [
+            {
+              "id": "longest-substring-without-repeating",
+              "name": "Longest Substring Without Repeating",
+              "description": "Expanding and contracting"
+            },
+            {
+              "id": "longest-substring-with-k-distinct",
+              "name": "Longest Substring with K Distinct",
+              "description": "Frequency map + window"
+            },
+            {
+              "id": "minimum-window-substring",
+              "name": "Minimum Window Substring",
+              "description": "Shrinking to minimum"
+            },
+            {
+              "id": "fruits-into-baskets",
+              "name": "Fruits Into Baskets",
+              "description": "At most K distinct elements"
+            },
+            {
+              "id": "subarray-product-less-than-k",
+              "name": "Subarray Product Less Than K",
+              "description": "Multiplicative constraint"
+            }
+          ]
+        },
+        {
+          "id": "window-with-frequency-map",
+          "name": "Window with Frequency Map",
+          "sectionNumber": "17.6",
+          "problemTypes": [
+            {
+              "id": "character-frequency-tracking",
+              "name": "Character Frequency Tracking",
+              "description": "Using hash map"
+            },
+            {
+              "id": "anagram-finding",
+              "name": "Anagram Finding",
+              "description": "Matching frequency patterns"
+            },
+            {
+              "id": "permutation-in-string",
+              "name": "Permutation in String",
+              "description": "Checking window match"
+            },
+            {
+              "id": "find-all-anagrams",
+              "name": "Find All Anagrams",
+              "description": "Collecting all matches"
+            }
+          ]
+        },
+        {
+          "id": "window-optimization-techniques",
+          "name": "Window Optimization Techniques",
+          "sectionNumber": "17.7",
+          "problemTypes": [
+            {
+              "id": "monotonic-deque",
+              "name": "Monotonic Deque",
+              "description": "For window min/max in O(1)"
+            },
+            {
+              "id": "lazy-deletion",
+              "name": "Lazy Deletion",
+              "description": "Marking stale elements"
+            },
+            {
+              "id": "two-pass-window",
+              "name": "Two-Pass Window",
+              "description": "Preprocessing for efficiency"
+            },
+            {
+              "id": "cumulative-state",
+              "name": "Cumulative State",
+              "description": "Prefix sums with window"
+            }
+          ]
+        },
+        {
+          "id": "advanced-window-patterns",
+          "name": "Advanced Window Patterns",
+          "sectionNumber": "17.8",
+          "problemTypes": [
+            {
+              "id": "subarray-sum-equals-k",
+              "name": "Subarray Sum Equals K",
+              "description": "Prefix sum + hash map"
+            },
+            {
+              "id": "continuous-subarray-sum",
+              "name": "Continuous Subarray Sum",
+              "description": "Modulo arithmetic"
+            },
+            {
+              "id": "maximum-size-subarray-sum-equals-k",
+              "name": "Maximum Size Subarray Sum Equals K",
+              "description": "Longest window"
+            },
+            {
+              "id": "minimum-operations-to-reduce-x-to-zero",
+              "name": "Minimum Operations to Reduce X to Zero",
+              "description": "Two-side window"
+            },
+            {
+              "id": "replace-substring-for-balanced-string",
+              "name": "Replace Substring for Balanced String",
+              "description": "Complement window"
+            }
+          ]
+        },
+        {
+          "id": "multi-array-two-pointers",
+          "name": "Multi-Array Two Pointers",
+          "sectionNumber": "17.9",
+          "problemTypes": [
+            {
+              "id": "merge-k-sorted-arrays",
+              "name": "Merge K Sorted Arrays",
+              "description": "Heap or multi-pointer"
+            },
+            {
+              "id": "intersection-of-multiple-arrays",
+              "name": "Intersection of Multiple Arrays",
+              "description": "Pointer per array"
+            },
+            {
+              "id": "median-of-two-sorted-arrays",
+              "name": "Median of Two Sorted Arrays",
+              "description": "Binary search + pointers"
+            }
+          ]
+        },
+        {
+          "id": "cyclic-circular-window",
+          "name": "Cyclic/Circular Window",
+          "sectionNumber": "17.10",
+          "problemTypes": [
+            {
+              "id": "maximum-sum-circular-subarray",
+              "name": "Maximum Sum Circular Subarray",
+              "description": "Handle wrap-around"
+            },
+            {
+              "id": "circular-array-loop",
+              "name": "Circular Array Loop",
+              "description": "Detecting cycles in circular structure"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Two Sum II (sorted array)",
+        "3Sum",
+        "3Sum Closest",
+        "4Sum",
+        "Container With Most Water",
+        "Trapping Rain Water",
+        "Remove Duplicates from Sorted Array",
+        "Longest Substring Without Repeating Characters",
+        "Minimum Window Substring",
+        "Longest Substring with At Most K Distinct Characters",
+        "Find All Anagrams in String",
+        "Permutation in String",
+        "Sliding Window Maximum",
+        "Minimum Size Subarray Sum",
+        "Subarray Product Less Than K",
+        "Fruit Into Baskets",
+        "Max Consecutive Ones III"
+      ],
+      "overview": "Advanced patterns using multiple pointers for efficient array/string processing. These techniques optimize brute force O(n²) or O(n³) solutions to O(n) or O(n log n).",
+      "pythonConsiderations": [
+        "Use collections.Counter for frequency tracking",
+        "collections.deque for efficient window operations",
+        "Dictionary .get(key, 0) to avoid KeyError",
+        "Window state updates: increment/decrement counts",
+        "Use sets for \"seen\" tracking in substring problems",
+        "defaultdict(int) for automatic zero initialization",
+        "--"
+      ]
+    },
+    {
+      "id": "file-handling-python-specific",
+      "name": "File Handling (Python-Specific)",
+      "order": 18,
+      "subtopics": [
+        {
+          "id": "basic-file-operations",
+          "name": "Basic File Operations",
+          "sectionNumber": "18.1",
+          "problemTypes": [
+            {
+              "id": "opening-files",
+              "name": "Opening Files",
+              "description": "open(filename, mode)"
+            },
+            {
+              "id": "modes",
+              "name": "Modes",
+              "description": "'r' (read), 'w' (write), 'a' (append), 'rb' (binary read)"
+            },
+            {
+              "id": "context-manager",
+              "name": "Context Manager",
+              "description": "with open() as f: for automatic closing"
+            },
+            {
+              "id": "reading",
+              "name": "Reading",
+              "description": "read(), readline(), readlines()"
+            },
+            {
+              "id": "writing",
+              "name": "Writing",
+              "description": "write(), writelines()"
+            },
+            {
+              "id": "closing",
+              "name": "Closing",
+              "description": "f.close() (automatic with context manager)"
+            }
+          ]
+        },
+        {
+          "id": "reading-files",
+          "name": "Reading Files",
+          "sectionNumber": "18.2",
+          "problemTypes": [
+            {
+              "id": "read-entire-file",
+              "name": "Read Entire File",
+              "description": "content = f.read()"
+            },
+            {
+              "id": "read-line-by-line",
+              "name": "Read Line by Line",
+              "description": "for line in f:"
+            },
+            {
+              "id": "read-lines-into-list",
+              "name": "Read Lines into List",
+              "description": "lines = f.readlines()"
+            },
+            {
+              "id": "read-specific-bytes",
+              "name": "Read Specific Bytes",
+              "description": "f.read(n)"
+            },
+            {
+              "id": "read-with-strip",
+              "name": "Read with Strip",
+              "description": "line.strip() to remove newlines"
+            }
+          ]
+        },
+        {
+          "id": "writing-files",
+          "name": "Writing Files",
+          "sectionNumber": "18.3",
+          "problemTypes": [
+            {
+              "id": "write-string",
+              "name": "Write String",
+              "description": "f.write(string)"
+            },
+            {
+              "id": "write-lines",
+              "name": "Write Lines",
+              "description": "f.writelines(list_of_strings)"
+            },
+            {
+              "id": "append-mode",
+              "name": "Append Mode",
+              "description": "Adding to existing file"
+            },
+            {
+              "id": "overwrite-mode",
+              "name": "Overwrite Mode",
+              "description": "Clearing and writing"
+            },
+            {
+              "id": "flush-buffer",
+              "name": "Flush Buffer",
+              "description": "f.flush() for immediate write"
+            }
+          ]
+        },
+        {
+          "id": "large-file-handling",
+          "name": "Large File Handling",
+          "sectionNumber": "18.4",
+          "problemTypes": [
+            {
+              "id": "line-by-line-processing",
+              "name": "Line-by-Line Processing",
+              "description": "Memory-efficient iteration"
+            },
+            {
+              "id": "chunked-reading",
+              "name": "Chunked Reading",
+              "description": "f.read(chunk_size) in loop"
+            },
+            {
+              "id": "generator-functions",
+              "name": "Generator Functions",
+              "description": "Yielding lines lazily"
+            },
+            {
+              "id": "buffered-reading",
+              "name": "Buffered Reading",
+              "description": "Using buffer size parameter"
+            },
+            {
+              "id": "memory-mapping",
+              "name": "Memory Mapping",
+              "description": "mmap for large files"
+            }
+          ]
+        },
+        {
+          "id": "structured-data-parsing",
+          "name": "Structured Data Parsing",
+          "sectionNumber": "18.5",
+          "problemTypes": [
+            {
+              "id": "csv-files",
+              "name": "CSV Files",
+              "description": "Using csv module"
+            },
+            {
+              "id": "csv-reader",
+              "name": "csv.reader()",
+              "description": "Reading CSV rows"
+            },
+            {
+              "id": "csv-dictreader",
+              "name": "csv.DictReader()",
+              "description": "Reading as dictionaries"
+            },
+            {
+              "id": "csv-writer",
+              "name": "csv.writer()",
+              "description": "Writing CSV rows"
+            },
+            {
+              "id": "csv-dictwriter",
+              "name": "csv.DictWriter()",
+              "description": "Writing from dictionaries"
+            },
+            {
+              "id": "json-files",
+              "name": "JSON Files",
+              "description": "Using json module"
+            },
+            {
+              "id": "json-load",
+              "name": "json.load()",
+              "description": "Parse JSON from file"
+            },
+            {
+              "id": "json-dump",
+              "name": "json.dump()",
+              "description": "Write JSON to file"
+            },
+            {
+              "id": "json-loads",
+              "name": "json.loads()",
+              "description": "Parse JSON string"
+            },
+            {
+              "id": "json-dumps",
+              "name": "json.dumps()",
+              "description": "Convert to JSON string"
+            },
+            {
+              "id": "xml-html",
+              "name": "XML/HTML",
+              "description": "Using xml.etree.ElementTree or BeautifulSoup"
+            },
+            {
+              "id": "yaml",
+              "name": "YAML",
+              "description": "Using pyyaml library (if available)"
+            }
+          ]
+        },
+        {
+          "id": "file-path-operations",
+          "name": "File Path Operations",
+          "sectionNumber": "18.6",
+          "problemTypes": [
+            {
+              "id": "path-manipulation",
+              "name": "Path Manipulation",
+              "description": "Using os.path or pathlib"
+            },
+            {
+              "id": "os-path-join",
+              "name": "os.path.join()",
+              "description": "Building paths"
+            },
+            {
+              "id": "os-path-exists",
+              "name": "os.path.exists()",
+              "description": "Checking existence"
+            },
+            {
+              "id": "os-path-isfile",
+              "name": "os.path.isfile()",
+              "description": "Checking if file"
+            },
+            {
+              "id": "os-path-isdir",
+              "name": "os.path.isdir()",
+              "description": "Checking if directory"
+            },
+            {
+              "id": "os-path-basename",
+              "name": "os.path.basename()",
+              "description": "Getting filename"
+            },
+            {
+              "id": "os-path-dirname",
+              "name": "os.path.dirname()",
+              "description": "Getting directory"
+            },
+            {
+              "id": "pathlib",
+              "name": "Pathlib",
+              "description": "Modern path handling"
+            },
+            {
+              "id": "pathfilename",
+              "name": "Path(filename)",
+              "description": "Creating path object"
+            },
+            {
+              "id": "path-exists-path-is-file-path-is-dir",
+              "name": "path.exists(), path.is_file(), path.is_dir()"
+            },
+            {
+              "id": "path-read-text-path-write-text",
+              "name": "path.read_text(), path.write_text()"
+            }
+          ]
+        },
+        {
+          "id": "directory-operations",
+          "name": "Directory Operations",
+          "sectionNumber": "18.7",
+          "problemTypes": [
+            {
+              "id": "list-files",
+              "name": "List Files",
+              "description": "os.listdir(path), path.iterdir()"
+            },
+            {
+              "id": "walk-directory-tree",
+              "name": "Walk Directory Tree",
+              "description": "os.walk(path)"
+            },
+            {
+              "id": "create-directory",
+              "name": "Create Directory",
+              "description": "os.mkdir(), os.makedirs()"
+            },
+            {
+              "id": "remove-directory",
+              "name": "Remove Directory",
+              "description": "os.rmdir(), shutil.rmtree()"
+            },
+            {
+              "id": "glob-patterns",
+              "name": "Glob Patterns",
+              "description": "glob.glob('*.txt') for pattern matching"
+            }
+          ]
+        },
+        {
+          "id": "error-handling",
+          "name": "Error Handling",
+          "sectionNumber": "18.8",
+          "problemTypes": [
+            {
+              "id": "filenotfounderror",
+              "name": "FileNotFoundError",
+              "description": "Handle missing files"
+            },
+            {
+              "id": "permissionerror",
+              "name": "PermissionError",
+              "description": "Handle access denied"
+            },
+            {
+              "id": "ioerror",
+              "name": "IOError",
+              "description": "General I/O errors"
+            },
+            {
+              "id": "try-except-finally",
+              "name": "Try-Except-Finally",
+              "description": "Proper cleanup"
+            },
+            {
+              "id": "context-manager",
+              "name": "Context Manager",
+              "description": "Automatic error handling"
+            }
+          ]
+        },
+        {
+          "id": "binary-file-operations",
+          "name": "Binary File Operations",
+          "sectionNumber": "18.9",
+          "problemTypes": [
+            {
+              "id": "reading-binary",
+              "name": "Reading Binary",
+              "description": "Mode 'rb'"
+            },
+            {
+              "id": "writing-binary",
+              "name": "Writing Binary",
+              "description": "Mode 'wb'"
+            },
+            {
+              "id": "byte-operations",
+              "name": "Byte Operations",
+              "description": "Working with bytes objects"
+            },
+            {
+              "id": "struct-module",
+              "name": "Struct Module",
+              "description": "Packing/unpacking binary data"
+            },
+            {
+              "id": "pickle",
+              "name": "Pickle",
+              "description": "Serializing Python objects"
+            }
+          ]
+        },
+        {
+          "id": "file-processing-patterns",
+          "name": "File Processing Patterns",
+          "sectionNumber": "18.10",
+          "problemTypes": [
+            {
+              "id": "line-counting",
+              "name": "Line Counting",
+              "description": "Iterating and counting"
+            },
+            {
+              "id": "word-frequency",
+              "name": "Word Frequency",
+              "description": "Dictionary for counts"
+            },
+            {
+              "id": "log-file-analysis",
+              "name": "Log File Analysis",
+              "description": "Pattern matching and aggregation"
+            },
+            {
+              "id": "data-transformation",
+              "name": "Data Transformation",
+              "description": "Read, process, write"
+            },
+            {
+              "id": "file-merging",
+              "name": "File Merging",
+              "description": "Combining multiple files"
+            },
+            {
+              "id": "file-splitting",
+              "name": "File Splitting",
+              "description": "Dividing large files"
+            }
+          ]
+        },
+        {
+          "id": "temporary-files",
+          "name": "Temporary Files",
+          "sectionNumber": "18.11",
+          "problemTypes": [
+            {
+              "id": "tempfile-module",
+              "name": "tempfile Module",
+              "description": "Creating temporary files"
+            },
+            {
+              "id": "temporaryfile",
+              "name": "TemporaryFile",
+              "description": "Auto-deleted file object"
+            },
+            {
+              "id": "namedtemporaryfile",
+              "name": "NamedTemporaryFile",
+              "description": "Temporary with filename"
+            },
+            {
+              "id": "temporarydirectory",
+              "name": "TemporaryDirectory",
+              "description": "Temporary directory"
+            }
+          ]
+        },
+        {
+          "id": "file-compression",
+          "name": "File Compression",
+          "sectionNumber": "18.12",
+          "problemTypes": [
+            {
+              "id": "gzip-module",
+              "name": "gzip Module",
+              "description": "GZIP compression"
+            },
+            {
+              "id": "zipfile-module",
+              "name": "zipfile Module",
+              "description": "ZIP archives"
+            },
+            {
+              "id": "tarfile-module",
+              "name": "tarfile Module",
+              "description": "TAR archives"
+            },
+            {
+              "id": "reading-compressed",
+              "name": "Reading Compressed",
+              "description": "Opening .gz, .zip files"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "Read file and count words",
+        "Find most frequent word in file",
+        "Merge sorted files",
+        "Process log files and extract patterns",
+        "Parse CSV and compute statistics",
+        "Convert CSV to JSON",
+        "Find duplicate lines in file",
+        "Split large file into chunks",
+        "Read configuration file",
+        "Search for pattern in multiple files",
+        "Count lines/words/characters in file",
+        "Remove duplicate lines from file",
+        "Reverse lines in file",
+        "Tail -n implementation (last n lines)"
+      ],
+      "overview": "File I/O operations for reading, writing, and processing files. Essential for data processing, log analysis, and configuration management in real-world applications.",
+      "pythonConsiderations": [
+        "Always use context manager: with open() as f: ensures cleanup",
+        "Encoding: Specify encoding='utf-8' for text files",
+        "Newlines: \\n on Unix, \\r\\n on Windows, newline='' for CSV",
+        "Buffering: Default buffering is usually optimal",
+        "pathlib.Path: Modern, object-oriented path handling",
+        "File position: f.seek(0) to reset to beginning",
+        "Binary vs Text: Text mode handles encoding, binary doesn't",
+        "Generator pattern: Use for memory efficiency with large files",
+        "csv.DictReader: Easier than manual parsing",
+        "json module: Built-in, no external dependencies needed",
+        "Demonstrate understanding of memory efficiency",
+        "Show proper error handling",
+        "Use context managers consistently",
+        "Explain trade-offs (memory vs speed)",
+        "Consider edge cases (empty files, missing files, large files)",
+        "Know when to use generators vs loading all data",
+        "Understand encoding issues (UTF-8, ASCII, etc.)",
+        "--"
+      ]
+    },
+    {
+      "id": "system-design-patterns-coding-interview-context",
+      "name": "System Design Patterns (Coding Interview Context)",
+      "order": 19,
+      "subtopics": [
+        {
+          "id": "design-fundamental-data-structures",
+          "name": "Design Fundamental Data Structures",
+          "sectionNumber": "19.1",
+          "problemTypes": [
+            {
+              "id": "lru-cache",
+              "name": "LRU Cache",
+              "description": "Doubly linked list + hash map"
+            },
+            {
+              "id": "o1-get-put-operations",
+              "name": "O(1) get, put operations"
+            },
+            {
+              "id": "eviction-policy-implementation",
+              "name": "Eviction policy implementation"
+            },
+            {
+              "id": "capacity-management",
+              "name": "Capacity management"
+            },
+            {
+              "id": "lfu-cache",
+              "name": "LFU Cache",
+              "description": "Frequency tracking with min-heap or nested maps"
+            },
+            {
+              "id": "frequency-buckets",
+              "name": "Frequency buckets"
+            },
+            {
+              "id": "tie-breaking-with-timestamps",
+              "name": "Tie-breaking with timestamps"
+            },
+            {
+              "id": "design-hashmap",
+              "name": "Design HashMap",
+              "description": "Hash function, collision handling"
+            },
+            {
+              "id": "separate-chaining-with-linked-lists",
+              "name": "Separate chaining with linked lists"
+            },
+            {
+              "id": "load-factor-and-rehashing",
+              "name": "Load factor and rehashing"
+            },
+            {
+              "id": "design-hashset",
+              "name": "Design HashSet",
+              "description": "Similar to HashMap"
+            },
+            {
+              "id": "min-stack",
+              "name": "Min Stack",
+              "description": "Stack with O(1) minimum"
+            },
+            {
+              "id": "auxiliary-stack-approach",
+              "name": "Auxiliary stack approach"
+            },
+            {
+              "id": "single-stack-with-pairs",
+              "name": "Single stack with pairs"
+            }
+          ]
+        },
+        {
+          "id": "design-data-stream-structures",
+          "name": "Design Data Stream Structures",
+          "sectionNumber": "19.2",
+          "problemTypes": [
+            {
+              "id": "moving-average-from-data-stream",
+              "name": "Moving Average from Data Stream",
+              "description": "Sliding window"
+            },
+            {
+              "id": "queue-based-implementation",
+              "name": "Queue-based implementation"
+            },
+            {
+              "id": "running-sum-optimization",
+              "name": "Running sum optimization"
+            },
+            {
+              "id": "find-median-from-data-stream",
+              "name": "Find Median from Data Stream",
+              "description": "Two heaps"
+            },
+            {
+              "id": "max-heap-for-lower-half",
+              "name": "Max-heap for lower half"
+            },
+            {
+              "id": "min-heap-for-upper-half",
+              "name": "Min-heap for upper half"
+            },
+            {
+              "id": "balancing-heaps",
+              "name": "Balancing heaps"
+            },
+            {
+              "id": "streaming-data-processing",
+              "name": "Streaming Data Processing",
+              "description": "Online algorithms"
+            }
+          ]
+        },
+        {
+          "id": "design-iterator-patterns",
+          "name": "Design Iterator Patterns",
+          "sectionNumber": "19.3",
+          "problemTypes": [
+            {
+              "id": "flatten-nested-list-iterator",
+              "name": "Flatten Nested List Iterator",
+              "description": "Stack-based traversal"
+            },
+            {
+              "id": "lazy-evaluation",
+              "name": "Lazy evaluation"
+            },
+            {
+              "id": "hasnext-and-next-implementation",
+              "name": "hasNext() and next() implementation"
+            },
+            {
+              "id": "peeking-iterator",
+              "name": "Peeking Iterator",
+              "description": "Caching next element"
+            },
+            {
+              "id": "zigzag-iterator",
+              "name": "Zigzag Iterator",
+              "description": "Multiple lists interleaving"
+            },
+            {
+              "id": "binary-search-tree-iterator",
+              "name": "Binary Search Tree Iterator",
+              "description": "In-order with O(h) space"
+            }
+          ]
+        },
+        {
+          "id": "design-rate-limiters",
+          "name": "Design Rate Limiters",
+          "sectionNumber": "19.4",
+          "problemTypes": [
+            {
+              "id": "token-bucket",
+              "name": "Token Bucket",
+              "description": "Rate limiting with tokens"
+            },
+            {
+              "id": "token-generation-rate",
+              "name": "Token generation rate"
+            },
+            {
+              "id": "burst-capacity",
+              "name": "Burst capacity"
+            },
+            {
+              "id": "sliding-window-counter",
+              "name": "Sliding Window Counter",
+              "description": "Time-window tracking"
+            },
+            {
+              "id": "fixed-window-issues",
+              "name": "Fixed window issues"
+            },
+            {
+              "id": "sliding-window-solution",
+              "name": "Sliding window solution"
+            },
+            {
+              "id": "leaky-bucket",
+              "name": "Leaky Bucket",
+              "description": "Queue-based rate control"
+            }
+          ]
+        },
+        {
+          "id": "design-text-string-systems",
+          "name": "Design Text/String Systems",
+          "sectionNumber": "19.5",
+          "problemTypes": [
+            {
+              "id": "design-search-autocomplete",
+              "name": "Design Search Autocomplete",
+              "description": "Trie + ranking"
+            },
+            {
+              "id": "prefix-matching",
+              "name": "Prefix matching"
+            },
+            {
+              "id": "top-k-suggestions",
+              "name": "Top-k suggestions"
+            },
+            {
+              "id": "weight-frequency-tracking",
+              "name": "Weight/frequency tracking"
+            },
+            {
+              "id": "design-spell-checker",
+              "name": "Design Spell Checker",
+              "description": "Trie + edit distance"
+            },
+            {
+              "id": "dictionary-lookup",
+              "name": "Dictionary lookup"
+            },
+            {
+              "id": "suggestion-generation",
+              "name": "Suggestion generation"
+            },
+            {
+              "id": "design-text-editor",
+              "name": "Design Text Editor",
+              "description": "Gap buffer or rope"
+            },
+            {
+              "id": "efficient-insert-delete",
+              "name": "Efficient insert/delete"
+            },
+            {
+              "id": "undo-redo-with-stacks",
+              "name": "Undo/redo with stacks"
+            }
+          ]
+        },
+        {
+          "id": "design-file-systems",
+          "name": "Design File Systems",
+          "sectionNumber": "19.6",
+          "problemTypes": [
+            {
+              "id": "in-memory-file-system",
+              "name": "In-Memory File System",
+              "description": "Tree structure"
+            },
+            {
+              "id": "directory-as-map-of-children",
+              "name": "Directory as map of children"
+            },
+            {
+              "id": "path-parsing-and-navigation",
+              "name": "Path parsing and navigation"
+            },
+            {
+              "id": "file-operations-create-read-write",
+              "name": "File operations (create, read, write)"
+            },
+            {
+              "id": "design-log-system",
+              "name": "Design Log System",
+              "description": "Time-based storage"
+            },
+            {
+              "id": "efficient-retrieval-by-time-range",
+              "name": "Efficient retrieval by time range"
+            },
+            {
+              "id": "granularity-buckets",
+              "name": "Granularity buckets"
+            }
+          ]
+        },
+        {
+          "id": "design-scheduling-systems",
+          "name": "Design Scheduling Systems",
+          "sectionNumber": "19.7",
+          "problemTypes": [
+            {
+              "id": "task-scheduler",
+              "name": "Task Scheduler",
+              "description": "Priority queue with cooldown"
+            },
+            {
+              "id": "greedy-scheduling",
+              "name": "Greedy scheduling"
+            },
+            {
+              "id": "frequency-tracking",
+              "name": "Frequency tracking"
+            },
+            {
+              "id": "design-job-scheduler",
+              "name": "Design Job Scheduler",
+              "description": "Priority queue"
+            },
+            {
+              "id": "dependencies-handling",
+              "name": "Dependencies handling"
+            },
+            {
+              "id": "deadline-management",
+              "name": "Deadline management"
+            },
+            {
+              "id": "design-meeting-scheduler",
+              "name": "Design Meeting Scheduler",
+              "description": "Interval merging"
+            },
+            {
+              "id": "conflict-detection",
+              "name": "Conflict detection"
+            },
+            {
+              "id": "room-allocation",
+              "name": "Room allocation"
+            }
+          ]
+        },
+        {
+          "id": "design-url-systems",
+          "name": "Design URL Systems",
+          "sectionNumber": "19.8",
+          "problemTypes": [
+            {
+              "id": "url-shortener-design-tinyurl",
+              "name": "URL Shortener (Design TinyURL)",
+              "description": "Hashing/encoding"
+            },
+            {
+              "id": "base62-encoding",
+              "name": "Base62 encoding"
+            },
+            {
+              "id": "counter-based-generation",
+              "name": "Counter-based generation"
+            },
+            {
+              "id": "hash-collision-handling",
+              "name": "Hash collision handling"
+            },
+            {
+              "id": "custom-short-links",
+              "name": "Custom short links"
+            },
+            {
+              "id": "url-parser",
+              "name": "URL Parser",
+              "description": "String parsing"
+            },
+            {
+              "id": "protocol-domain-path-extraction",
+              "name": "Protocol, domain, path extraction"
+            }
+          ]
+        },
+        {
+          "id": "design-social-network-features",
+          "name": "Design Social Network Features",
+          "sectionNumber": "19.9",
+          "problemTypes": [
+            {
+              "id": "design-twitter",
+              "name": "Design Twitter",
+              "description": "Timeline generation"
+            },
+            {
+              "id": "tweet-storage",
+              "name": "Tweet storage"
+            },
+            {
+              "id": "follow-relationships-graph",
+              "name": "Follow relationships (graph)"
+            },
+            {
+              "id": "timeline-merging-merge-k-sorted-lists",
+              "name": "Timeline merging (merge k sorted lists)"
+            },
+            {
+              "id": "pull-vs-push-models",
+              "name": "Pull vs push models"
+            },
+            {
+              "id": "design-news-feed",
+              "name": "Design News Feed",
+              "description": "Ranked content delivery"
+            },
+            {
+              "id": "friend-posts-aggregation",
+              "name": "Friend posts aggregation"
+            },
+            {
+              "id": "pagination",
+              "name": "Pagination"
+            },
+            {
+              "id": "design-friend-recommendation",
+              "name": "Design Friend Recommendation",
+              "description": "Graph algorithms"
+            },
+            {
+              "id": "common-friends",
+              "name": "Common friends"
+            },
+            {
+              "id": "mutual-connections",
+              "name": "Mutual connections"
+            }
+          ]
+        },
+        {
+          "id": "design-reservation-systems",
+          "name": "Design Reservation Systems",
+          "sectionNumber": "19.10",
+          "problemTypes": [
+            {
+              "id": "design-parking-lot",
+              "name": "Design Parking Lot",
+              "description": "Hierarchy of spots"
+            },
+            {
+              "id": "different-vehicle-types",
+              "name": "Different vehicle types"
+            },
+            {
+              "id": "spot-availability-tracking",
+              "name": "Spot availability tracking"
+            },
+            {
+              "id": "nearest-spot-finding",
+              "name": "Nearest spot finding"
+            },
+            {
+              "id": "design-movie-ticket-booking",
+              "name": "Design Movie Ticket Booking",
+              "description": "Seat allocation"
+            },
+            {
+              "id": "concurrency-handling-locking",
+              "name": "Concurrency handling (locking)"
+            },
+            {
+              "id": "seat-hold-timeout",
+              "name": "Seat hold timeout"
+            },
+            {
+              "id": "design-restaurant-reservation",
+              "name": "Design Restaurant Reservation",
+              "description": "Time slot management"
+            },
+            {
+              "id": "table-capacity",
+              "name": "Table capacity"
+            },
+            {
+              "id": "waitlist-queue",
+              "name": "Waitlist queue"
+            }
+          ]
+        },
+        {
+          "id": "design-game-systems",
+          "name": "Design Game Systems",
+          "sectionNumber": "19.11",
+          "problemTypes": [
+            {
+              "id": "design-tic-tac-toe",
+              "name": "Design Tic-Tac-Toe",
+              "description": "Board state representation"
+            },
+            {
+              "id": "win-condition-checking",
+              "name": "Win condition checking"
+            },
+            {
+              "id": "optimal-move-detection",
+              "name": "Optimal move detection"
+            },
+            {
+              "id": "design-snake-game",
+              "name": "Design Snake Game",
+              "description": "Queue for snake body"
+            },
+            {
+              "id": "collision-detection",
+              "name": "Collision detection"
+            },
+            {
+              "id": "food-generation",
+              "name": "Food generation"
+            },
+            {
+              "id": "design-leaderboard",
+              "name": "Design Leaderboard",
+              "description": "Sorted structure"
+            },
+            {
+              "id": "score-updates",
+              "name": "Score updates"
+            },
+            {
+              "id": "rank-queries",
+              "name": "Rank queries"
+            },
+            {
+              "id": "top-k-players",
+              "name": "Top-k players"
+            }
+          ]
+        },
+        {
+          "id": "design-caching-systems",
+          "name": "Design Caching Systems",
+          "sectionNumber": "19.12",
+          "problemTypes": [
+            {
+              "id": "multi-level-cache",
+              "name": "Multi-Level Cache",
+              "description": "L1, L2 cache hierarchy"
+            },
+            {
+              "id": "cache-coherence",
+              "name": "Cache coherence"
+            },
+            {
+              "id": "write-through-vs-write-back",
+              "name": "Write-through vs write-back"
+            },
+            {
+              "id": "distributed-cache",
+              "name": "Distributed Cache",
+              "description": "Consistent hashing"
+            },
+            {
+              "id": "key-distribution",
+              "name": "Key distribution"
+            },
+            {
+              "id": "node-addition-removal",
+              "name": "Node addition/removal"
+            },
+            {
+              "id": "cache-invalidation",
+              "name": "Cache Invalidation",
+              "description": "TTL, LRU policies"
+            }
+          ]
+        },
+        {
+          "id": "design-range-query-structures",
+          "name": "Design Range Query Structures",
+          "sectionNumber": "19.13",
+          "problemTypes": [
+            {
+              "id": "range-sum-query",
+              "name": "Range Sum Query",
+              "description": "Prefix sums, segment tree"
+            },
+            {
+              "id": "immutable",
+              "name": "Immutable",
+              "description": "prefix sum array"
+            },
+            {
+              "id": "mutable",
+              "name": "Mutable",
+              "description": "segment tree or BIT"
+            },
+            {
+              "id": "range-minimum-query",
+              "name": "Range Minimum Query",
+              "description": "Sparse table, segment tree"
+            },
+            {
+              "id": "binary-indexed-tree-fenwick-tree",
+              "name": "Binary Indexed Tree (Fenwick Tree)",
+              "description": "Efficient updates"
+            },
+            {
+              "id": "point-update-range-query",
+              "name": "Point update, range query"
+            }
+          ]
+        },
+        {
+          "id": "design-undo-redo-systems",
+          "name": "Design Undo/Redo Systems",
+          "sectionNumber": "19.14",
+          "problemTypes": [
+            {
+              "id": "command-pattern",
+              "name": "Command Pattern",
+              "description": "Stack of operations"
+            },
+            {
+              "id": "execute-undo-redo-methods",
+              "name": "Execute, undo, redo methods"
+            },
+            {
+              "id": "state-snapshots",
+              "name": "State snapshots"
+            },
+            {
+              "id": "memento-pattern",
+              "name": "Memento Pattern",
+              "description": "Saving states"
+            },
+            {
+              "id": "state-history-stack",
+              "name": "State history stack"
+            }
+          ]
+        },
+        {
+          "id": "design-notification-systems",
+          "name": "Design Notification Systems",
+          "sectionNumber": "19.15",
+          "problemTypes": [
+            {
+              "id": "priority-based-notifications",
+              "name": "Priority-Based Notifications",
+              "description": "Priority queue"
+            },
+            {
+              "id": "urgency-levels",
+              "name": "Urgency levels"
+            },
+            {
+              "id": "batching",
+              "name": "Batching"
+            },
+            {
+              "id": "rate-limited-notifications",
+              "name": "Rate-Limited Notifications",
+              "description": "Token bucket"
+            },
+            {
+              "id": "user-preferences",
+              "name": "User preferences"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [
+        "LRU Cache",
+        "LFU Cache",
+        "Design HashMap",
+        "HashSet",
+        "Min Stack",
+        "Max Stack",
+        "Design Twitter",
+        "Design TinyURL",
+        "Design Search Autocomplete System",
+        "Design In-Memory File System",
+        "Design Hit Counter",
+        "Design Tic-Tac-Toe",
+        "Design Snake Game",
+        "Design Parking System",
+        "Implement Trie (Prefix Tree)",
+        "Range Sum Query - Mutable/Immutable",
+        "Find Median from Data Stream",
+        "Design Log Storage System",
+        "Design Underground System",
+        "Time-Space Tradeoffs: Cache vs computation",
+        "Amortized Complexity: Average performance over operations",
+        "Lazy Evaluation: Compute only when needed",
+        "Precomputation: Build auxiliary structures",
+        "Data Structure Selection: Right tool for requirements",
+        "API Design: Clean",
+        "intuitive interfaces",
+        "Edge Cases: Empty",
+        "single element",
+        "capacity limits",
+        "Scalability Considerations: Growth handling"
+      ],
+      "overview": "System design in coding interviews focuses on designing data structures and algorithms for scalable systems. Different from high-level architecture, this covers implementation patterns.",
+      "pythonConsiderations": [
+        "collections.OrderedDict: For LRU Cache (before Python 3.7)",
+        "collections.defaultdict: Simplifies nested structures",
+        "collections.deque: Efficient for queues",
+        "heapq: For priority queues",
+        "@property: For getter methods",
+        "init, repr, str: Object lifecycle",
+        "Duck typing: Interface flexibility",
+        "Class design: Single responsibility principle",
+        "Hash Map + Doubly Linked List: LRU Cache",
+        "Two Heaps: Median finding",
+        "Trie: Prefix-based operations",
+        "Segment Tree: Range queries with updates",
+        "Union-Find: Connected components",
+        "Consistent Hashing: Load distribution",
+        "Bloom Filter: Membership testing with false positives",
+        "--"
+      ]
+    },
+    {
+      "id": "advanced-topics-and-specialized-algorithms",
+      "name": "Advanced Topics & Specialized Algorithms",
+      "order": 20,
+      "subtopics": [
+        {
+          "id": "advanced-graph-algorithms",
+          "name": "Advanced Graph Algorithms",
+          "sectionNumber": "20.1",
+          "problemTypes": [
+            {
+              "id": "network-flow",
+              "name": "Network Flow",
+              "description": "Max flow, min cut"
+            },
+            {
+              "id": "ford-fulkerson-algorithm",
+              "name": "Ford-Fulkerson algorithm"
+            },
+            {
+              "id": "edmonds-karp-bfs-based",
+              "name": "Edmonds-Karp (BFS-based)"
+            },
+            {
+              "id": "bipartite-matching",
+              "name": "Bipartite Matching",
+              "description": "Hungarian algorithm"
+            },
+            {
+              "id": "tarjan-s-algorithm",
+              "name": "Tarjan's Algorithm",
+              "description": "Strongly connected components"
+            },
+            {
+              "id": "kosaraju-s-algorithm",
+              "name": "Kosaraju's Algorithm",
+              "description": "SCC alternative"
+            },
+            {
+              "id": "eulerian-path",
+              "name": "Eulerian Path",
+              "description": "Edge traversal"
+            },
+            {
+              "id": "hamiltonian-path",
+              "name": "Hamiltonian Path",
+              "description": "Vertex traversal"
+            }
+          ]
+        },
+        {
+          "id": "string-algorithms-advanced",
+          "name": "String Algorithms (Advanced)",
+          "sectionNumber": "20.2",
+          "problemTypes": [
+            {
+              "id": "suffix-array",
+              "name": "Suffix Array",
+              "description": "Substring operations"
+            },
+            {
+              "id": "suffix-tree",
+              "name": "Suffix Tree",
+              "description": "Pattern matching, LCP"
+            },
+            {
+              "id": "aho-corasick",
+              "name": "Aho-Corasick",
+              "description": "Multiple pattern matching"
+            },
+            {
+              "id": "manacher-s-algorithm",
+              "name": "Manacher's Algorithm",
+              "description": "Longest palindrome O(n)"
+            }
+          ]
+        },
+        {
+          "id": "computational-geometry",
+          "name": "Computational Geometry",
+          "sectionNumber": "20.3",
+          "problemTypes": [
+            {
+              "id": "convex-hull",
+              "name": "Convex Hull",
+              "description": "Graham scan, Jarvis march"
+            },
+            {
+              "id": "line-intersection",
+              "name": "Line Intersection",
+              "description": "Sweep line algorithm"
+            },
+            {
+              "id": "closest-pair",
+              "name": "Closest Pair",
+              "description": "Divide and conquer"
+            },
+            {
+              "id": "point-in-polygon",
+              "name": "Point in Polygon",
+              "description": "Ray casting"
+            }
+          ]
+        },
+        {
+          "id": "game-theory",
+          "name": "Game Theory",
+          "sectionNumber": "20.4",
+          "problemTypes": [
+            {
+              "id": "minimax",
+              "name": "Minimax",
+              "description": "Optimal game play"
+            },
+            {
+              "id": "alpha-beta-pruning",
+              "name": "Alpha-Beta Pruning",
+              "description": "Search optimization"
+            },
+            {
+              "id": "nim-game",
+              "name": "Nim Game",
+              "description": "XOR-based strategy"
+            },
+            {
+              "id": "grundy-numbers",
+              "name": "Grundy Numbers",
+              "description": "Combinatorial game theory"
+            }
+          ]
+        },
+        {
+          "id": "randomized-algorithms",
+          "name": "Randomized Algorithms",
+          "sectionNumber": "20.5",
+          "problemTypes": [
+            {
+              "id": "reservoir-sampling",
+              "name": "Reservoir Sampling",
+              "description": "Random sampling from stream"
+            },
+            {
+              "id": "random-shuffle",
+              "name": "Random Shuffle",
+              "description": "Fisher-Yates algorithm"
+            },
+            {
+              "id": "monte-carlo",
+              "name": "Monte Carlo",
+              "description": "Probabilistic answers"
+            },
+            {
+              "id": "las-vegas",
+              "name": "Las Vegas",
+              "description": "Always correct, random runtime"
+            }
+          ]
+        },
+        {
+          "id": "approximation-algorithms",
+          "name": "Approximation Algorithms",
+          "sectionNumber": "20.6",
+          "problemTypes": [
+            {
+              "id": "greedy-approximations",
+              "name": "Greedy Approximations",
+              "description": "Near-optimal solutions"
+            },
+            {
+              "id": "vertex-cover",
+              "name": "Vertex Cover",
+              "description": "2-approximation"
+            },
+            {
+              "id": "set-cover",
+              "name": "Set Cover",
+              "description": "Greedy log-approximation"
+            }
+          ]
+        }
+      ],
+      "problemArchetypes": [],
+      "overview": "Advanced algorithms and specialized techniques for complex problems."
+    }
+  ]
+}
