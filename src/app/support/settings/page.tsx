@@ -223,7 +223,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Hero Header */}
-      <header className="border-b bg-gradient-to-br from-primary/5 to-transparent">
+      <header className="border-b bg-linear-to-br from-primary/5 to-transparent">
         <div className="container max-w-7xl px-4 py-8 md:py-10">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   CommandDialog,
@@ -24,57 +24,68 @@ import {
   Question,
   BookOpen,
   Hash,
-  GitBranch,
   Sun,
   Moon,
   Key,
+  Keyboard,
+  Bug,
+  Rocket,
 } from "@phosphor-icons/react";
 import {
   getStaticPages,
   getModuleItems,
-  getSubtopicItems,
-  getArchetypeItems,
-  searchItems,
+  getHelpActions,
+  searchCommands,
+  searchModules,
+  searchSubtopics,
+  searchArchetypes,
   SearchResult,
 } from "@/lib/searchIndex";
+
+// Icon mapping for dynamic rendering
+const IconMap: Record<string, React.ElementType> = {
+  House,
+  Books,
+  Code,
+  Lightning,
+  Clock,
+  ChartLine,
+  Cpu,
+  Gear,
+  Question,
+  BookOpen,
+  Hash,
+  Keyboard,
+  Bug,
+  Rocket,
+};
 
 export function CommandCenter() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
   const [query, setQuery] = useState("");
   const { theme, setTheme } = useTheme();
 
-  // Memoize static lists
+  // Memoize static lists (only modules needed for initial view)
   const staticPages = useMemo(() => getStaticPages(), []);
   const moduleItems = useMemo(() => getModuleItems(), []);
-  // Subtopics and Archetypes are loaded but filtering happens on render
-  const subtopicItems = useMemo(() => getSubtopicItems(), []);
-  const archetypeItems = useMemo(() => getArchetypeItems(), []);
+  const helpActions = useMemo(() => getHelpActions(), []);
 
-  // Filter Logic
+  // Determine if searching
   const isSearching = query.trim().length > 0;
 
-  const displayedPages = useMemo(
-    () => (isSearching ? searchItems(staticPages, query) : staticPages),
-    [isSearching, query, staticPages]
-  );
+  // Search results - only computed when searching
+  const searchResults = useMemo(() => {
+    if (!isSearching) return null;
+    return {
+      commands: searchCommands(query),
+      modules: searchModules(query),
+      subtopics: searchSubtopics(query),
+      archetypes: searchArchetypes(query),
+    };
+  }, [isSearching, query]);
 
-  const displayedModules = useMemo(
-    () => (isSearching ? searchItems(moduleItems, query) : moduleItems),
-    [isSearching, query, moduleItems]
-  );
-
-  const displayedSubtopics = useMemo(
-    () => (isSearching ? searchItems(subtopicItems, query) : []),
-    [isSearching, query, subtopicItems]
-  );
-
-  const displayedArchetypes = useMemo(
-    () => (isSearching ? searchItems(archetypeItems, query) : []),
-    [isSearching, query, archetypeItems]
-  );
-
+  // Keyboard shortcut listener
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -86,32 +97,7 @@ export function CommandCenter() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleSelect = (item: SearchResult) => {
-    setOpen(false);
-    if (item.onSelect) {
-      item.onSelect();
-    } else if (item.href) {
-      router.push(item.href);
-    }
-  };
-
-  // Icon mapping
-  const IconMap: Record<string, React.ElementType> = {
-    House,
-    Books,
-    Code,
-    Lightning,
-    Clock,
-    ChartLine,
-    Cpu,
-    Gear,
-    Question,
-    BookOpen,
-    Hash,
-    GitBranch,
-  };
-
-  // Stats integration
+  // Stats integration - weakest subtopic
   const [weakestSubtopic, setWeakestSubtopic] = useState<{
     id: string;
     name: string;
@@ -120,7 +106,6 @@ export function CommandCenter() {
 
   useEffect(() => {
     if (open && !isSearching) {
-      // Dynamic import to avoid SSR issues with localStorage
       import("@/lib/statsStore").then(({ getWeakestSubtopics }) => {
         const weakest = getWeakestSubtopics(1);
         if (weakest.length > 0) {
@@ -134,236 +119,269 @@ export function CommandCenter() {
     }
   }, [open, isSearching]);
 
+  // Handle item selection
+  const handleSelect = (item: SearchResult) => {
+    setOpen(false);
+    setQuery("");
+    if (item.onSelect) {
+      item.onSelect();
+    } else if (item.href) {
+      router.push(item.href);
+    }
+  };
+
+  // Navigate and close helper
+  const navigateTo = (path: string) => {
+    setOpen(false);
+    setQuery("");
+    router.push(path);
+  };
+
+  // Render icon helper
+  const renderIcon = (iconName?: string, className?: string) => {
+    const Icon = iconName ? IconMap[iconName] : House;
+    return <Icon className={className || "mr-2 h-4 w-4"} />;
+  };
+
   return (
-    <>
-      {/* Removed trigger button since it's global shortcut, but could add a hidden one or use context */}
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput
-          placeholder="Type a command or search topic..."
-          value={query}
-          onValueChange={setQuery}
-        />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandInput
+        placeholder="Type a command or search topic..."
+        value={query}
+        onValueChange={setQuery}
+      />
+      <CommandList>
+        <CommandEmpty>
+          No results found. Try a broader topic name or module.
+        </CommandEmpty>
 
-          {/* Initial State Groups */}
-          {!isSearching && (
-            <>
-              <CommandGroup heading="Practice">
+        {/* ===== INITIAL STATE (no search) ===== */}
+        {!isSearching && (
+          <>
+            {/* Practice Group */}
+            <CommandGroup heading="Practice">
+              <CommandItem
+                value="start-auto"
+                onSelect={() => navigateTo("/practice/auto")}
+              >
+                <Lightning className="mr-2 h-4 w-4 text-amber-500" />
+                <span>Start Auto Mode</span>
+              </CommandItem>
+
+              {weakestSubtopic && (
                 <CommandItem
-                  value="start-auto"
-                  onSelect={() => {
-                    router.push("/practice/auto");
-                    setOpen(false);
-                  }}
+                  value="weakest-subtopic"
+                  onSelect={() =>
+                    navigateTo(
+                      `/practice?mode=manual&module=${
+                        weakestSubtopic.moduleId
+                      }&subtopic=${encodeURIComponent(
+                        weakestSubtopic.name
+                      )}&difficulty=beginner`
+                    )
+                  }
                 >
-                  <Lightning className="mr-2 h-4 w-4 text-amber-500" />
-                  <span>Start Auto Mode</span>
+                  <ChartLine className="mr-2 h-4 w-4 text-red-500" />
+                  <span>Practice Weakest: {weakestSubtopic.name}</span>
                 </CommandItem>
-
-                {weakestSubtopic && (
-                  <CommandItem
-                    value="weakest-subtopic"
-                    onSelect={() => {
-                      router.push(
-                        `/practice?mode=manual&module=${
-                          weakestSubtopic.moduleId
-                        }&subtopic=${encodeURIComponent(
-                          weakestSubtopic.name
-                        )}&difficulty=beginner`
-                      );
-                      setOpen(false);
-                    }}
-                  >
-                    <ChartLine className="mr-2 h-4 w-4 text-red-500" />
-                    <span>Practice Weakest: {weakestSubtopic.name}</span>
-                  </CommandItem>
-                )}
-
-                <CommandItem
-                  value="manual-practice"
-                  onSelect={() => {
-                    router.push("/practice/manual");
-                    setOpen(false);
-                  }}
-                >
-                  <Code className="mr-2 h-4 w-4" />
-                  <span>Open Manual Practice</span>
-                </CommandItem>
-              </CommandGroup>
-
-              <CommandSeparator />
-
-              {/* Suggestions / Context (Merged into specific actions or hidden if redundant) */}
-              {/* Keeping context-aware items if they add value beyond the standard groups */}
-              {pathname === "/practice/auto" && (
-                <CommandGroup heading="Suggestions">
-                  <CommandItem
-                    value="go-home"
-                    onSelect={() => {
-                      router.push("/");
-                      setOpen(false);
-                    }}
-                  >
-                    <House className="mr-2 h-4 w-4" />
-                    <span>Go Home</span>
-                  </CommandItem>
-                </CommandGroup>
               )}
-            </>
-          )}
 
-          {/* Core Navigation */}
-          {displayedPages.length > 0 && (
-            <CommandGroup heading="Go To">
-              {displayedPages.map((page) => {
-                const Icon = page.icon ? IconMap[page.icon] : House;
-                return (
-                  <CommandItem
-                    key={page.id}
-                    value={page.id}
-                    onSelect={() => handleSelect(page)}
-                  >
-                    <Icon className="mr-2 h-4 w-4" />
-                    <span>{page.title}</span>
-                  </CommandItem>
-                );
-              })}
+              <CommandItem
+                value="manual-practice"
+                onSelect={() => navigateTo("/practice/manual")}
+              >
+                <Code className="mr-2 h-4 w-4" />
+                <span>Open Manual Practice</span>
+              </CommandItem>
             </CommandGroup>
-          )}
 
-          <CommandSeparator />
+            <CommandSeparator />
 
-          {/* Modules */}
-          {displayedModules.length > 0 && (
+            {/* Go To Group */}
+            <CommandGroup heading="Go To">
+              {staticPages.map((page) => (
+                <CommandItem
+                  key={page.id}
+                  value={page.id}
+                  onSelect={() => handleSelect(page)}
+                >
+                  {renderIcon(page.icon)}
+                  <span>{page.title}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+
+            <CommandSeparator />
+
+            {/* Modules Group */}
             <CommandGroup heading="Modules">
-              {displayedModules.map((item) => (
+              {moduleItems.map((item) => (
                 <CommandItem
                   key={item.id}
                   value={item.id}
                   onSelect={() => handleSelect(item)}
                 >
                   <BookOpen className="mr-2 h-4 w-4 opacity-70" />
-                  <span>{item.title}</span>
+                  <div className="flex flex-col">
+                    <span>{item.title}</span>
+                    {item.subtitle && (
+                      <span className="text-xs text-muted-foreground truncate max-w-[250px]">
+                        {item.subtitle}
+                      </span>
+                    )}
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
-          )}
 
-          {/* Subtopics - Search Only */}
-          {isSearching && displayedSubtopics.length > 0 && (
-            <>
-              <CommandSeparator />
-              <CommandGroup heading="Subtopics">
-                {displayedSubtopics.map((item) => (
+            <CommandSeparator />
+
+            {/* Settings & Toggles Group */}
+            <CommandGroup heading="Settings & Toggles">
+              <CommandItem
+                value="toggle-theme"
+                onSelect={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? (
+                  <Sun className="mr-2 h-4 w-4" />
+                ) : (
+                  <Moon className="mr-2 h-4 w-4" />
+                )}
+                <span>Toggle Theme</span>
+              </CommandItem>
+              <CommandItem
+                value="api-settings"
+                onSelect={() => navigateTo("/support/settings?tab=api")}
+              >
+                <Key className="mr-2 h-4 w-4" />
+                <span>API Key Settings</span>
+              </CommandItem>
+              <CommandItem
+                value="general-settings"
+                onSelect={() => navigateTo("/support/settings?tab=general")}
+              >
+                <Gear className="mr-2 h-4 w-4" />
+                <span>General Settings</span>
+              </CommandItem>
+            </CommandGroup>
+
+            <CommandSeparator />
+
+            {/* Help Group */}
+            <CommandGroup heading="Help">
+              {helpActions.map((action) => (
+                <CommandItem
+                  key={action.id}
+                  value={action.id}
+                  onSelect={() => handleSelect(action)}
+                >
+                  {renderIcon(action.icon)}
+                  <span>{action.title}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
+        )}
+
+        {/* ===== SEARCH STATE ===== */}
+        {isSearching && searchResults && (
+          <>
+            {/* Commands (matching navigation/practice/settings/help) */}
+            {searchResults.commands.length > 0 && (
+              <CommandGroup heading="Commands">
+                {searchResults.commands.map((item) => (
                   <CommandItem
                     key={item.id}
                     value={item.id}
                     onSelect={() => handleSelect(item)}
                   >
-                    <Hash className="mr-2 h-4 w-4 opacity-70" />
-                    <div className="flex flex-col">
-                      <span>{item.title}</span>
-                      {item.subtitle && (
-                        <span className="text-xs text-muted-foreground">
-                          {item.subtitle}
-                        </span>
-                      )}
-                    </div>
+                    {renderIcon(item.icon)}
+                    <span>{item.title}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
-            </>
-          )}
+            )}
 
-          {/* Archetypes - Search Only */}
-          {isSearching && displayedArchetypes.length > 0 && (
-            <>
-              <CommandSeparator />
-              <CommandGroup heading="Problem Archetypes">
-                {displayedArchetypes.map((item) => (
-                  <CommandItem
-                    key={item.id}
-                    value={item.id}
-                    onSelect={() => handleSelect(item)}
-                  >
-                    <Lightning className="mr-2 h-4 w-4 opacity-70" />
-                    <div className="flex flex-col">
-                      <span>{item.title}</span>
-                      {item.subtitle && (
-                        <span className="text-xs text-muted-foreground">
-                          {item.subtitle}
-                        </span>
-                      )}
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </>
-          )}
+            {/* Modules */}
+            {searchResults.modules.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Modules">
+                  {searchResults.modules.map((item) => (
+                    <CommandItem
+                      key={item.id}
+                      value={item.id}
+                      onSelect={() => handleSelect(item)}
+                    >
+                      <BookOpen className="mr-2 h-4 w-4 opacity-70" />
+                      <div className="flex flex-col">
+                        <span>{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground">
+                            {item.subtitle}
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
 
-          {/* Settings & Toggles - Initial Only */}
-          {!isSearching && (
-            <>
-              <CommandSeparator />
-              <CommandGroup heading="Settings & Toggles">
-                <CommandItem
-                  value="toggle-theme"
-                  onSelect={() => {
-                    setTheme(theme === "dark" ? "light" : "dark");
-                  }}
-                >
-                  {theme === "dark" ? (
-                    <Sun className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Moon className="mr-2 h-4 w-4" />
-                  )}
-                  <span>Toggle Theme</span>
-                </CommandItem>
-                <CommandItem
-                  value="api-settings"
-                  onSelect={() => {
-                    router.push("/support/settings?tab=api");
-                    setOpen(false);
-                  }}
-                >
-                  <Key className="mr-2 h-4 w-4" />
-                  <span>API Key Settings</span>
-                </CommandItem>
-                <CommandItem
-                  value="general-settings"
-                  onSelect={() => {
-                    router.push("/support/settings?tab=general");
-                    setOpen(false);
-                  }}
-                >
-                  <Gear className="mr-2 h-4 w-4" />
-                  <span>General Settings</span>
-                </CommandItem>
-              </CommandGroup>
-            </>
-          )}
+            {/* Subtopics - Search Only */}
+            {searchResults.subtopics.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Subtopics">
+                  {searchResults.subtopics.map((item) => (
+                    <CommandItem
+                      key={item.id}
+                      value={item.id}
+                      onSelect={() => handleSelect(item)}
+                    >
+                      <Hash className="mr-2 h-4 w-4 opacity-70" />
+                      <div className="flex flex-col">
+                        <span>{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground">
+                            {item.subtitle}
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
 
-          {/* Help - Initial Only */}
-          {!isSearching && (
-            <>
-              <CommandSeparator />
-              <CommandGroup heading="Help">
-                <CommandItem
-                  value="docs"
-                  onSelect={() => {
-                    router.push("/support/help");
-                    setOpen(false);
-                  }}
-                >
-                  <Question className="mr-2 h-4 w-4" />
-                  <span>Search Documentation</span>
-                </CommandItem>
-              </CommandGroup>
-            </>
-          )}
-        </CommandList>
-      </CommandDialog>
-    </>
+            {/* Problem Archetypes - Search Only */}
+            {searchResults.archetypes.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Problem Archetypes">
+                  {searchResults.archetypes.map((item) => (
+                    <CommandItem
+                      key={item.id}
+                      value={item.id}
+                      onSelect={() => handleSelect(item)}
+                    >
+                      <Lightning className="mr-2 h-4 w-4 opacity-70" />
+                      <div className="flex flex-col">
+                        <span>{item.title}</span>
+                        {item.subtitle && (
+                          <span className="text-xs text-muted-foreground">
+                            {item.subtitle}
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+          </>
+        )}
+      </CommandList>
+    </CommandDialog>
   );
 }

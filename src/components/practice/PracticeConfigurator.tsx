@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getAllModules } from "@/lib/topicsStore";
 import { getTemplateQuestion } from "@/lib/questionService";
@@ -37,47 +37,28 @@ export function PracticeConfigurator() {
   const searchParams = useSearchParams();
   const modules = useMemo(() => getAllModules(), []);
 
-  // Initialize from URL params if available
-  const initialModuleId = searchParams.get("module") || "";
-  const initialSubtopicName = searchParams.get("subtopic") || "";
-  const initialDiff =
+  // Read URL params
+  const urlModuleId = searchParams.get("module") || "";
+  const urlSubtopicName = searchParams.get("subtopic") || "";
+  const urlDifficulty =
     (searchParams.get("difficulty") as Difficulty) || "beginner";
 
-  const [selectedModuleId, setSelectedModuleId] =
-    useState<string>(initialModuleId);
-  const [selectedSubtopicId, setSelectedSubtopicId] = useState<string>("");
+  // Helper to find subtopic ID from name
+  const findSubtopicId = (modId: string, subName: string) => {
+    if (!modId || !subName) return "";
+    const mod = modules.find((m) => m.id === modId);
+    return mod?.subtopics.find((s) => s.name === subName)?.id || "";
+  };
+
+  // Initialize state from URL params
+  const [selectedModuleId, setSelectedModuleId] = useState<string>(urlModuleId);
+  const [selectedSubtopicId, setSelectedSubtopicId] = useState<string>(() =>
+    findSubtopicId(urlModuleId, urlSubtopicName)
+  );
   const [selectedProblemTypeId, setSelectedProblemTypeId] =
     useState<string>("");
-  const [difficulty, setDifficulty] = useState<Difficulty>(initialDiff);
-
+  const [difficulty, setDifficulty] = useState<Difficulty>(urlDifficulty);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // Effect to sync state with URL params
-  useEffect(() => {
-    const modId = searchParams.get("module");
-    const subName = searchParams.get("subtopic");
-    const diff = searchParams.get("difficulty") as Difficulty;
-
-    if (modId && modId !== selectedModuleId) {
-      setSelectedModuleId(modId);
-    }
-
-    if (diff) {
-      setDifficulty(diff);
-    }
-
-    if (modId && subName) {
-      const mod = modules.find((m) => m.id === modId);
-      if (mod) {
-        const sub = mod.subtopics.find((s) => s.name === subName);
-        if (sub && sub.id !== selectedSubtopicId) {
-          // Defer to next tick to avoid conflicts during hydration if needed,
-          // though typically safe in effect.
-          setSelectedSubtopicId(sub.id);
-        }
-      }
-    }
-  }, [searchParams, modules]); // Depend on searchParams effectively
 
   // Find module object
   const selectedModule = useMemo(

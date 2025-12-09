@@ -1,0 +1,141 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - link:
+          - /url: /
+          - generic:
+            - img
+        - generic:
+          - link:
+            - /url: /
+            - img
+          - link:
+            - /url: /practice/manual
+            - img
+          - link:
+            - /url: /practice/auto
+            - img
+          - link:
+            - /url: /history
+            - img
+          - link:
+            - /url: /insights/stats
+            - img
+          - link:
+            - /url: /insights/api-usage
+            - img
+          - link:
+            - /url: /support/settings
+            - img
+          - link:
+            - /url: /support/help
+            - img
+          - link:
+            - /url: /support/bug-report
+            - img
+    - main:
+      - generic:
+        - generic:
+          - heading [level=1]: "404"
+          - generic:
+            - heading [level=2]: This page could not be found.
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search for a command to run...
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+    - img [ref=e7]
+  - alert
+  - dialog "Command Palette" [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e14]:
+        - img [ref=e15]
+        - combobox [expanded] [active] [ref=e17]
+      - listbox "Suggestions" [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]: Navigation
+          - group "Navigation" [ref=e21]:
+            - option "Go to Dashboard" [selected] [ref=e22]:
+              - img
+              - generic [ref=e23]: Go to Dashboard
+            - option "Open Manual Practice" [ref=e24]:
+              - img
+              - generic [ref=e25]: Open Manual Practice
+            - option "Open Auto Mode" [ref=e26]:
+              - img
+              - generic [ref=e27]: Open Auto Mode
+            - option "Open History" [ref=e28]:
+              - img
+              - generic [ref=e29]: Open History
+            - option "Open Stats & Progress" [ref=e30]:
+              - img
+              - generic [ref=e31]: Open Stats & Progress
+            - option "Open API Usage" [ref=e32]:
+              - img
+              - generic [ref=e33]: Open API Usage
+            - option "Open Help & Docs" [ref=e34]:
+              - img
+              - generic [ref=e35]: Open Help & Docs
+            - option "Open Bug Report" [ref=e36]:
+              - img
+              - generic [ref=e37]: Open Bug Report
+            - option "Open Settings" [ref=e38]:
+              - img
+              - generic [ref=e39]: Open Settings
+            - option "Configure API Key" [ref=e40]:
+              - img
+              - generic [ref=e41]: Configure API Key
+          - separator [ref=e42]
+          - generic [ref=e43]: Auto Mode
+          - group "Auto Mode" [ref=e44]:
+            - option "Start New Run" [ref=e45]:
+              - img
+              - generic [ref=e46]: Start New Run
+          - separator [ref=e47]
+          - generic [ref=e48]: Jump to Topic
+          - group "Jump to Topic" [ref=e49]:
+            - option "Strings" [ref=e50]:
+              - img
+              - generic [ref=e51]: Strings
+            - option "Lists" [ref=e52]:
+              - img
+              - generic [ref=e53]: Lists
+            - option "Dictionaries" [ref=e54]:
+              - img
+              - generic [ref=e55]: Dictionaries
+            - option "Sets" [ref=e56]:
+              - img
+              - generic [ref=e57]: Sets
+            - option "Functions" [ref=e58]:
+              - img
+              - generic [ref=e59]: Functions
+            - option "OOP" [ref=e60]:
+              - img
+              - generic [ref=e61]: OOP
+            - option "Pandas" [ref=e62]:
+              - img
+              - generic [ref=e63]: Pandas
+          - separator [ref=e64]
+          - generic [ref=e65]: Controls
+          - group "Controls" [ref=e66]:
+            - option "Reset All Stats" [ref=e67]:
+              - img
+              - generic [ref=e68]: Reset All Stats
+            - option "Import Save Files" [ref=e69]:
+              - img
+              - generic [ref=e70]: Import Save Files
+            - option "Export Runs" [ref=e71]:
+              - img
+              - generic [ref=e72]: Export Runs
+            - option "Keyboard Shortcuts ⌘K" [ref=e73]:
+              - img
+              - generic [ref=e74]: Keyboard Shortcuts
+              - generic [ref=e75]: ⌘K
+    - button "Close" [ref=e76]:
+      - img
+      - generic [ref=e77]: Close
+```

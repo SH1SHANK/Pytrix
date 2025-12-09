@@ -14,6 +14,7 @@ import { motion } from "motion/react";
 import { Sidebar, SidebarBody, useSidebar } from "@/components/ui/sidebar";
 import {
   House,
+  Books,
   GraduationCap,
   Lightning,
   ClockCounterClockwise,
@@ -30,6 +31,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   // Core
   { label: "Dashboard", href: "/", icon: House },
+  { label: "Modules", href: "/modules", icon: Books },
   { label: "Manual Practice", href: "/practice/manual", icon: GraduationCap },
   { label: "Auto Mode", href: "/practice/auto", icon: Lightning },
   { label: "History", href: "/history", icon: ClockCounterClockwise },
