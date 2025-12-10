@@ -123,6 +123,36 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for full details.
 
 ---
 
+## 🧪 Testing
+
+Pytrix has a comprehensive test suite covering unit tests, integration tests, and end-to-end browser tests.
+
+### Quick Commands
+
+```bash
+# Run all tests
+npm run test
+
+# Run unit tests only
+npm run test:unit
+
+# Run E2E tests (browser)
+npm run test:e2e
+
+# Watch mode for development
+npm run test:watch
+```
+
+### Test Stack
+
+- **Vitest** - Unit and integration testing
+- **Testing Library** - React component testing
+- **Playwright** - End-to-end browser testing
+
+See [tests/README.md](./tests/README.md) for complete documentation on writing and running tests.
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions!

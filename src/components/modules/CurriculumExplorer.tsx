@@ -30,7 +30,7 @@ export function CurriculumExplorer() {
   return (
     <div className="flex flex-col md:flex-row h-full overflow-hidden bg-background">
       {/* Sidebar - Settings-style List */}
-      <aside className="w-full md:w-64 lg:w-72 border-r shrink-0 z-20 bg-background md:block hidden">
+      <aside className="w-full md:w-64 lg:w-72 border-r shrink-0 z-20 bg-background md:flex flex-col hidden overflow-hidden">
         <ModuleSidebar
           modules={filteredModules}
           selectedModuleId={selectedModuleId}
@@ -52,7 +52,7 @@ export function CurriculumExplorer() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 h-full overflow-hidden flex flex-col bg-background">
+      <main className="flex-1 min-w-0 min-h-0 overflow-hidden flex flex-col bg-background">
         {selectedModule ? (
           <ModuleDetailView module={selectedModule} searchQuery={searchQuery} />
         ) : (

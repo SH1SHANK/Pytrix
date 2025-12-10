@@ -790,7 +790,7 @@ export function importRunFromJSON(jsonString: string): AutoRunV2 | ImportError {
     run.status = "paused"; // Don't auto-start
     saveRun(run);
     return run;
-  } catch (e) {
+  } catch {
     return { error: "Failed to parse JSON file." };
   }
 }

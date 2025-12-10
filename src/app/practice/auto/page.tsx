@@ -23,7 +23,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -35,7 +34,6 @@ import {
 } from "@/components/ui/collapsible";
 import {
   Lightning,
-  Sparkle,
   Target,
   TrendUp,
   CaretRight,
@@ -51,7 +49,6 @@ import {
   Info,
 } from "@phosphor-icons/react";
 import { useApiKey } from "@/app/ApiKeyContext";
-import { getStats } from "@/lib/statsStore";
 import {
   getAllAutoRunsV2,
   createAutoRunV2,
@@ -253,82 +250,6 @@ function AdaptiveLearningCards({ run }: { run: AutoRunV2 | null }) {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-// ============================================
-// PAST INSIGHTS
-// ============================================
-
-function PastInsights({ run }: { run: AutoRunV2 | null }) {
-  const stats = getStats();
-
-  if (!run && stats.totalAttempts === 0) {
-    return (
-      <Card className="bg-muted/30 border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-          <Sparkle
-            weight="duotone"
-            className="h-10 w-10 text-muted-foreground mb-3"
-          />
-          <p className="text-sm font-medium">No practice history yet</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Start your first adaptive run to see insights here
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const accuracy =
-    stats.totalAttempts > 0
-      ? Math.round((stats.totalSolved / stats.totalAttempts) * 100)
-      : 0;
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <TrendUp weight="duotone" className="h-4 w-4 text-green-500" />
-          Your Progress
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="space-y-1">
-            <p className="text-2xl font-bold">{stats.totalAttempts}</p>
-            <p className="text-xs text-muted-foreground">Total Attempts</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl font-bold text-green-500">{accuracy}%</p>
-            <p className="text-xs text-muted-foreground">Accuracy</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl font-bold">{run?.streak ?? 0}</p>
-            <p className="text-xs text-muted-foreground">Current Streak</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl font-bold">{run?.completedQuestions ?? 0}</p>
-            <p className="text-xs text-muted-foreground">This Run</p>
-          </div>
-        </div>
-
-        {run && (
-          <div className="mt-4 pt-4 border-t">
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span className="text-muted-foreground">Run Progress</span>
-              <span>
-                {run.currentIndex + 1} / {run.topicQueue.length}
-              </span>
-            </div>
-            <Progress
-              value={((run.currentIndex + 1) / run.topicQueue.length) * 100}
-              className="h-2"
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 

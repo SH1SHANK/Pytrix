@@ -144,7 +144,7 @@ interface ProblemTypeWithContext {
  * 4. Shuffle within same-mastery tiers
  * 5. Avoid recently used problem types
  */
-function generateTopicAwareQueue(
+export function generateTopicAwareQueue(
   recentProblemTypes: string[] = []
 ): TopicQueueEntry[] {
   const modules = getAllModules();

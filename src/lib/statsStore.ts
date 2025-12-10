@@ -151,7 +151,7 @@ function createEmptyModuleStats(
   };
 }
 
-function createEmptyStatsV2(): GlobalStatsV2 {
+export function createEmptyStatsV2(): GlobalStatsV2 {
   return {
     version: 3,
     totalAttempts: 0,
@@ -218,7 +218,7 @@ export function getStatsV2(): GlobalStatsV2 {
 /**
  * Save stats to localStorage.
  */
-function saveStatsV2(stats: GlobalStatsV2): void {
+export function saveStatsV2(stats: GlobalStatsV2): void {
   if (typeof window === "undefined") return;
   stats.lastUpdatedAt = Date.now();
   localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(stats));

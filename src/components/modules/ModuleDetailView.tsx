@@ -114,7 +114,7 @@ export function ModuleDetailView({
       </div>
 
       {/* Main Content: Hierarchy */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-6 md:p-8 max-w-4xl mx-auto w-full space-y-8">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold flex items-center gap-2 tracking-tight">

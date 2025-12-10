@@ -184,6 +184,7 @@ export function getArchetypeId(problemTypeId: string): string {
  */
 export function getOperationTags(
   problemTypeId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _subtopicId?: string
 ): OperationTag[] {
   const tags = new Set<OperationTag>();
