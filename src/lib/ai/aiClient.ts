@@ -14,14 +14,20 @@
  * - All responses are normalized to structured error types
  */
 
-import { getApiKeyForProvider, isApiKeyConfigured } from "@/lib/stores/apiKeyStore";
+import {
+  getApiKeyForProvider,
+  isApiKeyConfigured,
+} from "@/lib/stores/apiKeyStore";
 import { recordApiUsage, recordRateLimitHit } from "@/lib/stores/usageStore";
 import {
   recordApiUsageEntry,
   ApiFeature,
   ApiCallStatus,
 } from "@/lib/stores/apiUsageEntryStore";
-import { checkAndRecordCall, SafetyCheckResult } from "@/lib/safety/apiSafetyController";
+import {
+  checkAndRecordCall,
+  SafetyCheckResult,
+} from "@/lib/safety/apiSafetyController";
 import { Question, Difficulty } from "@/lib/types";
 import { Hint } from "@/lib/types/Hint";
 
@@ -264,7 +270,8 @@ export async function getHints(
  */
 export async function revealSolution(
   question: Question,
-  failedAttempts: number
+  failedAttempts: number,
+  hintsUsed: number = 0
 ): Promise<{ referenceSolution: string }> {
   // Check safety limits first
   const safetyCheck = checkAndRecordCall("optimal-solution");
@@ -280,7 +287,7 @@ export async function revealSolution(
       "Content-Type": "application/json",
       "X-API-Key": apiKey,
     },
-    body: JSON.stringify({ question, failedAttempts }),
+    body: JSON.stringify({ question, failedAttempts, hintsUsed }),
   });
 
   const data = await handleResponse<{

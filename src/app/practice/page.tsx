@@ -136,6 +136,7 @@ function PracticeWorkspace() {
   const [lastExecutionTimeMs, setLastExecutionTimeMs] = useState<number | null>(
     null
   );
+  const [isGeneratingHint, setIsGeneratingHint] = useState(false);
 
   // Auto Mode V2 state
   const [saveFile, setSaveFile] = useState<AutoRunV2 | null>(null);
@@ -530,6 +531,7 @@ function PracticeWorkspace() {
   const handleHint = async () => {
     if (!question) return;
     const nextLimit = hintsUsed + 1;
+    setIsGeneratingHint(true);
     toast.info(`Generating hint (${nextLimit}/2)...`);
 
     try {
@@ -543,6 +545,8 @@ function PracticeWorkspace() {
       setHintsUsed(nextLimit);
     } catch {
       toast.error("Could not get hint.");
+    } finally {
+      setIsGeneratingHint(false);
     }
   };
 
@@ -552,7 +556,8 @@ function PracticeWorkspace() {
     try {
       const { referenceSolution } = await revealSolution(
         question,
-        failedAttempts
+        failedAttempts,
+        hintsUsed
       );
       setIsSolutionRevealed(true);
       setQuestion((prev) =>
@@ -891,10 +896,14 @@ function PracticeWorkspace() {
                         variant="outline"
                         size="sm"
                         onClick={handleHint}
-                        disabled={hintsUsed >= 2}
+                        disabled={hintsUsed >= 2 || isGeneratingHint}
                         className="hidden sm:flex h-8"
                       >
-                        <Lightbulb className="h-4 w-4 lg:mr-2" />
+                        {isGeneratingHint ? (
+                          <SpinnerGap className="h-4 w-4 animate-spin lg:mr-2" />
+                        ) : (
+                          <Lightbulb className="h-4 w-4 lg:mr-2" />
+                        )}
                         <span className="hidden lg:inline">
                           Hint ({hintsUsed}/2)
                         </span>
@@ -910,7 +919,11 @@ function PracticeWorkspace() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      disabled={failedAttempts < 2 && !isSolutionRevealed}
+                      disabled={
+                        failedAttempts < 2 &&
+                        hintsUsed < 2 &&
+                        !isSolutionRevealed
+                      }
                       className="hidden sm:flex h-8"
                     >
                       <Lock className="h-4 w-4 lg:mr-2" />

@@ -30,17 +30,18 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { question, failedAttempts } = body as {
+    const { question, failedAttempts, hintsUsed } = body as {
       question: Question;
       failedAttempts: number;
+      hintsUsed?: number;
     };
 
     if (!question) {
       return NextResponse.json({ error: "Missing question" }, { status: 400 });
     }
 
-    // Guard: require at least 2 failed attempts
-    if (failedAttempts < 2) {
+    // Guard: require at least 2 failed attempts OR 2 hints used
+    if (failedAttempts < 2 && (hintsUsed || 0) < 2) {
       return NextResponse.json(
         { error: "Cannot reveal solution yet. Keep trying!" },
         { status: 400 }

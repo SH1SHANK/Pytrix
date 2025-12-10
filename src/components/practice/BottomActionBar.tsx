@@ -37,6 +37,7 @@ interface BottomActionBarProps {
   // State
   isRunning: boolean;
   isSubmitting: boolean;
+  isGeneratingHint?: boolean;
   hintsUsed: number;
   maxHints?: number;
   showNext: boolean;
@@ -80,8 +81,9 @@ export function BottomActionBar({
   difficulty,
   moduleName,
   showTimer = false,
+  isGeneratingHint = false,
 }: BottomActionBarProps) {
-  const isWorking = isRunning || isSubmitting;
+  const isWorking = isRunning || isSubmitting || isGeneratingHint;
 
   const getDifficultyColor = () => {
     switch (difficulty) {
@@ -175,12 +177,16 @@ export function BottomActionBar({
                 disabled={hintsUsed >= maxHints || isWorking}
                 className="gap-1.5 h-8"
               >
-                <Lightbulb
-                  weight={hintsUsed > 0 ? "fill" : "duotone"}
-                  className={`h-4 w-4 ${
-                    hintsUsed > 0 ? "text-yellow-500" : ""
-                  }`}
-                />
+                {isGeneratingHint ? (
+                  <SpinnerGap className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Lightbulb
+                    weight={hintsUsed > 0 ? "fill" : "duotone"}
+                    className={`h-4 w-4 ${
+                      hintsUsed > 0 ? "text-yellow-500" : ""
+                    }`}
+                  />
+                )}
                 <span className="hidden sm:inline text-xs">Hint</span>
                 <Badge
                   variant="secondary"
