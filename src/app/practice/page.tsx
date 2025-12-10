@@ -37,9 +37,7 @@ import {
   SpinnerGap,
   ArrowsClockwise,
   Question as QuestionIcon,
-  SkipForward,
 } from "@phosphor-icons/react";
-import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { QuestionPanel } from "@/components/practice/QuestionPanel";
 import { CodeEditorPanel } from "@/components/practice/CodeEditorPanel";
@@ -48,7 +46,6 @@ import { OutputPanel } from "@/components/practice/OutputPanel";
 import { PracticeHeader } from "@/components/practice/PracticeHeader";
 import { HelpSheet } from "@/components/help/HelpSheet";
 import { RuntimeStatusBar } from "@/components/practice/RuntimeStatusBar";
-import { Kbd } from "@/components/ui/kbd";
 
 // AI Client (uses API routes with user's API key)
 import {

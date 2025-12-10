@@ -10,7 +10,7 @@
  * - Right: Controls (Timer + Actions)
  */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,8 +40,6 @@ import {
 } from "@/lib/auto-mode/autoRunTypes";
 import {
   slowDown,
-  getCurrentQueueEntry,
-  getSubtopicDifficulty,
   jumpToQueueIndex,
   type NavigationItem,
 } from "@/lib/auto-mode";
@@ -109,7 +107,6 @@ function DifficultyIcon({
 
 export function PracticeHeader({
   mode,
-  title, // Usually question title or generic "Practice"
   breadcrumbs,
   difficulty,
   streak,
