@@ -2,12 +2,12 @@
 
 import React, { createContext, useContext, useState } from "react";
 import { Stats, Topic, DifficultyLevel } from "@/lib/types";
-import { TOPICS } from "@/lib/mockQuestions";
+import { TOPICS } from "@/lib/question/mockQuestions";
 import {
   getStats,
   incrementAttempt as storeIncrementAttempt,
   GlobalStats,
-} from "@/lib/statsStore";
+} from "@/lib/stores/statsStore";
 
 interface PracticeContextType {
   stats: Stats;

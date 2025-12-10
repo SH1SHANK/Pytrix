@@ -15,7 +15,7 @@ import { Accordion, AccordionContent } from "@/components/ui/accordion";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Module, Subtopic } from "@/types/topics";
-import { getModuleStats, getSubtopicStats } from "@/lib/statsStore";
+import { getModuleStats, getSubtopicStats } from "@/lib/stores/statsStore";
 
 interface ModuleDetailViewProps {
   module: Module;

@@ -1,4 +1,4 @@
-import { DifficultyLevel } from "./statsStore";
+import { DifficultyLevel } from "@/lib/stores/statsStore";
 
 export type Difficulty = DifficultyLevel;
 
@@ -63,5 +63,4 @@ export type {
   GlobalStats,
   DifficultyStats,
   DifficultyLevel,
-} from "./statsStore";
-export type { AutoModeSaveFile } from "./autoModeService";
+} from "@/lib/stores/statsStore";

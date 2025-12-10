@@ -1,4 +1,4 @@
-import { getAllModules } from "@/lib/topicsStore";
+import { getAllModules } from "@/lib/stores/topicsStore";
 
 export type SearchResultType =
   | "page"

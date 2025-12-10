@@ -62,7 +62,7 @@ import {
   getHistory,
   deleteHistoryEntry,
   QuestionHistoryEntry,
-} from "@/lib/historyStore";
+} from "@/lib/stores/historyStore";
 import { toast } from "sonner";
 import { useRequireApiKey } from "@/hooks/useRequireApiKey";
 

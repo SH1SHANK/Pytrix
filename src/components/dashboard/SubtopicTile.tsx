@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Lightning, Brain, Rocket, CheckCircle } from "@phosphor-icons/react";
-import type { SubtopicStats } from "@/lib/statsStore";
+import type { SubtopicStats } from "@/lib/stores/statsStore";
 import { cn } from "@/lib/utils";
 
 interface SubtopicTileProps {

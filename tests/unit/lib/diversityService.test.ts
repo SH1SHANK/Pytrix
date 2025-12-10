@@ -23,8 +23,8 @@ import {
   clearSessionCache,
   clearAllHistory,
   getSessionStats,
-} from "@/lib/diversityService";
-import type { QuestionFingerprint } from "@/lib/questionFingerprint";
+} from "@/lib/question/diversityService";
+import type { QuestionFingerprint } from "@/lib/question/questionFingerprint";
 
 // Helper to create mock fingerprints
 function createMockFingerprint(

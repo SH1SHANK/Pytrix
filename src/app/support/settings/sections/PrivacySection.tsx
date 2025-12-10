@@ -38,7 +38,7 @@ import {
   ChartBar,
 } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import { useSettingsStore } from "@/lib/settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { useHydration } from "@/hooks/useHydration";
 
 export function PrivacySection() {

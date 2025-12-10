@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Module } from "@/lib/topicsStore";
+import { Module } from "@/lib/stores/topicsStore";
 import {
   Card,
   CardContent,

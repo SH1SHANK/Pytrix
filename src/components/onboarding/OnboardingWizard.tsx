@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSettingsStore } from "@/lib/settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { useApiKey } from "@/app/ApiKeyContext";
 import { ArrowLeft, ArrowRight, Check } from "@phosphor-icons/react";
 

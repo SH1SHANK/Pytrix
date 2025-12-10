@@ -4,7 +4,21 @@
  * Types for the curriculum-aware Auto Mode with adaptive difficulty.
  */
 
-import type { TopicQueueEntry } from "./autoModeService";
+// ============================================
+// TOPIC QUEUE (defined here to avoid circular imports)
+// ============================================
+
+/**
+ * Entry in the topic queue.
+ */
+export interface TopicQueueEntry {
+  moduleId: string;
+  subtopicId: string;
+  problemTypeId: string;
+  moduleName: string;
+  subtopicName: string;
+  problemTypeName: string;
+}
 
 // ============================================
 // TUNING CONFIGURATION

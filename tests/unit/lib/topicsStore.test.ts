@@ -31,7 +31,7 @@ import {
   getRandomSubtopic,
   getRandomProblemType,
   getTopicsData,
-} from "@/lib/topicsStore";
+} from "@/lib/stores/topicsStore";
 
 describe("topicsStore", () => {
   describe("getAllModules", () => {

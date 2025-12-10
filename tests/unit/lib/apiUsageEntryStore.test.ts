@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { useApiUsageEntryStore } from "@/lib/apiUsageEntryStore";
+import { useApiUsageEntryStore } from "@/lib/stores/apiUsageEntryStore";
 
 describe("apiUsageEntryStore", () => {
   beforeEach(() => {

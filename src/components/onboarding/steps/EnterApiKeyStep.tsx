@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useApiKey } from "@/app/ApiKeyContext";
-import { useSettingsStore } from "@/lib/settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 import {
   Eye,
   EyeSlash,

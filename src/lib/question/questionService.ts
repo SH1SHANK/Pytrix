@@ -15,21 +15,21 @@ import {
   type QuestionTemplate,
   type EdgeCase,
   type TestCaseTemplate,
-} from "@/lib/questionTemplates";
+} from "@/lib/question/questionTemplates";
 import {
   getProblemTypeWithContext,
   type Module,
   type Subtopic,
-} from "@/lib/topicsStore";
+} from "@/lib/stores/topicsStore";
 import type { Difficulty as TemplateDifficulty } from "@/types/question";
-import { createFingerprint } from "@/lib/questionFingerprint";
+import { createFingerprint } from "@/lib/question/questionFingerprint";
 import {
   getAvoidList,
   formatAvoidListForPrompt,
   recordFingerprint,
   shouldRegenerateQuestion,
   DIVERSITY_CONFIG,
-} from "@/lib/diversityService";
+} from "@/lib/question/diversityService";
 
 // ============================================================================
 // Types

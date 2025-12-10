@@ -41,7 +41,7 @@ import {
   exportRun,
   exportAllRuns,
   importRuns,
-} from "@/lib/autoModeService";
+} from "@/lib/auto-mode";
 import { toast } from "sonner";
 
 interface SaveFileDialogProps {

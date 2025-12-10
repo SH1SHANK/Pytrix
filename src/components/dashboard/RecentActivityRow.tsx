@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getHistory, type QuestionHistoryEntry } from "@/lib/historyStore";
+import { getHistory, type QuestionHistoryEntry } from "@/lib/stores/historyStore";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

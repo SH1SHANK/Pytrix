@@ -51,10 +51,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
-import { loadUserApiConfig } from "@/lib/apiKeyStore";
-import { testApiConnection } from "@/lib/aiClient";
+import { loadUserApiConfig } from "@/lib/stores/apiKeyStore";
+import { testApiConnection } from "@/lib/ai/aiClient";
 import { useApiKey } from "@/app/ApiKeyContext";
-import { useSettingsStore } from "@/lib/settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 // import { useHydration } from "@/hooks/useHydration";
 
 export function ApiKeysSection() {

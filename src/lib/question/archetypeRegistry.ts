@@ -5,7 +5,7 @@
  * Uses problem type IDs from topics.json as the primary archetype identifier.
  */
 
-import { getProblemTypeWithContext } from "./topicsStore";
+import { getProblemTypeWithContext } from "@/lib/stores/topicsStore";
 
 // ============================================================================
 // Operation Tags

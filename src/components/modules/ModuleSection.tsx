@@ -22,8 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent } from "@/components/ui/accordion";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import type { Module, Subtopic } from "@/types/topics";
-import { getModuleStats, getSubtopicStats } from "@/lib/statsStore";
-import { cn } from "@/lib/utils";
+import { getModuleStats, getSubtopicStats } from "@/lib/stores/statsStore";
 
 interface ModuleSectionProps {
   module: Module;

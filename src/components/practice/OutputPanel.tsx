@@ -17,7 +17,7 @@ import {
 } from "@phosphor-icons/react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { optimizeSolution } from "@/lib/aiClient";
+import { optimizeSolution } from "@/lib/ai/aiClient";
 
 interface OutputPanelProps {
   runResult: RunResult;

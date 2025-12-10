@@ -1,4 +1,4 @@
-import { getInternalClient } from "../src/lib/internalTestClient";
+import { getInternalClient } from "../src/lib/ai/internalTestClient";
 
 async function runInternalCheck() {
   console.log("Starting internal LLM check...");

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GraduationCap, ArrowSquareOut } from "@phosphor-icons/react";
-import { ApiUsageEntry } from "@/lib/apiUsageEntryStore";
+import { ApiUsageEntry } from "@/lib/stores/apiUsageEntryStore";
 import Link from "next/link";
 
 interface PastQuestionGenerationsProps {

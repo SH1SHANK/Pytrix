@@ -35,7 +35,7 @@ import {
   SidebarDensity,
   UIFont,
   CodeFont,
-} from "@/lib/settingsStore";
+} from "@/lib/stores/settingsStore";
 import { cn } from "@/lib/utils";
 import { useHydration } from "@/hooks/useHydration";
 

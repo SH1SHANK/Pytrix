@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { getAllModules } from "@/lib/topicsStore";
+import { getAllModules } from "@/lib/stores/topicsStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ResizablePanelGroup,
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/tooltip";
 import { MagnifyingGlass, CaretRight } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import { getModuleStats } from "@/lib/statsStore";
+import { getModuleStats } from "@/lib/stores/statsStore";
 import { ModuleSection } from "./ModuleSection";
 import type { Module } from "@/types/topics";
 

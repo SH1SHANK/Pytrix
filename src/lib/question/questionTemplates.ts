@@ -10,7 +10,7 @@ import {
   type ProblemType,
   type Module,
   type Subtopic,
-} from "@/lib/topicsStore";
+} from "@/lib/stores/topicsStore";
 
 import topicsData from "@/data/topics.json";
 

@@ -60,7 +60,7 @@ import {
 import { SaveFileDialog } from "@/components/automode/SaveFileDialog";
 import { DifficultySelectionSheet } from "./DifficultySelectionSheet";
 import { Topic } from "@/lib/types";
-import { resetTopicStats } from "@/lib/statsStore";
+import { resetTopicStats } from "@/lib/stores/statsStore";
 import { toast } from "sonner";
 
 // Map topic IDs to Phosphor icons

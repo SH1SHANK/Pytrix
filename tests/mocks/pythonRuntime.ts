@@ -9,7 +9,7 @@ import type {
   ExecutionResult,
   RuntimeInfo,
   RuntimeStatus,
-} from "@/lib/pythonRuntime";
+} from "@/lib/runtime/pythonRuntime";
 
 // Current mock state
 let mockStatus: RuntimeStatus = "ready";
@@ -166,7 +166,7 @@ export const mockSubscribeToRuntimeStatus = vi
  * Setup python runtime mocks
  */
 export function setupPythonRuntimeMocks() {
-  vi.mock("@/lib/pythonRuntime", () => ({
+  vi.mock("@/lib/runtime/pythonRuntime", () => ({
     runPython: mockRunPython,
     initPyodide: mockInitPyodide,
     getRuntimeInfo: mockGetRuntimeInfo,

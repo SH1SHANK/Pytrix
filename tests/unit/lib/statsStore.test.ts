@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Mock topicsStore before imports
-vi.mock("@/lib/topicsStore", () => ({
+vi.mock("@/lib/stores/topicsStore", () => ({
   getAllModules: vi.fn(() => [
     {
       id: "strings",
@@ -72,7 +72,7 @@ import {
   resetModuleStats,
   createEmptyStatsV2,
   type RecordAttemptInput,
-} from "@/lib/statsStore";
+} from "@/lib/stores/statsStore";
 
 describe("statsStore", () => {
   beforeEach(() => {

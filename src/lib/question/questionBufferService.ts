@@ -7,8 +7,8 @@
  * Buffer keys: `${mode}:${topic}:${difficulty}`
  */
 
-import { Question, DifficultyLevel } from "./types";
-import { generateQuestion } from "./aiClient";
+import { Question, DifficultyLevel } from "@/lib/types";
+import { generateQuestion } from "@/lib/ai/aiClient";
 
 // ============================================
 // CONFIGURATION

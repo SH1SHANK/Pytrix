@@ -25,7 +25,7 @@ import {
   CheckCircle,
   XCircle,
 } from "@phosphor-icons/react";
-import type { ModuleStats } from "@/lib/statsStore";
+import type { ModuleStats } from "@/lib/stores/statsStore";
 import { cn } from "@/lib/utils";
 import { SubtopicTile } from "./SubtopicTile";
 

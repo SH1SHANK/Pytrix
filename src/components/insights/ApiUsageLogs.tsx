@@ -31,7 +31,7 @@ import {
   FunnelSimple,
   ArrowSquareOut,
 } from "@phosphor-icons/react";
-import { ApiUsageEntry } from "@/lib/apiUsageEntryStore";
+import { ApiUsageEntry } from "@/lib/stores/apiUsageEntryStore";
 import Link from "next/link";
 
 interface ApiUsageLogsProps {

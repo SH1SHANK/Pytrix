@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/accordion";
 import { Play, Lightning, Brain, Rocket } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import type { Module } from "@/lib/topicsStore";
-import type { ModuleStats } from "@/lib/statsStore";
-import { getModuleStats } from "@/lib/statsStore";
+import type { Module } from "@/lib/stores/topicsStore";
+import type { ModuleStats } from "@/lib/stores/statsStore";
+import { getModuleStats } from "@/lib/stores/statsStore";
 
 interface DashboardModuleSheetProps {
   module: Module | null;

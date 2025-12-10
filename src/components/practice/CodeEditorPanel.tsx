@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import Editor, { loader } from "@monaco-editor/react";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
-import { useSettingsStore } from "@/lib/settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 
 interface CodeEditorPanelProps {
   code: string;

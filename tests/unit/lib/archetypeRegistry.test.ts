@@ -16,8 +16,8 @@ import {
   getTagOverlap,
   ALL_OPERATION_TAGS,
   type OperationTag,
-} from "@/lib/archetypeRegistry";
-import { getAllModules } from "@/lib/topicsStore";
+} from "@/lib/question/archetypeRegistry";
+import { getAllModules } from "@/lib/stores/topicsStore";
 
 describe("archetypeRegistry", () => {
   describe("ALL_OPERATION_TAGS", () => {

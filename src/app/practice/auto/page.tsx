@@ -56,8 +56,8 @@ import {
   getSubtopicDifficulty,
   generateMiniCurriculum,
   DEFAULT_AUTO_RUN_CONFIG,
-} from "@/lib/autoModeServiceV2";
-import type { AutoRunV2, DifficultyLevel } from "@/lib/autoRunTypes";
+} from "@/lib/auto-mode";
+import type { AutoRunV2, DifficultyLevel } from "@/lib/auto-mode/autoRunTypes";
 import { cn } from "@/lib/utils";
 
 // ============================================

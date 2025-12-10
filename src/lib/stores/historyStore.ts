@@ -5,7 +5,7 @@
  * Supports revisiting past questions with code snapshots.
  */
 
-import { DifficultyLevel } from "./types";
+import { DifficultyLevel } from "@/lib/types";
 
 // ============================================
 // CONFIGURATION

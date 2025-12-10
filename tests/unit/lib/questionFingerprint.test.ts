@@ -22,7 +22,7 @@ import {
   matchesFilter,
   SIMILARITY_THRESHOLD,
   type QuestionFingerprint,
-} from "@/lib/questionFingerprint";
+} from "@/lib/question/questionFingerprint";
 import type { Question } from "@/lib/types";
 
 // Helper to create a mock question

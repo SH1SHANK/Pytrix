@@ -43,7 +43,7 @@ vi.mock("@/lib/questionTemplates", () => ({
 }));
 
 // Mock topicsStore
-vi.mock("@/lib/topicsStore", () => ({
+vi.mock("@/lib/stores/topicsStore", () => ({
   getProblemTypeWithContext: vi.fn((problemTypeId: string) => {
     if (problemTypeId === "non-existent") return undefined;
     return {
@@ -59,7 +59,7 @@ vi.mock("@/lib/topicsStore", () => ({
 }));
 
 // Mock diversityService
-vi.mock("@/lib/diversityService", () => ({
+vi.mock("@/lib/question/diversityService", () => ({
   createFingerprint: vi.fn(() => ({
     module: "strings",
     subtopic: "String Basics",
@@ -76,7 +76,7 @@ vi.mock("@/lib/diversityService", () => ({
 }));
 
 // Mock questionFingerprint
-vi.mock("@/lib/questionFingerprint", () => ({
+vi.mock("@/lib/question/questionFingerprint", () => ({
   createFingerprint: vi.fn(() => ({
     module: "strings",
     subtopic: "String Basics",
@@ -93,7 +93,7 @@ import {
   getBatchTemplateQuestions,
   isProblemTypeAvailable,
   getProblemTypeContext,
-} from "@/lib/questionService";
+} from "@/lib/question/questionService";
 
 describe("questionService - Extended Coverage", () => {
   beforeEach(() => {

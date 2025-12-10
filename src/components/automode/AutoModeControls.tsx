@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { type AutoRunV2 } from "@/lib/autoRunTypes";
-import { saveRun } from "@/lib/autoModeServiceV2";
+import { type AutoRunV2 } from "@/lib/auto-mode/autoRunTypes";
+import { saveRun } from "@/lib/auto-mode";
 import { GearSix, Lightning, FirstAid } from "@phosphor-icons/react";
 
 interface AutoModeControlsProps {

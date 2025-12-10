@@ -14,16 +14,16 @@
  * - All responses are normalized to structured error types
  */
 
-import { getApiKeyForProvider, isApiKeyConfigured } from "./apiKeyStore";
-import { recordApiUsage, recordRateLimitHit } from "./usageStore";
+import { getApiKeyForProvider, isApiKeyConfigured } from "@/lib/stores/apiKeyStore";
+import { recordApiUsage, recordRateLimitHit } from "@/lib/stores/usageStore";
 import {
   recordApiUsageEntry,
   ApiFeature,
   ApiCallStatus,
-} from "./apiUsageEntryStore";
-import { checkAndRecordCall, SafetyCheckResult } from "./apiSafetyController";
-import { Question, Difficulty } from "./types";
-import { Hint } from "./types/Hint";
+} from "@/lib/stores/apiUsageEntryStore";
+import { checkAndRecordCall, SafetyCheckResult } from "@/lib/safety/apiSafetyController";
+import { Question, Difficulty } from "@/lib/types";
+import { Hint } from "@/lib/types/Hint";
 
 // ============================================
 // NORMALIZED ERROR TYPES

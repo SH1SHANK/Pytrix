@@ -20,9 +20,9 @@ import {
   AIResult,
 } from "@/lib/ai/modelRouter";
 import { Question, Difficulty } from "@/lib/types";
-import { MOCK_QUESTIONS } from "@/lib/mockQuestions";
+import { MOCK_QUESTIONS } from "@/lib/question/mockQuestions";
 
-import { generateTemplate } from "@/lib/questionTemplates";
+import { generateTemplate } from "@/lib/question/questionTemplates";
 
 interface GeneratedQuestionData {
   id?: string;

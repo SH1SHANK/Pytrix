@@ -15,8 +15,8 @@ import {
   CircleNotch,
 } from "@phosphor-icons/react";
 import { useRequireApiKey } from "@/hooks/useRequireApiKey";
-import { getStatsV2, GlobalStatsV2 } from "@/lib/statsStore";
-import { getAllModules, Module } from "@/lib/topicsStore";
+import { getStatsV2, GlobalStatsV2 } from "@/lib/stores/statsStore";
+import { getAllModules, Module } from "@/lib/stores/topicsStore";
 
 export default function StatsPage() {
   const [stats, setStats] = useState<GlobalStatsV2 | null>(null);

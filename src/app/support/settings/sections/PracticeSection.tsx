@@ -35,7 +35,7 @@ import {
   useSettingsStore,
   DefaultMode,
   DefaultDifficulty,
-} from "@/lib/settingsStore";
+} from "@/lib/stores/settingsStore";
 import { useHydration } from "@/hooks/useHydration";
 
 export function PracticeSection() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { getAllModules, getTopicsStats, Module } from "@/lib/topicsStore";
+import { getAllModules, getTopicsStats, Module } from "@/lib/stores/topicsStore";
 import { ModuleCard } from "./ModuleCard";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

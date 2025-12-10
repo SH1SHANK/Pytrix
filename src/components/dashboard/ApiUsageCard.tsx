@@ -18,7 +18,7 @@ import {
   resetApiUsage,
   QuotaStatus,
   DailyUsage,
-} from "@/lib/usageStore";
+} from "@/lib/stores/usageStore";
 import { toast } from "sonner";
 
 function formatNumber(n: number): string {

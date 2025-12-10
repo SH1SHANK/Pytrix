@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { MagnifyingGlass, CaretRight } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import type { Module } from "@/types/topics";
-import { getModuleStats } from "@/lib/statsStore";
+import { getModuleStats } from "@/lib/stores/statsStore";
 
 interface ModuleSidebarProps {
   modules: Module[];

@@ -40,7 +40,7 @@ import {
   searchSubtopics,
   searchArchetypes,
   SearchResult,
-} from "@/lib/searchIndex";
+} from "@/lib/search/searchIndex";
 
 // Icon mapping for dynamic rendering
 const IconMap: Record<string, React.ElementType> = {
@@ -117,7 +117,7 @@ export function CommandCenter({
 
   useEffect(() => {
     if (open && !isSearching) {
-      import("@/lib/statsStore").then(({ getWeakestSubtopics }) => {
+      import("@/lib/stores/statsStore").then(({ getWeakestSubtopics }) => {
         const weakest = getWeakestSubtopics(1);
         if (weakest.length > 0) {
           setWeakestSubtopic({

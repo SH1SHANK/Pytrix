@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getAllModules } from "@/lib/topicsStore";
-import { getTemplateQuestion } from "@/lib/questionService";
+import { getAllModules } from "@/lib/stores/topicsStore";
+import { getTemplateQuestion } from "@/lib/question/questionService";
 import type { Difficulty } from "@/lib/types";
 import {
   Select,

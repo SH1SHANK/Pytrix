@@ -14,7 +14,7 @@ import {
   subscribeToRuntimeStatus,
   RuntimeInfo,
   initPyodide,
-} from "@/lib/pythonRuntime";
+} from "@/lib/runtime/pythonRuntime";
 
 interface RuntimeStatusBarProps {
   onReady?: () => void;

@@ -12,8 +12,8 @@
 import { useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "./AppSidebar";
-import { useSettingsStore } from "@/lib/settingsStore";
-import { useSyncSafetyWithSettings } from "@/lib/apiSafetyController";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
+import { useSyncSafetyWithSettings } from "@/lib/safety/apiSafetyController";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {

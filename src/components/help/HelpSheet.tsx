@@ -40,8 +40,8 @@ import {
 } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { resetStats } from "@/lib/statsStore";
-import { exportAllRuns, importRuns } from "@/lib/autoModeService";
+import { resetStats } from "@/lib/stores/statsStore";
+import { exportAllRuns, importRuns } from "@/lib/auto-mode";
 import { usePractice } from "@/app/PracticeContext";
 
 interface HelpSheetProps {

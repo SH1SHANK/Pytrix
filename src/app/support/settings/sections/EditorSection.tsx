@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Code, Sliders, Play } from "@phosphor-icons/react";
-import { useSettingsStore, EditorTheme } from "@/lib/settingsStore";
+import { useSettingsStore, EditorTheme } from "@/lib/stores/settingsStore";
 import { useHydration } from "@/hooks/useHydration";
 
 export function EditorSection() {

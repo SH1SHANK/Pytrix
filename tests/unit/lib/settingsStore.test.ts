@@ -21,14 +21,14 @@ describe("settingsStore", () => {
   describe("default values", () => {
     it("should have correct default theme", async () => {
       // Dynamically import to get fresh store
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
       const state = useSettingsStore.getState();
 
       expect(state.appearance.theme).toBe("github-dark");
     });
 
     it("should have correct default editor settings", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
       const state = useSettingsStore.getState();
 
       expect(state.editor.tabSize).toBe(4);
@@ -37,7 +37,7 @@ describe("settingsStore", () => {
     });
 
     it("should have correct default practice settings", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
       const state = useSettingsStore.getState();
 
       expect(state.practice.defaultMode).toBe("manual");
@@ -45,7 +45,7 @@ describe("settingsStore", () => {
     });
 
     it("should have onboarding not completed by default", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
       const state = useSettingsStore.getState();
 
       expect(state.hasCompletedOnboarding).toBe(false);
@@ -55,7 +55,7 @@ describe("settingsStore", () => {
 
   describe("updateAppearance", () => {
     it("should update theme", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().updateAppearance({ theme: "github-light" });
 
@@ -64,7 +64,7 @@ describe("settingsStore", () => {
     });
 
     it("should update accent color", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().updateAppearance({ accentColor: "purple" });
 
@@ -73,7 +73,7 @@ describe("settingsStore", () => {
     });
 
     it("should preserve other appearance settings when updating one", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
       const originalFont = useSettingsStore.getState().appearance.uiFont;
 
       useSettingsStore.getState().updateAppearance({ theme: "github-light" });
@@ -85,7 +85,7 @@ describe("settingsStore", () => {
 
   describe("updateEditor", () => {
     it("should update tab size", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().updateEditor({ tabSize: 2 });
 
@@ -94,7 +94,7 @@ describe("settingsStore", () => {
     });
 
     it("should toggle minimap", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().updateEditor({ showMinimap: true });
 
@@ -105,7 +105,7 @@ describe("settingsStore", () => {
 
   describe("updatePractice", () => {
     it("should update default difficulty", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore
         .getState()
@@ -116,7 +116,7 @@ describe("settingsStore", () => {
     });
 
     it("should toggle adaptive difficulty", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore
         .getState()
@@ -129,7 +129,7 @@ describe("settingsStore", () => {
 
   describe("updateKeyBinding", () => {
     it("should update a key binding", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore
         .getState()
@@ -143,7 +143,7 @@ describe("settingsStore", () => {
 
   describe("onboarding", () => {
     it("should complete onboarding", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().completeOnboarding();
 
@@ -153,7 +153,7 @@ describe("settingsStore", () => {
     });
 
     it("should set onboarding step", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().setOnboardingStep(3);
 
@@ -162,7 +162,7 @@ describe("settingsStore", () => {
     });
 
     it("should reset onboarding", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       // First complete it
       useSettingsStore.getState().completeOnboarding();
@@ -179,7 +179,7 @@ describe("settingsStore", () => {
 
   describe("resetToDefaults", () => {
     it("should reset all settings to defaults", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       // Change some settings
       useSettingsStore.getState().updateAppearance({ theme: "github-light" });
@@ -194,7 +194,7 @@ describe("settingsStore", () => {
     });
 
     it("should not reset onboarding state", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().completeOnboarding();
       useSettingsStore.getState().resetToDefaults();
@@ -208,7 +208,7 @@ describe("settingsStore", () => {
 
   describe("setApiKeyVerified", () => {
     it("should set API key verification timestamp", async () => {
-      const { useSettingsStore } = await import("@/lib/settingsStore");
+      const { useSettingsStore } = await import("@/lib/stores/settingsStore");
 
       useSettingsStore.getState().setApiKeyVerified();
 

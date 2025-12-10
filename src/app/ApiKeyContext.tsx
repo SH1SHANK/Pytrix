@@ -26,7 +26,7 @@ import {
   clearUserApiConfig,
   createApiConfig,
   loadUserApiConfig,
-} from "@/lib/apiKeyStore";
+} from "@/lib/stores/apiKeyStore";
 
 // ============================================
 // TYPES

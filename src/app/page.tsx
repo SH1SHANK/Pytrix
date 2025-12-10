@@ -17,12 +17,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ArrowCounterClockwise } from "@phosphor-icons/react";
-import { resetStats } from "@/lib/statsStore";
+import { resetStats } from "@/lib/stores/statsStore";
 import { usePractice } from "@/app/PracticeContext";
 import { useApiKey } from "@/app/ApiKeyContext";
 import { toast } from "sonner";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
-import { useSettingsStore } from "@/lib/settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 
 export default function Home() {
   const { refreshStats } = usePractice();

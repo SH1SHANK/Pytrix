@@ -1,6 +1,6 @@
 "use client";
 
-import { Subtopic, ProblemType } from "@/lib/topicsStore";
+import { Subtopic, ProblemType } from "@/lib/stores/topicsStore";
 import {
   Accordion,
   AccordionContent,

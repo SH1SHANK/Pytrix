@@ -5,7 +5,7 @@
  * Supports per-difficulty tracking and migration from old flat format.
  */
 
-import { getAllModules } from "./topicsStore";
+import { getAllModules } from "@/lib/stores/topicsStore";
 
 // ============================================
 // TYPE DEFINITIONS

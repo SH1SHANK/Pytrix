@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Lightning, TrendUp, ArrowRight, Robot } from "@phosphor-icons/react";
 import Link from "next/link";
-import { getWeakestSubtopics, type SubtopicStats } from "@/lib/statsStore";
+import { getWeakestSubtopics, type SubtopicStats } from "@/lib/stores/statsStore";
 
 export function NextStepsPanel() {
   const [weakest, setWeakest] = useState<{

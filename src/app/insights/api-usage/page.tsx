@@ -32,8 +32,8 @@ import {
   getQuotaStatus,
   DailyUsage,
   QuotaStatus,
-} from "@/lib/usageStore";
-import { useApiUsageEntryStore } from "@/lib/apiUsageEntryStore";
+} from "@/lib/stores/usageStore";
+import { useApiUsageEntryStore } from "@/lib/stores/apiUsageEntryStore";
 import {
   Gauge,
   Warning,

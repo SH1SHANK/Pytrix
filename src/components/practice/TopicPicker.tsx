@@ -7,7 +7,7 @@
  */
 
 import { useState, useMemo } from "react";
-import { getAllModules } from "@/lib/topicsStore";
+import { getAllModules } from "@/lib/stores/topicsStore";
 import { type Difficulty } from "@/lib/types";
 import {
   Select,

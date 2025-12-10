@@ -6,7 +6,7 @@
  * without storing the full question text.
  */
 
-import type { Question, Difficulty } from "./types";
+import type { Question, Difficulty } from "@/lib/types";
 import {
   getArchetypeId,
   getOperationTags,

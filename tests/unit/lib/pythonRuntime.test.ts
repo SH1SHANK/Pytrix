@@ -8,9 +8,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Mock the actual module before importing
-vi.mock("@/lib/pythonRuntime", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/pythonRuntime")>(
-    "@/lib/pythonRuntime"
+vi.mock("@/lib/runtime/pythonRuntime", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/runtime/pythonRuntime")>(
+    "@/lib/runtime/pythonRuntime"
   );
 
   // We'll test the types and interfaces, actual execution is mocked
@@ -88,7 +88,7 @@ describe("pythonRuntime", () => {
 
   describe("initPyodide", () => {
     it("should initialize successfully", async () => {
-      const { initPyodide } = await import("@/lib/pythonRuntime");
+      const { initPyodide } = await import("@/lib/runtime/pythonRuntime");
 
       const result = await initPyodide();
       expect(result).toBe(true);
@@ -97,7 +97,7 @@ describe("pythonRuntime", () => {
 
   describe("getRuntimeInfo", () => {
     it("should return runtime status", async () => {
-      const { getRuntimeInfo } = await import("@/lib/pythonRuntime");
+      const { getRuntimeInfo } = await import("@/lib/runtime/pythonRuntime");
 
       const info = getRuntimeInfo();
       expect(info.status).toBe("ready");
@@ -108,7 +108,7 @@ describe("pythonRuntime", () => {
 
   describe("isRuntimeReady", () => {
     it("should return true when ready", async () => {
-      const { isRuntimeReady } = await import("@/lib/pythonRuntime");
+      const { isRuntimeReady } = await import("@/lib/runtime/pythonRuntime");
 
       expect(isRuntimeReady()).toBe(true);
     });
@@ -116,7 +116,7 @@ describe("pythonRuntime", () => {
 
   describe("getPythonVersion", () => {
     it("should return version string", async () => {
-      const { getPythonVersion } = await import("@/lib/pythonRuntime");
+      const { getPythonVersion } = await import("@/lib/runtime/pythonRuntime");
 
       expect(getPythonVersion()).toBe("3.11.3");
     });
@@ -124,7 +124,7 @@ describe("pythonRuntime", () => {
 
   describe("runPython", () => {
     it("should capture stdout from print statements", async () => {
-      const { runPython } = await import("@/lib/pythonRuntime");
+      const { runPython } = await import("@/lib/runtime/pythonRuntime");
 
       const result = await runPython('print("Hello, World!")');
 
@@ -133,7 +133,7 @@ describe("pythonRuntime", () => {
     });
 
     it("should capture return values", async () => {
-      const { runPython } = await import("@/lib/pythonRuntime");
+      const { runPython } = await import("@/lib/runtime/pythonRuntime");
 
       const result = await runPython("return 42");
 
@@ -142,7 +142,7 @@ describe("pythonRuntime", () => {
     });
 
     it("should handle syntax errors", async () => {
-      const { runPython } = await import("@/lib/pythonRuntime");
+      const { runPython } = await import("@/lib/runtime/pythonRuntime");
 
       const result = await runPython("SyntaxError test");
 
@@ -152,7 +152,7 @@ describe("pythonRuntime", () => {
     });
 
     it("should handle timeout for infinite loops", async () => {
-      const { runPython } = await import("@/lib/pythonRuntime");
+      const { runPython } = await import("@/lib/runtime/pythonRuntime");
 
       const result = await runPython("infinite loop simulation");
 
@@ -161,7 +161,7 @@ describe("pythonRuntime", () => {
     });
 
     it("should include execution time", async () => {
-      const { runPython } = await import("@/lib/pythonRuntime");
+      const { runPython } = await import("@/lib/runtime/pythonRuntime");
 
       const result = await runPython("simple code");
 
@@ -172,7 +172,7 @@ describe("pythonRuntime", () => {
 
   describe("subscribeToRuntimeStatus", () => {
     it("should call listener with current status", async () => {
-      const { subscribeToRuntimeStatus } = await import("@/lib/pythonRuntime");
+      const { subscribeToRuntimeStatus } = await import("@/lib/runtime/pythonRuntime");
 
       const listener = vi.fn();
       const unsubscribe = subscribeToRuntimeStatus(listener);
@@ -188,7 +188,7 @@ describe("pythonRuntime", () => {
     });
 
     it("should return unsubscribe function", async () => {
-      const { subscribeToRuntimeStatus } = await import("@/lib/pythonRuntime");
+      const { subscribeToRuntimeStatus } = await import("@/lib/runtime/pythonRuntime");
 
       const listener = vi.fn();
       const unsubscribe = subscribeToRuntimeStatus(listener);
@@ -199,7 +199,7 @@ describe("pythonRuntime", () => {
 
   describe("resetRuntime", () => {
     it("should reset successfully", async () => {
-      const { resetRuntime } = await import("@/lib/pythonRuntime");
+      const { resetRuntime } = await import("@/lib/runtime/pythonRuntime");
 
       // Should not throw
       expect(() => resetRuntime()).not.toThrow();

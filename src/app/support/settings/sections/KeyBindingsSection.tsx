@@ -16,7 +16,7 @@ import {
 import { Kbd } from "@/components/ui/kbd";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Keyboard, Info } from "@phosphor-icons/react";
-import { useSettingsStore } from "@/lib/settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 
 export function KeyBindingsSection() {
   const { keyBindings } = useSettingsStore();

@@ -55,19 +55,19 @@ import {
   revealSolution, // was generateSolution
   getHints, // was generateHint
   evaluateCode,
-} from "@/lib/aiClient";
+} from "@/lib/ai/aiClient";
 
 // Question Service for topic-select mode
-import { getTemplateQuestion } from "@/lib/questionService";
+import { getTemplateQuestion } from "@/lib/question/questionService";
 
 // Question Buffer Service
 import {
   initBuffer,
   nextQuestion as bufferNextQuestion,
-} from "@/lib/questionBufferService";
+} from "@/lib/question/questionBufferService";
 
 // Python Runtime
-import { runPython, isRuntimeReady } from "@/lib/pythonRuntime";
+import { runPython, isRuntimeReady } from "@/lib/runtime/pythonRuntime";
 
 // Auto Mode V2 Imports
 import {
@@ -75,12 +75,12 @@ import {
   getCurrentQueueEntry,
   recordAttemptV2,
   advanceQueue,
-} from "@/lib/autoModeServiceV2";
-import { type AutoRunV2 } from "@/lib/autoRunTypes";
-import { AutoModeStatsBarV2 } from "@/components/automode/AutoModeStatsBarV2";
+} from "@/lib/auto-mode";
+import { type AutoRunV2 } from "@/lib/auto-mode/autoRunTypes";
+import { AutoModeStatsBar } from "@/components/automode/AutoModeStatsBar";
 
 // History tracking
-import { upsertHistoryEntry, getHistoryEntry } from "@/lib/historyStore";
+import { upsertHistoryEntry, getHistoryEntry } from "@/lib/stores/historyStore";
 
 function PracticeWorkspace() {
   const searchParams = useSearchParams();
@@ -651,7 +651,7 @@ function PracticeWorkspace() {
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Auto Mode Stats Bar V2 */}
       {mode === "auto" && saveFile && (
-        <AutoModeStatsBarV2 run={saveFile} onRunUpdate={setSaveFile} />
+        <AutoModeStatsBar run={saveFile} onRunUpdate={setSaveFile} />
       )}
 
       {/* Top Bar */}

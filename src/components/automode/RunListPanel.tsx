@@ -2,14 +2,14 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { AutoRunV2 } from "@/lib/autoRunTypes";
+import { AutoRunV2 } from "@/lib/auto-mode/autoRunTypes";
 import {
   deleteAutoRunV2,
   updateRunName,
   exportRunToJSON,
   importRunFromJSON,
   saveRun,
-} from "@/lib/autoModeServiceV2";
+} from "@/lib/auto-mode";
 import {
   Table,
   TableBody,

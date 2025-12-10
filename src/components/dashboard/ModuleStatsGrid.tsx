@@ -28,8 +28,8 @@ import {
   getStatsV2,
   type ModuleStats,
   type GlobalStatsV2,
-} from "@/lib/statsStore";
-import { getAllModules } from "@/lib/topicsStore";
+} from "@/lib/stores/statsStore";
+import { getAllModules } from "@/lib/stores/topicsStore";
 
 // Module ID to icon mapping
 const moduleIcons: Record<string, React.ReactNode> = {

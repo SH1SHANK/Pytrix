@@ -13,21 +13,22 @@ import {
   getModuleById,
   type Module,
   type Subtopic,
-} from "./topicsStore";
-import { getStats } from "./statsStore";
-import type { TopicQueueEntry } from "./autoModeService";
+} from "@/lib/stores/topicsStore";
+import { getStats } from "@/lib/stores/statsStore";
 import {
   type AutoRunV2,
-  // type AutoRunConfig,
+  type TopicQueueEntry,
   type DifficultyLevel,
-  // type AttemptRecord,
   type AttemptResult,
   type AdaptiveAnalytics,
   DEFAULT_AUTO_RUN_CONFIG,
   STORAGE_KEY_V2,
   STORAGE_KEY_ANALYTICS,
 } from "./autoRunTypes";
-import { getArchetypeExposure, isConsecutiveRepeat } from "./diversityService";
+import {
+  getArchetypeExposure,
+  isConsecutiveRepeat,
+} from "@/lib/question/diversityService";
 
 // ============================================
 // STORAGE HELPERS
@@ -52,7 +53,7 @@ export function generateMiniCurriculum(
 
   if (!stringModule) {
     console.warn(
-      "[autoModeServiceV2] String manipulation module not found, falling back"
+      "[autoModeService] String manipulation module not found, falling back"
     );
     return generateWeaknessBasedQueue([]);
   }
@@ -259,7 +260,7 @@ function migrateRunsIfNeeded(existingRuns: AutoRunV2[]): AutoRunV2[] {
     keysToRemove.forEach((k) => localStorage.removeItem(k));
 
     console.log(
-      `[autoModeServiceV2] Migrated ${migratedRuns.length} runs to V2 array storage.`
+      `[autoModeService] Migrated ${migratedRuns.length} runs to V2 array storage.`
     );
     return combined;
   }
@@ -284,7 +285,7 @@ export function getAllAutoRunsV2(): AutoRunV2[] {
     try {
       runs = JSON.parse(stored) as AutoRunV2[];
     } catch {
-      console.warn("[autoModeServiceV2] Corrupted runs list, resetting.");
+      console.warn("[autoModeService] Corrupted runs list, resetting.");
       runs = [];
     }
   }
@@ -419,7 +420,7 @@ function applyDecay(run: AutoRunV2): AutoRunV2 {
   if (now - run.lastUpdatedAt > decayThresholdMs && run.streak > 0) {
     const newStreak = Math.floor(run.streak / 2);
     console.log(
-      `[autoModeServiceV2] Applying decay: streak ${run.streak} → ${newStreak}`
+      `[autoModeService] Applying decay: streak ${run.streak} → ${newStreak}`
     );
 
     run.streak = newStreak;
@@ -800,3 +801,83 @@ export function importRunFromJSON(jsonString: string): AutoRunV2 | ImportError {
 // ============================================
 
 export { DEFAULT_AUTO_RUN_CONFIG };
+
+// Re-export types for convenience
+export type { AutoRunV2, TopicQueueEntry } from "./autoRunTypes";
+
+// ============================================
+// V1 COMPATIBILITY ALIASES
+// ============================================
+// These aliases support components built for V1 API
+
+/** @deprecated Use getAllAutoRunsV2 */
+export const getSaveFiles = getAllAutoRunsV2;
+
+/** @deprecated Use createAutoRunV2 */
+export const createSaveFile = createAutoRunV2;
+
+/** @deprecated Use deleteAutoRunV2 */
+export const deleteSaveFile = deleteAutoRunV2;
+
+/** @deprecated Use AutoRunV2 */
+export type AutoModeSaveFile = AutoRunV2;
+
+/**
+ * Get a summary of a run for display.
+ * @deprecated V1 compatibility function
+ */
+export function getSaveFileSummary(run: AutoRunV2): string {
+  const current = getCurrentQueueEntry(run);
+  const topicName = current?.subtopicName || "Unknown";
+  return `${run.completedQuestions} questions • ${topicName}`;
+}
+
+/**
+ * Export a single run.
+ * @deprecated Use exportRunToJSON
+ */
+export function exportRun(runId: string): AutoRunV2 | null {
+  return loadAutoRunV2(runId);
+}
+
+/**
+ * Export all runs.
+ * @deprecated V1 compatibility function
+ */
+export function exportAllRuns(): { runs: AutoRunV2[]; exportedAt: number } {
+  return {
+    runs: getAllAutoRunsV2(),
+    exportedAt: Date.now(),
+  };
+}
+
+/**
+ * Import runs from exported data.
+ * @deprecated V1 compatibility function
+ */
+export function importRuns(data: { runs?: AutoRunV2[] }): {
+  imported: number;
+  skipped: number;
+  errors: string[];
+} {
+  const result = { imported: 0, skipped: 0, errors: [] as string[] };
+
+  if (!data.runs || !Array.isArray(data.runs)) {
+    result.errors.push("Invalid import data format");
+    return result;
+  }
+
+  const existingRuns = getAllAutoRunsV2();
+  const existingIds = new Set(existingRuns.map((r) => r.id));
+
+  for (const run of data.runs) {
+    if (existingIds.has(run.id)) {
+      result.skipped++;
+    } else {
+      saveRun(run);
+      result.imported++;
+    }
+  }
+
+  return result;
+}

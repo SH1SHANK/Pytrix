@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Globe, House, Warning } from "@phosphor-icons/react";
-import { useSettingsStore, LandingPage } from "@/lib/settingsStore";
+import { useSettingsStore, LandingPage } from "@/lib/stores/settingsStore";
 import { useHydration } from "@/hooks/useHydration";
 
 export function GeneralSection() {

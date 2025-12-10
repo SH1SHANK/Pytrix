@@ -12,7 +12,7 @@
  */
 
 import { create } from "zustand";
-import { useSettingsStore } from "./settingsStore";
+import { useSettingsStore } from "@/lib/stores/settingsStore";
 
 // ============================================
 // TYPES
