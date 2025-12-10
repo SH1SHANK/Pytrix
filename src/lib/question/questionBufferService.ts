@@ -9,6 +9,7 @@
 
 import { Question, DifficultyLevel } from "@/lib/types";
 import { generateQuestion } from "@/lib/ai/aiClient";
+import { assertQuestionDifficulty } from "./difficultyValidator";
 
 // ============================================
 // CONFIGURATION
@@ -34,8 +35,8 @@ export const BUFFER_CONFIG = {
    * Per-session limits (reset on page refresh).
    * Helps stay within free tier API limits.
    */
-  MAX_QUESTION_CALLS_PER_SESSION: 50,
-  MAX_SOLUTION_CALLS_PER_SESSION: 20,
+  MAX_QUESTION_CALLS_PER_SESSION: 200,
+  MAX_SOLUTION_CALLS_PER_SESSION: 100,
 
   /**
    * Optional adaptive buffer sizing (not implemented yet).
@@ -134,6 +135,9 @@ export async function initBuffer(
   sessionUsage.questionCalls++;
   const firstQuestion = await generateQuestion(topic, difficulty);
 
+  // Runtime validation: ensure difficulty matches
+  assertQuestionDifficulty(firstQuestion, difficulty);
+
   const bufferedQ: BufferedQuestion = {
     questionId: firstQuestion.id,
     topic,
@@ -209,6 +213,9 @@ export async function nextQuestion(
   sessionUsage.questionCalls++;
   const newQuestion = await generateQuestion(topic, difficulty);
 
+  // Runtime validation: ensure difficulty matches
+  assertQuestionDifficulty(newQuestion, difficulty);
+
   const bufferedQ: BufferedQuestion = {
     questionId: newQuestion.id,
     topic,
@@ -273,6 +280,9 @@ async function prefetchQuestions(
     try {
       sessionUsage.questionCalls++;
       const question = await generateQuestion(topic, difficulty);
+
+      // Runtime validation: ensure difficulty matches
+      assertQuestionDifficulty(question, difficulty);
 
       const bufferedQ: BufferedQuestion = {
         questionId: question.id,

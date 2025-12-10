@@ -73,6 +73,7 @@ export interface GlobalStatsV2 {
   masteryPercent: number;
   modules: ModuleStats[];
   lastUpdatedAt: number;
+  currentManualStreak: number;
 }
 
 /**
@@ -162,6 +163,7 @@ export function createEmptyStatsV2(): GlobalStatsV2 {
     masteryPercent: 0,
     modules: [],
     lastUpdatedAt: Date.now(),
+    currentManualStreak: 0,
   };
 }
 
@@ -416,6 +418,7 @@ export function resetStatsV2(): GlobalStatsV2 {
   }
 
   const empty = createEmptyStatsV2();
+
   localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(empty));
   return empty;
 }
@@ -449,6 +452,33 @@ export function resetModuleStats(moduleId: string): GlobalStatsV2 {
 
   saveStatsV2(stats);
   return stats;
+}
+
+/**
+ * Get the current streak for manual mode.
+ */
+export function getManualStreak(): number {
+  const stats = getStatsV2();
+  return stats.currentManualStreak || 0;
+}
+
+/**
+ * Increment the manual streak.
+ */
+export function incrementManualStreak(): number {
+  const stats = getStatsV2();
+  stats.currentManualStreak = (stats.currentManualStreak || 0) + 1;
+  saveStatsV2(stats);
+  return stats.currentManualStreak;
+}
+
+/**
+ * Reset the manual streak.
+ */
+export function resetManualStreak(): void {
+  const stats = getStatsV2();
+  stats.currentManualStreak = 0;
+  saveStatsV2(stats);
 }
 
 // ============================================

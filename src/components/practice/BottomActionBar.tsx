@@ -23,6 +23,7 @@ import {
   Fire,
 } from "@phosphor-icons/react";
 import type { DifficultyLevel } from "@/lib/types";
+import { PracticeTimer } from "./PracticeTimer";
 
 interface BottomActionBarProps {
   // Actions
@@ -49,6 +50,9 @@ interface BottomActionBarProps {
   streak: number;
   difficulty: DifficultyLevel;
   moduleName?: string;
+
+  // Timer (Manual Mode)
+  showTimer?: boolean;
 }
 
 /**
@@ -75,6 +79,7 @@ export function BottomActionBar({
   streak,
   difficulty,
   moduleName,
+  showTimer = false,
 }: BottomActionBarProps) {
   const isWorking = isRunning || isSubmitting;
 
@@ -145,6 +150,16 @@ export function BottomActionBar({
             {streak}
           </span>
         </div>
+
+        {/* Session Timer (Manual Mode) */}
+        {showTimer && mode === "manual" && (
+          <>
+            <Separator orientation="vertical" className="h-6 hidden sm:block" />
+            <div className="hidden sm:block">
+              <PracticeTimer size="sm" />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Center Section: Secondary Actions */}

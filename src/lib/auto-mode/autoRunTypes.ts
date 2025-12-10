@@ -10,14 +10,14 @@
 
 /**
  * Entry in the topic queue.
+ * Now subtopic-based (one entry per subtopic, not per problemType).
+ * Problem type is selected at question generation time for variety.
  */
 export interface TopicQueueEntry {
   moduleId: string;
   subtopicId: string;
-  problemTypeId: string;
   moduleName: string;
   subtopicName: string;
-  problemTypeName: string;
 }
 
 // ============================================
@@ -56,10 +56,13 @@ export const DEFAULT_AUTO_RUN_CONFIG: AutoRunConfig = {
 };
 
 // ============================================
-// DIFFICULTY TYPES
+// DIFFICULTY TYPES (imported from canonical source)
 // ============================================
 
-export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+import { DifficultyLevel } from "@/lib/stores/statsStore";
+
+// Re-export for convenience
+export type { DifficultyLevel };
 
 /**
  * Tracks difficulty pointer per subtopic.
@@ -74,10 +77,11 @@ export type DifficultyPointer = Record<string, DifficultyLevel>;
 /**
  * Per-subtopic statistics within a run.
  */
-export interface SubtopicRunStats {
+export interface AutoRunSubtopicStats {
   attempts: number;
   solved: number;
   lastAttemptAt: number;
+  consecutiveFailures?: number;
 }
 
 /**
@@ -115,7 +119,7 @@ export interface AutoRunV2 {
   /** Total completed questions */
   completedQuestions: number;
   /** Stats per subtopic (keyed by subtopicId) */
-  perSubtopicStats: Record<string, SubtopicRunStats>;
+  perSubtopicStats: Record<string, AutoRunSubtopicStats>;
   /** Recently used problem types (for repeat avoidance) */
   recentProblemTypes: string[];
 
@@ -174,6 +178,8 @@ export interface AdaptiveAnalytics {
   remediationsTriggered: number;
   streakResets: number;
   decaysApplied: number;
+  /** Advanced questions skipped (neutral action, no penalty) */
+  skips: number;
 }
 
 // ============================================

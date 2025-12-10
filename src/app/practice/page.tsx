@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePractice } from "@/app/PracticeContext";
 import { Question, RunResult, DifficultyLevel } from "@/lib/types";
@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Play,
   FastForward,
   Lightbulb,
@@ -38,13 +37,15 @@ import {
   SpinnerGap,
   ArrowsClockwise,
   Question as QuestionIcon,
+  SkipForward,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { QuestionPanel } from "@/components/practice/QuestionPanel";
 import { CodeEditorPanel } from "@/components/practice/CodeEditorPanel";
 import { OutputPanel } from "@/components/practice/OutputPanel";
-// AutoModeStatsBar removed (replaced by V2)
+// PracticeHeader imported
+import { PracticeHeader } from "@/components/practice/PracticeHeader";
 import { HelpSheet } from "@/components/help/HelpSheet";
 import { RuntimeStatusBar } from "@/components/practice/RuntimeStatusBar";
 import { Kbd } from "@/components/ui/kbd";
@@ -75,17 +76,33 @@ import {
   getCurrentQueueEntry,
   recordAttemptV2,
   advanceQueue,
+  skipToNextModule,
+  getSubtopicDifficulty,
+  isRepeatedSubtopic,
+  getModuleNavigationItems,
+  type NavigationItem,
 } from "@/lib/auto-mode";
 import { type AutoRunV2 } from "@/lib/auto-mode/autoRunTypes";
-import { AutoModeStatsBar } from "@/components/automode/AutoModeStatsBar";
 
 // History tracking
 import { upsertHistoryEntry, getHistoryEntry } from "@/lib/stores/historyStore";
+import {
+  getManualStreak,
+  incrementManualStreak,
+  resetManualStreak,
+} from "@/lib/stores/statsStore";
 
 function PracticeWorkspace() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { incrementSolved, incrementAttempts } = usePractice();
+  // Manual streak state
+  const [manualStreak, setManualStreak] = useState(0);
+
+  // Initialize manual streak
+  useEffect(() => {
+    setManualStreak(getManualStreak());
+  }, []);
 
   const mode = searchParams.get("mode");
   const topicId = searchParams.get("topic") || "Strings";
@@ -118,6 +135,7 @@ function PracticeWorkspace() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
+  const [isLoadingNext, setIsLoadingNext] = useState(false);
   const [lastExecutionTimeMs, setLastExecutionTimeMs] = useState<number | null>(
     null
   );
@@ -130,21 +148,40 @@ function PracticeWorkspace() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + Enter to run
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      // Auto Mode: Shift + Enter for unified run/next
+      if (
+        mode === "auto" &&
+        e.shiftKey &&
+        e.key === "Enter" &&
+        !e.ctrlKey &&
+        !e.metaKey
+      ) {
+        e.preventDefault();
+        if (runResult.status === "correct") {
+          // Advance to next question
+          handleNext();
+        } else if (!isRunning && question) {
+          // Submit current solution
+          handleRun();
+        }
+        return;
+      }
+
+      // Manual/Review Mode: Ctrl/Cmd + Enter to run
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && mode !== "auto") {
         e.preventDefault();
         if (!isRunning && runResult.status !== "correct" && question) {
           handleRun();
         }
       }
-      // Ctrl/Cmd + Shift + H for hint
+      // Ctrl/Cmd + Shift + H for hint (all modes except review)
       if (
         (e.ctrlKey || e.metaKey) &&
         e.shiftKey &&
         e.key.toLowerCase() === "h"
       ) {
         e.preventDefault();
-        if (hintsUsed < 2 && question) {
+        if (hintsUsed < 2 && question && mode !== "review") {
           handleHint();
         }
       }
@@ -153,7 +190,7 @@ function PracticeWorkspace() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question, isRunning, runResult.status, hintsUsed]);
+  }, [question, isRunning, runResult.status, hintsUsed, mode]);
 
   // Load save file for Auto Mode V2
   useEffect(() => {
@@ -265,7 +302,7 @@ function PracticeWorkspace() {
           const entry = getCurrentQueueEntry(saveFile);
           // If queue is exhausted or corrupted, default to strings
           if (entry) {
-            targetTopic = entry.problemTypeId; // Use ID for fetch
+            targetTopic = entry.subtopicId; // Use subtopic ID for fetch
           } else {
             targetTopic = "reverse-string";
           }
@@ -286,6 +323,8 @@ function PracticeWorkspace() {
 
         if (isMounted) {
           setQuestion(newQuestion);
+          // Sync difficulty state to match question (ensures UI consistency)
+          setCurrentDifficulty(newQuestion.difficulty as DifficultyLevel);
           setCode(
             newQuestion.starterCode ||
               `def solve(input_data):\n    # Write your solution here\n    pass`
@@ -410,6 +449,21 @@ function PracticeWorkspace() {
           sampleOutput: question.sampleOutput,
         });
 
+        // Manual Mode Streak Logic
+        if (mode !== "auto") {
+          const isPerfect = hintsUsed === 0 && !isSolutionRevealed;
+          if (isPerfect) {
+            const newStreak = incrementManualStreak();
+            setManualStreak(newStreak);
+          } else {
+            // Assisted solve: streak doesn't increment, but doesn't necessarily reset if we only count "wrong" as reset
+            // Requirement: "Increment currentStreak only when... Solution revealed before submission -> mark as 'assisted'."
+            // Requirement: "Reset... when User Submits and answer is incorrect... OR User reveals full solution before correct Submit"
+            // If we are here, status is "correct". If revealed, we should have reset ALREADY when revealed?
+            // Let's safe-guard: if revealed, it's assisted. Streak stays same.
+          }
+        }
+
         // Update Auto Mode V2 Logic
         if (mode === "auto" && saveFile) {
           // Record success
@@ -439,6 +493,12 @@ function PracticeWorkspace() {
           sampleInput: question.sampleInput,
           sampleOutput: question.sampleOutput,
         });
+
+        // Manual Mode Streak Logic (Failure)
+        if (mode !== "auto") {
+          resetManualStreak();
+          setManualStreak(0);
+        }
 
         // Update Auto Mode V2 Logic (Failure)
         if (mode === "auto" && saveFile) {
@@ -503,6 +563,12 @@ function PracticeWorkspace() {
       );
 
       toast.warning("Solution revealed!");
+
+      // Reset streak on reveal for manual mode
+      if (mode !== "auto") {
+        resetManualStreak();
+        setManualStreak(0);
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Cannot reveal solution yet.";
@@ -511,56 +577,120 @@ function PracticeWorkspace() {
   };
 
   const handleNext = async () => {
-    const bufferMode = mode === "auto" ? "auto" : "manual";
-    let targetTopic = topicId;
+    setIsLoadingNext(true);
+    try {
+      const bufferMode = mode === "auto" ? "auto" : "manual";
+      let targetTopic = topicId;
 
-    // Auto Mode V2: strictly follows queue
-    if (mode === "auto" && saveFile) {
-      // Logic: we assume user is clicking next *after* solving?
-      // Or skipping? If skipping, we might need a skip handler.
-      // Assuming this is "Next Question" button which usually appears after success.
-      // In V2, success update already advances queue.
-      // So here we just need to get the NEW current topic.
-      // But wait, if handleNext is manual skip...
-      // If runResult.status === 'correct', we likely already advanced queue in handleRun.
-      // If we are skipping, we should call advanceQueue explicitly.
+      // Auto Mode V2: strictly follows queue
+      if (mode === "auto" && saveFile) {
+        // Logic: we assume user is clicking next *after* solving?
+        // Or skipping? If skipping, we might need a skip handler.
+        // Assuming this is "Next Question" button which usually appears after success.
+        // In V2, success update already advances queue.
+        // So here we just need to get the NEW current topic.
+        // But wait, if handleNext is manual skip...
+        // If runResult.status === 'correct', we likely already advanced queue in handleRun.
+        // If we are skipping, we should call advanceQueue explicitly.
 
-      // Check if we are already advanced (handled in handleRun?)
-      // Actually previous code only advanced if shouldRotateTopic.
-      // In V2, every question is a step.
-      // If handleRun executed and was correct, it CALLED advanceQueue.
-      // So saveFile is ALREADY pointing to next question.
-      // WE just need to read it.
+        // Check if we are already advanced (handled in handleRun?)
+        // Actually previous code only advanced if shouldRotateTopic.
+        // In V2, every question is a step.
+        // If handleRun executed and was correct, it CALLED advanceQueue.
+        // So saveFile is ALREADY pointing to next question.
+        // WE just need to read it.
 
-      const entry = getCurrentQueueEntry(saveFile);
-      if (entry) {
-        targetTopic = entry.problemTypeId;
+        const entry = getCurrentQueueEntry(saveFile);
+        if (entry) {
+          targetTopic = entry.subtopicId;
+        }
       }
+
+      // Use buffered question - instant if available
+      const nextQ = await bufferNextQuestion(
+        bufferMode,
+        targetTopic,
+        currentDifficulty
+      );
+
+      if (!nextQ) {
+        toast.error("Session limit reached. No more questions available.");
+        return;
+      }
+
+      setQuestion(nextQ);
+      // Sync difficulty state to match question (ensures UI consistency)
+      setCurrentDifficulty(nextQ.difficulty as DifficultyLevel);
+      setCode(
+        nextQ.starterCode ||
+          `def solve(input_data):\n    # Write your solution here\n    pass`
+      );
+      setRunResult({ status: "not_run", stdout: "", stderr: "" });
+      setFailedAttempts(0);
+      setIsSolutionRevealed(false);
+      setHintsUsed(0);
+      setLastExecutionTimeMs(null);
+      toast.info(`Next: ${nextQ.title}`);
+    } finally {
+      setIsLoadingNext(false);
     }
+  };
 
-    // Use buffered question - instant if available
-    const nextQ = await bufferNextQuestion(
-      bufferMode,
-      targetTopic,
-      currentDifficulty
-    );
+  /**
+   * Skip Advanced question and move to next module.
+   * Only available for Advanced difficulty in Auto Mode.
+   * Does NOT affect streak or difficulty - purely neutral progression.
+   */
+  const handleSkipAdvanced = async () => {
+    if (mode !== "auto" || !saveFile) return;
 
-    if (!nextQ) {
-      toast.error("Session limit reached. No more questions available.");
+    // Verify this is an Advanced question
+    const entry = getCurrentQueueEntry(saveFile);
+    if (!entry) return;
+
+    const currentDiff = getSubtopicDifficulty(saveFile, entry.subtopicId);
+    if (currentDiff !== "advanced") {
+      toast.error("Skip is only available for Advanced questions");
       return;
     }
 
-    setQuestion(nextQ);
-    setCode(
-      nextQ.starterCode ||
-        `def solve(input_data):\n    # Write your solution here\n    pass`
-    );
-    setRunResult({ status: "not_run", stdout: "", stderr: "" });
-    setFailedAttempts(0);
-    setIsSolutionRevealed(false);
-    setHintsUsed(0);
-    setLastExecutionTimeMs(null);
-    toast.info(`Next: ${nextQ.title}`);
+    setIsLoadingNext(true);
+    try {
+      // Skip to next module (no streak/difficulty penalty)
+      const updated = skipToNextModule(saveFile);
+      setSaveFile(updated);
+
+      // Load next question from the new module
+      const nextEntry = getCurrentQueueEntry(updated);
+      if (nextEntry) {
+        const nextDiff = getSubtopicDifficulty(updated, nextEntry.subtopicId);
+        const nextQ = await bufferNextQuestion(
+          "auto",
+          nextEntry.subtopicId,
+          nextDiff
+        );
+
+        if (nextQ) {
+          setQuestion(nextQ);
+          setCurrentDifficulty(nextQ.difficulty as DifficultyLevel);
+          setCode(
+            nextQ.starterCode ||
+              `def solve(input_data):\n    # Write your solution here\n    pass`
+          );
+          setRunResult({ status: "not_run", stdout: "", stderr: "" });
+          setFailedAttempts(0);
+          setIsSolutionRevealed(false);
+          setHintsUsed(0);
+          setLastExecutionTimeMs(null);
+          toast.success("Skipped to next module - streak preserved! 🔥");
+        }
+      }
+    } catch (err) {
+      console.error("Skip failed:", err);
+      toast.error("Failed to skip. Please try again.");
+    } finally {
+      setIsLoadingNext(false);
+    }
   };
 
   const handleRegenerate = async () => {
@@ -622,7 +752,7 @@ function PracticeWorkspace() {
         if (!entry) throw new Error("Queue exhausted");
 
         const newQ = await generateQuestion(
-          entry.problemTypeId,
+          entry.subtopicId,
           currentDifficulty
         );
 
@@ -647,161 +777,263 @@ function PracticeWorkspace() {
 
   // if (isLoading || !question) removed to allow Skeleton rendering
 
+  // Auto Mode specific logic
+  // Auto Mode specific logic
+  const upcomingItems: NavigationItem[] = useMemo(() => {
+    if (mode === "auto" && saveFile) {
+      return getModuleNavigationItems(saveFile);
+    }
+    return [];
+  }, [mode, saveFile]);
+
+  const canSkip = useMemo(() => {
+    if (mode !== "auto" || !saveFile || !question) return false;
+
+    const isAdvanced = currentDifficulty === "advanced";
+    // Actually question.topic usually stores subtopic ID or name. Let's assume subtopic ID for now or verify.
+    // In AutoMode, question is generated with moduleId/subtopicId.
+    // Actually question.topic is typically the name. saveFile entries have subtopicId.
+    // We should use getCurrentQueueEntry(saveFile).subtopicId
+    const currentEntry = getCurrentQueueEntry(saveFile);
+    if (!currentEntry) return false;
+    const isRepeatedById = isRepeatedSubtopic(
+      saveFile,
+      currentEntry.subtopicId
+    );
+
+    return isAdvanced || isRepeatedById;
+  }, [mode, saveFile, question, currentDifficulty]);
+
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Auto Mode Stats Bar V2 */}
-      {mode === "auto" && saveFile && (
-        <AutoModeStatsBar run={saveFile} onRunUpdate={setSaveFile} />
-      )}
+      <PracticeHeader
+        mode={
+          mode === "auto"
+            ? "auto"
+            : mode === "review"
+            ? "review"
+            : mode === "topic-select"
+            ? "topic-select"
+            : "manual"
+        }
+        title={question ? question.title : "Practice"}
+        breadcrumbs={[
+          { label: "Practice", href: "/" },
+          ...(mode === "auto" && saveFile
+            ? [
+                {
+                  label:
+                    getCurrentQueueEntry(saveFile)?.moduleName || "Auto Mode",
+                  href: "/practice/auto",
+                },
+                {
+                  label:
+                    getCurrentQueueEntry(saveFile)?.subtopicName || "Topic",
+                  isCurrent: true,
+                },
+              ]
+            : [{ label: question?.topic || topicId, isCurrent: true }]),
+        ]}
+        difficulty={currentDifficulty}
+        streak={mode === "auto" && saveFile ? saveFile.streak : manualStreak}
+        run={saveFile}
+        onRunUpdate={setSaveFile}
+        upcomingItems={upcomingItems}
+        actions={
+          <>
+            {/* Manual Mode / Topic Select Actions */}
+            {mode !== "auto" && (
+              <>
+                {/* New Question */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRegenerate}
+                        disabled={isLoading}
+                        className="hidden lg:flex h-8"
+                      >
+                        <ArrowsClockwise className="h-4 w-4 lg:mr-2" />
+                        <span className="hidden lg:inline">New</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Generate New Question</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-      {/* Top Bar */}
-      <header className="h-14 border-b flex items-center px-4 justify-between bg-card text-card-foreground">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <span className="font-semibold truncate max-w-[200px] md:max-w-md">
-            {question ? question.title : <Skeleton className="h-5 w-48" />}
-          </span>
-        </div>
+                {/* Reset Code */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCode(
+                            question?.starterCode ||
+                              "def solve(input_data):\n    # Write your solution here\n    pass"
+                          )
+                        }
+                        className="hidden md:flex h-8"
+                      >
+                        <ArrowCounterClockwise className="h-4 w-4 lg:mr-2" />
+                        <span className="hidden lg:inline">Reset</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Reset Code</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-        <div className="flex items-center gap-2">
-          {/* Regenerate Button */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRegenerate}
-                  disabled={isLoading}
-                >
-                  <ArrowsClockwise className="h-4 w-4 mr-2" /> New
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Generate New Question</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                {/* Hint */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleHint}
+                        disabled={hintsUsed >= 2}
+                        className="hidden sm:flex h-8"
+                      >
+                        <Lightbulb className="h-4 w-4 lg:mr-2" />
+                        <span className="hidden lg:inline">
+                          Hint ({hintsUsed}/2)
+                        </span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Get AI Hint</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCode(
-                      `def solve(input_data):\n    # Write your solution here\n    pass`
-                    )
-                  }
-                >
-                  <ArrowCounterClockwise className="h-4 w-4 mr-2" /> Reset
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Reset Code</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                {/* Reveal Solution */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={failedAttempts < 2 && !isSolutionRevealed}
+                      className="hidden sm:flex h-8"
+                    >
+                      <Lock className="h-4 w-4 lg:mr-2" />
+                      <span className="hidden lg:inline">
+                        {isSolutionRevealed ? "Open" : "Reveal"}
+                      </span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Revealing the solution will mark this attempt as
+                        unassisted but you won&apos;t get full mastery points.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleReveal}>
+                        Reveal
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleHint}
-                  disabled={hintsUsed >= 2}
-                >
-                  <Lightbulb className="h-4 w-4 mr-2" /> Hint ({hintsUsed}/2)
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Get AI Help</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="destructive"
-                size="sm"
-                disabled={failedAttempts < 2 && !isSolutionRevealed}
-              >
-                <Lock className="h-4 w-4 mr-2" />{" "}
-                {isSolutionRevealed ? "Solution Open" : "Reveal Solution"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Revealing the solution will mark this attempt as unassisted
-                  but you won&apos;t get full mastery points.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleReveal}>
-                  Reveal
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+                {/* Run Button (Manual) */}
                 <Button
                   size="sm"
                   onClick={handleRun}
-                  disabled={isRunning || runResult.status === "correct"}
+                  disabled={isRunning}
+                  className="min-w-[80px] h-8"
                 >
                   {isRunning ? (
-                    <SpinnerGap className="h-4 w-4 mr-2 animate-spin" />
+                    <SpinnerGap className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Play className="h-4 w-4 mr-2" />
+                    <Play className="h-4 w-4 lg:mr-2" />
                   )}
-                  Run & Check
+                  <span className="hidden lg:inline">Run</span>
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent className="flex items-center gap-1">
-                Run Code
-                <div className="flex items-center gap-0.5 ml-1">
-                  <Kbd>Ctrl</Kbd>{" "}
-                  <span className="text-muted-foreground">+</span>{" "}
-                  <Kbd>Enter</Kbd>
+
+                {/* Help & Settings */}
+                <div className="flex items-center gap-1 ml-2 border-l pl-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    asChild
+                    className="h-8 w-8 text-muted-foreground"
+                  >
+                    <Link href="/settings">
+                      <SpinnerGap className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <HelpSheet
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground"
+                      >
+                        <QuestionIcon weight="duotone" className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
                 </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              </>
+            )}
 
-          {runResult.status === "correct" && (
-            <Button size="sm" variant="default" onClick={handleNext}>
-              Next <FastForward className="h-4 w-4 ml-2" />
-            </Button>
-          )}
+            {/* Auto Mode Actions */}
+            {mode === "auto" && (
+              <div className="flex items-center gap-2">
+                {/* Skip Advanced / Repeated */}
+                {canSkip && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSkipAdvanced}
+                    disabled={isLoadingNext}
+                    className="hidden xl:flex text-muted-foreground h-8"
+                  >
+                    Skip
+                  </Button>
+                )}
 
-          {/* Help Button */}
-          <HelpSheet
-            trigger={
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Help and Settings"
-              >
-                <QuestionIcon weight="duotone" className="h-5 w-5" />
-              </Button>
-            }
-          />
-        </div>
-      </header>
+                {/* Run / Next */}
+                <Button
+                  size="sm"
+                  onClick={
+                    runResult.status === "correct" ? handleNext : handleRun
+                  }
+                  disabled={isRunning || isLoading || isLoadingNext}
+                  className="min-w-[100px] h-8"
+                >
+                  {isRunning ? (
+                    <SpinnerGap className="h-4 w-4 animate-spin" />
+                  ) : isLoadingNext ? (
+                    <SpinnerGap className="h-4 w-4 animate-spin" />
+                  ) : runResult.status === "correct" ? (
+                    <FastForward className="h-4 w-4 lg:mr-2" />
+                  ) : (
+                    <Play className="h-4 w-4 lg:mr-2" />
+                  )}
+                  <span className="hidden lg:inline">
+                    {runResult.status === "correct" ? "Next" : "Run"}
+                  </span>
+                </Button>
+              </div>
+            )}
+          </>
+        }
+      />
 
       {/* Main Workspace */}
       <div className="flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           {/* Left: Question */}
           <ResizablePanel defaultSize={40} minSize={30}>
-            <QuestionPanel question={question} isLoading={isLoading} />
+            <QuestionPanel
+              question={question}
+              isLoading={isLoading || isLoadingNext}
+            />
           </ResizablePanel>
 
           <ResizableHandle />
@@ -826,13 +1058,15 @@ function PracticeWorkspace() {
 
               <ResizablePanel defaultSize={40} minSize={20}>
                 <OutputPanel
+                  key={question?.id} // Force reset state on question change
                   runResult={runResult}
                   question={question}
                   isRevealed={isSolutionRevealed}
                   currentCode={code}
-                  onApplyOptimizedCode={(optimizedCode) =>
-                    setCode(optimizedCode)
-                  }
+                  onApplyOptimizedCode={(optCode) => {
+                    setCode(optCode);
+                    setRunResult((prev) => ({ ...prev, status: "not_run" }));
+                  }}
                 />
               </ResizablePanel>
             </ResizablePanelGroup>

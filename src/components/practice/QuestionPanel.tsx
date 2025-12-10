@@ -37,38 +37,54 @@ export function QuestionPanel({ question, isLoading }: QuestionPanelProps) {
     return (
       <Card className="h-full flex flex-col border-none shadow-none">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between mb-2">
-            <Skeleton className="h-5 w-24" />
-            <Skeleton className="h-5 w-24" />
+          {/* Breadcrumb skeleton */}
+          <div className="flex items-center gap-2 mb-3">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-4" />
+            <Skeleton className="h-4 w-20" />
           </div>
+          {/* Badges skeleton */}
+          <div className="flex items-center justify-between mb-2">
+            <Skeleton className="h-5 w-24 rounded-full" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+          {/* Title skeleton */}
           <Skeleton className="h-7 w-3/4" />
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden p-0">
           <div className="h-full px-6 pb-6 pt-2 space-y-6">
+            {/* Description skeleton */}
             <div className="space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <div className="space-y-1">
+              <Skeleton className="h-5 w-24" />
+              <div className="space-y-2">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
                 <Skeleton className="h-4 w-2/3" />
               </div>
             </div>
             <Separator />
+            {/* Input/Output format skeleton */}
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-full" />
               </div>
               <div className="space-y-1">
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-28" />
                 <Skeleton className="h-4 w-full" />
               </div>
             </div>
             <Separator />
+            {/* Sample Input/Output skeleton */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-20 w-full rounded-md" />
+                <Skeleton className="h-16 w-full rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-16 w-full rounded-md" />
               </div>
             </div>
           </div>

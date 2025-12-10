@@ -110,7 +110,7 @@ function CurriculumPathPreview({ run }: { run: AutoRunV2 | null }) {
 
             return (
               <div
-                key={entry.problemTypeId}
+                key={entry.subtopicId}
                 className="flex items-center shrink-0"
               >
                 <Badge

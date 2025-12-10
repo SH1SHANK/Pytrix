@@ -1,80 +1,101 @@
 "use client";
 
+import { useEffect, useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Flame, Lightning } from "@phosphor-icons/react";
-import type { DifficultyLevel } from "@/lib/types";
+import { Fire, Robot, User } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface StreakWidgetProps {
   streak: number;
   mode: "auto" | "manual";
-  difficulty?: DifficultyLevel;
-  moduleName?: string;
+  className?: string;
 }
 
-/**
- * Compact streak display for the bottom action bar.
- * Shows current streak with flame icon and mode indicator.
- */
-export function StreakWidget({
-  streak,
-  mode,
-  difficulty,
-  moduleName,
-}: StreakWidgetProps) {
-  const streakColor =
-    streak >= 5
-      ? "text-orange-500"
-      : streak >= 3
-      ? "text-yellow-500"
-      : "text-muted-foreground";
+export function StreakWidget({ streak, mode, className }: StreakWidgetProps) {
+  const prevStreakRef = useRef(streak);
+  const [isIncrementing, setIsIncrementing] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
-  const difficultyColors: Record<DifficultyLevel, string> = {
-    beginner: "bg-green-500/10 text-green-500 border-green-500/20",
-    intermediate: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-    advanced: "bg-red-500/10 text-red-500 border-red-500/20",
-  };
+  useEffect(() => {
+    if (streak > prevStreakRef.current) {
+      // Increment animation
+      setTimeout(() => setIsIncrementing(true), 0);
+      const timer = setTimeout(() => setIsIncrementing(false), 1000);
+      return () => clearTimeout(timer);
+    } else if (streak < prevStreakRef.current) {
+      // Reset animation
+      setTimeout(() => setIsResetting(true), 0);
+      const timer = setTimeout(() => setIsResetting(false), 600);
+      return () => clearTimeout(timer);
+    }
+    prevStreakRef.current = streak;
+  }, [streak]);
+
+  // Determine colors based on mode and streak level
+  const isHighStreak = streak >= 3;
+  const isGodlike = streak >= 10;
+
+  const modeColor =
+    mode === "auto"
+      ? "text-purple-500 border-purple-500/30 bg-purple-500/10"
+      : "text-blue-500 border-blue-500/30 bg-blue-500/10";
+
+  const fireColor = isGodlike
+    ? "text-purple-500"
+    : isHighStreak
+    ? "text-orange-500"
+    : "text-muted-foreground";
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Mode Indicator */}
+    <div className={cn("flex items-center gap-2", className)}>
       <Badge
         variant="outline"
-        className={`text-xs ${
-          mode === "auto"
-            ? "bg-primary/10 text-primary border-primary/20"
-            : "bg-muted"
-        }`}
+        className={cn(
+          "relative overflow-hidden gap-1.5 px-2 py-1 transition-all duration-300",
+          modeColor,
+          isResetting && "animate-shake opacity-50 border-red-500 text-red-500"
+        )}
       >
-        <Lightning weight="fill" className="h-3 w-3 mr-1" />
-        {mode === "auto" ? "Auto" : "Manual"}
+        <AnimatePresence mode="wait">
+          {isIncrementing && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, y: 10 }}
+              animate={{ opacity: 1, scale: 1.5, y: -20 }}
+              exit={{ opacity: 0 }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-green-500 pointer-events-none z-10"
+            >
+              +1
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {mode === "auto" ? (
+          <Robot weight="fill" className="h-3 w-3" />
+        ) : (
+          <User weight="fill" className="h-3 w-3" />
+        )}
+        <span className="text-xs font-medium capitalize">{mode}</span>
       </Badge>
 
-      {/* Difficulty Badge */}
-      {difficulty && (
-        <Badge
-          variant="outline"
-          className={`text-xs capitalize ${difficultyColors[difficulty]}`}
-        >
-          {difficulty}
-        </Badge>
-      )}
-
-      {/* Module Name (truncated) */}
-      {moduleName && (
-        <span className="text-xs text-muted-foreground hidden md:inline truncate max-w-[100px]">
-          {moduleName}
-        </span>
-      )}
-
-      {/* Streak Counter */}
       <div
-        className={`flex items-center gap-1 ${streakColor} transition-colors duration-300`}
+        className={cn(
+          "flex items-center gap-1.5 transition-all duration-300",
+          isIncrementing && "scale-110"
+        )}
       >
-        <Flame
+        <Fire
           weight={streak > 0 ? "fill" : "regular"}
-          className={`h-4 w-4 ${streak >= 3 ? "animate-pulse" : ""}`}
+          className={cn("h-4 w-4 transition-colors duration-300", fireColor)}
         />
-        <span className="font-semibold text-sm tabular-nums">{streak}</span>
+        <span
+          className={cn(
+            "text-sm font-bold tabular-nums transition-colors duration-300",
+            fireColor
+          )}
+        >
+          {streak}
+        </span>
       </div>
     </div>
   );

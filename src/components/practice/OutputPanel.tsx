@@ -50,27 +50,45 @@ export function OutputPanel({
     explanation: string;
     keyImprovements: string[];
   } | null>(null);
-  const hasRequestedOptimization = useRef(false);
+  const [isOptimalMatch, setIsOptimalMatch] = useState(false);
+
+  // Reset state when question changes
+  // Ideally, the parent should change the key of OutputPanel, but we can also react to ID change
+  const lastQuestionIdRef = useRef(question?.id);
+  if (question?.id !== lastQuestionIdRef.current) {
+    lastQuestionIdRef.current = question?.id;
+    setOptimizedResult(null);
+    setIsOptimalMatch(false);
+  }
+
+  const normalizeCode = (code: string) => {
+    return code
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("#")) // Remove empty lines and comments
+      .join("\n");
+  };
 
   const handleOptimize = async () => {
-    if (!question || !currentCode || hasRequestedOptimization.current) return;
+    if (!question || !currentCode) return;
 
     // Check cache first
     const cacheKey = getCacheKey(question.id, currentCode);
     const cached = optimizationCache.get(cacheKey);
     if (cached) {
       setOptimizedResult(cached);
+      checkIfOptimal(currentCode, cached.code);
       return;
     }
 
     setIsOptimizing(true);
-    hasRequestedOptimization.current = true;
 
     try {
       const result = await optimizeSolution(question, currentCode);
       if (result) {
         setOptimizedResult(result);
         optimizationCache.set(cacheKey, result);
+        checkIfOptimal(currentCode, result.code);
         toast.success("Optimal solution generated!");
       } else {
         toast.error("Could not generate optimization.");
@@ -82,30 +100,29 @@ export function OutputPanel({
     }
   };
 
+  const checkIfOptimal = (userCode: string, optimalCode: string) => {
+    const normalizedUser = normalizeCode(userCode);
+    const normalizedOptimal = normalizeCode(optimalCode);
+    setIsOptimalMatch(normalizedUser === normalizedOptimal);
+  };
+
+  const handleCopy = async () => {
+    if (optimizedResult?.code) {
+      try {
+        await navigator.clipboard.writeText(optimizedResult.code);
+        toast.success("Code copied to clipboard");
+      } catch {
+        toast.error("Failed to copy code");
+      }
+    }
+  };
+
   const handleApply = () => {
-    if (optimizedResult && onApplyOptimizedCode) {
+    if (optimizedResult?.code && onApplyOptimizedCode) {
       onApplyOptimizedCode(optimizedResult.code);
-      toast.success("Applied optimized solution to editor.");
+      toast.success("Optimized code applied!");
     }
   };
-
-  const handleCopy = () => {
-    if (optimizedResult) {
-      navigator.clipboard.writeText(optimizedResult.code);
-      toast.success("Copied to clipboard!");
-    }
-  };
-
-  // Reset optimization state when question changes
-  const questionId = question?.id;
-  if (
-    questionId &&
-    optimizedResult &&
-    !getCacheKey(questionId, currentCode || "").includes(questionId)
-  ) {
-    setOptimizedResult(null);
-    hasRequestedOptimization.current = false;
-  }
 
   return (
     <Card className="h-full border-none shadow-none flex flex-col">
@@ -268,7 +285,7 @@ export function OutputPanel({
                       <Copy weight="bold" className="h-3 w-3 mr-1" />
                       Copy
                     </Button>
-                    {onApplyOptimizedCode && (
+                    {onApplyOptimizedCode && !isOptimalMatch && (
                       <Button size="sm" onClick={handleApply}>
                         <ArrowRight weight="bold" className="h-3 w-3 mr-1" />
                         Apply to Editor
@@ -277,9 +294,34 @@ export function OutputPanel({
                   </div>
                 </div>
 
-                <pre className="bg-muted p-4 rounded-md text-sm font-mono whitespace-pre-wrap">
-                  {optimizedResult.code}
-                </pre>
+                {isOptimalMatch ? (
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6 text-center space-y-3">
+                    <div className="mx-auto w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center text-green-600">
+                      <CheckCircle weight="fill" className="h-6 w-6" />
+                    </div>
+                    <h4 className="font-bold text-green-700 dark:text-green-400">
+                      Perfect Match!
+                    </h4>
+                    <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                      Your solution is already identical to the optimized
+                      version. Excellent work! 🎉
+                    </p>
+                    <div className="pt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground text-xs"
+                        onClick={() => setIsOptimalMatch(false)}
+                      >
+                        Show code anyway
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <pre className="bg-muted p-4 rounded-md text-sm font-mono whitespace-pre-wrap">
+                    {optimizedResult.code}
+                  </pre>
+                )}
 
                 <div className="text-sm">
                   <h4 className="font-semibold mb-1">What&apos;s improved:</h4>

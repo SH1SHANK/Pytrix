@@ -65,8 +65,8 @@ export interface ApiSafetyState {
 // ============================================
 
 const DEFAULT_CONFIG: ApiSafetyConfig = {
-  maxCallsPerSession: 200,
-  maxQuestionCallsPerSession: 80,
+  maxCallsPerSession: 500,
+  maxQuestionCallsPerSession: 100,
   maxHintCallsPerSession: 50,
   maxOptimalSolutionCallsPerSession: 30,
   maxEvaluationCallsPerSession: 100,
@@ -258,10 +258,11 @@ export function getRemainingCalls(callType: CallType): number {
  */
 export function syncWithSettings(): void {
   const { advanced } = useSettingsStore.getState();
-  
+
   useApiSafetyStore.getState().updateConfig({
     maxCallsPerSession: advanced.maxApiCallsPerSession,
-    maxOptimalSolutionCallsPerSession: advanced.maxOptimalSolutionCallsPerSession,
+    maxOptimalSolutionCallsPerSession:
+      advanced.maxOptimalSolutionCallsPerSession,
   });
 }
 
@@ -271,7 +272,9 @@ export function syncWithSettings(): void {
  */
 export function useSyncSafetyWithSettings(): void {
   const maxApiCalls = useSettingsStore((s) => s.advanced.maxApiCallsPerSession);
-  const maxOptimalCalls = useSettingsStore((s) => s.advanced.maxOptimalSolutionCallsPerSession);
+  const maxOptimalCalls = useSettingsStore(
+    (s) => s.advanced.maxOptimalSolutionCallsPerSession
+  );
 
   // Update safety config when settings change
   useApiSafetyStore.getState().updateConfig({

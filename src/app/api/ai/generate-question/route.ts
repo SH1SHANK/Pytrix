@@ -143,6 +143,13 @@ Ensure the question is solvable and the reference solution is correct.
     if (result.success && result.data) {
       const json = result.data;
 
+      // CRITICAL: Log if AI returned wrong difficulty (for diagnostics)
+      if (json.difficulty && json.difficulty !== difficulty) {
+        console.warn(
+          `[generate-question] AI returned difficulty "${json.difficulty}" but requested "${difficulty}". Enforcing requested difficulty.`
+        );
+      }
+
       // Map AI response to our full Question interface
       const question: Question = {
         id:
@@ -152,7 +159,8 @@ Ensure the question is solvable and the reference solution is correct.
         topicId: template ? template.problemTypeId : json.topic.toLowerCase(),
         topicName: template ? template.problemTypeName : json.topic,
         topic: json.topic, // Keep original AI topic field
-        difficulty: json.difficulty as Difficulty,
+        // CRITICAL FIX: Use REQUESTED difficulty, NOT AI response
+        difficulty: difficulty,
         title: json.title,
         description: json.description,
         inputDescription: json.inputDescription,
@@ -188,7 +196,7 @@ Ensure the question is solvable and the reference solution is correct.
       );
     }
 
-    // Fallback to mock question
+    // Fallback to mock question - ENFORCE requested difficulty
     console.warn(
       "[generate-question] AI failed, using fallback:",
       result.message
@@ -198,10 +206,16 @@ Ensure the question is solvable and the reference solution is correct.
         (q) => q.topicName.toLowerCase() === topic.toLowerCase()
       ) || MOCK_QUESTIONS[0];
 
+    console.warn(
+      `[generate-question] FALLBACK: Serving mock question with enforced difficulty "${difficulty}"`
+    );
+
     return NextResponse.json({
       question: {
         ...fallback,
         topic: topic,
+        // CRITICAL FIX: Enforce requested difficulty on fallback
+        difficulty: difficulty,
         id: `fallback-${Date.now()}`,
       } as Question,
       usage: null,

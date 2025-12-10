@@ -25,10 +25,7 @@ import {
   STORAGE_KEY_V2,
   STORAGE_KEY_ANALYTICS,
 } from "./autoRunTypes";
-import {
-  getArchetypeExposure,
-  isConsecutiveRepeat,
-} from "@/lib/question/diversityService";
+import { isConsecutiveRepeat } from "@/lib/question/diversityService";
 
 // ============================================
 // STORAGE HELPERS
@@ -45,6 +42,7 @@ function generateId(): string {
 /**
  * Generate a mini-curriculum focused on String Manipulation.
  * Orders subtopics from basic to advanced concepts.
+ * One entry per subtopic (problem type selected at generation time).
  */
 export function generateMiniCurriculum(
   size: number = DEFAULT_AUTO_RUN_CONFIG.miniCurriculumSize
@@ -72,41 +70,16 @@ export function generateMiniCurriculum(
 
   const queue: TopicQueueEntry[] = [];
 
+  // One entry per subtopic (deduplicated)
   for (const subtopic of sortedSubtopics) {
-    // Take first 2 problem types from each subtopic
-    for (const pt of subtopic.problemTypes.slice(0, 2)) {
-      queue.push({
-        moduleId: stringModule.id,
-        subtopicId: subtopic.id,
-        problemTypeId: pt.id,
-        moduleName: stringModule.name,
-        subtopicName: subtopic.name,
-        problemTypeName: pt.name,
-      });
+    queue.push({
+      moduleId: stringModule.id,
+      subtopicId: subtopic.id,
+      moduleName: stringModule.name,
+      subtopicName: subtopic.name,
+    });
 
-      if (queue.length >= size) break;
-    }
     if (queue.length >= size) break;
-  }
-
-  // If we didn't get enough, pad with more problem types
-  if (queue.length < size) {
-    for (const subtopic of sortedSubtopics) {
-      for (const pt of subtopic.problemTypes.slice(2)) {
-        if (!queue.some((q) => q.problemTypeId === pt.id)) {
-          queue.push({
-            moduleId: stringModule.id,
-            subtopicId: subtopic.id,
-            problemTypeId: pt.id,
-            moduleName: stringModule.name,
-            subtopicName: subtopic.name,
-            problemTypeName: pt.name,
-          });
-        }
-        if (queue.length >= size) break;
-      }
-      if (queue.length >= size) break;
-    }
   }
 
   return queue;
@@ -114,24 +87,23 @@ export function generateMiniCurriculum(
 
 /**
  * Generate a weakness-based queue for after mini-curriculum.
+ * One entry per subtopic (deduplicated), sorted by weakness.
  */
 export function generateWeaknessBasedQueue(
-  recentProblemTypes: string[]
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _recentProblemTypes: string[]
 ): TopicQueueEntry[] {
   const modules = getAllModules();
   const stats = getStats();
   const topicStats = stats.perTopic;
 
-  // Calculate mastery and sort
+  // Calculate mastery per subtopic
   const allEntries: Array<{
     entry: TopicQueueEntry;
     mastery: number;
   }> = [];
 
   for (const mod of modules) {
-    // Skip string-manipulation for post-curriculum (already covered)
-    // Actually include it but with lower priority
-
     for (const subtopic of mod.subtopics) {
       const stat = topicStats.find(
         (s) => s.topic.toLowerCase() === subtopic.name.toLowerCase()
@@ -141,38 +113,21 @@ export function generateWeaknessBasedQueue(
           ? Math.round((stat.solved / stat.attempts) * 100)
           : 0;
 
-      for (const pt of subtopic.problemTypes) {
-        if (!recentProblemTypes.includes(pt.id)) {
-          allEntries.push({
-            entry: {
-              moduleId: mod.id,
-              subtopicId: subtopic.id,
-              problemTypeId: pt.id,
-              moduleName: mod.name,
-              subtopicName: subtopic.name,
-              problemTypeName: pt.name,
-            },
-            mastery,
-          });
-        }
-      }
+      // One entry per subtopic (deduplicated)
+      allEntries.push({
+        entry: {
+          moduleId: mod.id,
+          subtopicId: subtopic.id,
+          moduleName: mod.name,
+          subtopicName: subtopic.name,
+        },
+        mastery,
+      });
     }
   }
 
-  // Get archetype exposure for diversity-aware sorting
-  const exposure = getArchetypeExposure();
-
-  // Sort by mastery (untouched first), then by least-used archetypes
-  allEntries.sort((a, b) => {
-    // Primary: sort by mastery (lower = less practiced = higher priority)
-    if (a.mastery !== b.mastery) {
-      return a.mastery - b.mastery;
-    }
-    // Secondary: sort by exposure (lower = less seen = higher priority)
-    const expA = exposure.get(a.entry.problemTypeId) || 0;
-    const expB = exposure.get(b.entry.problemTypeId) || 0;
-    return expA - expB;
-  });
+  // Sort by mastery (least mastered first = higher priority)
+  allEntries.sort((a, b) => a.mastery - b.mastery);
 
   // Shuffle within same-mastery tiers
   const result: TopicQueueEntry[] = [];
@@ -535,12 +490,12 @@ export function advanceQueue(run: AutoRunV2): AutoRunV2 {
     run.currentIndex = 0;
   }
 
-  // Prevent consecutive repetition of same archetype
+  // Prevent consecutive repetition of same subtopic
   const current = getCurrentQueueEntry(run);
-  if (current && isConsecutiveRepeat(current.problemTypeId)) {
-    // Find next different archetype
+  if (current && isConsecutiveRepeat(current.subtopicId)) {
+    // Find next different subtopic
     for (let i = run.currentIndex + 1; i < run.topicQueue.length; i++) {
-      if (run.topicQueue[i].problemTypeId !== current.problemTypeId) {
+      if (run.topicQueue[i].subtopicId !== current.subtopicId) {
         // Swap current with this different one
         const temp = run.topicQueue[run.currentIndex];
         run.topicQueue[run.currentIndex] = run.topicQueue[i];
@@ -556,7 +511,181 @@ export function advanceQueue(run: AutoRunV2): AutoRunV2 {
 }
 
 /**
- * Get next N topics from queue (for preview)
+ * Skip current Advanced question and move to next module.
+ * This is a NEUTRAL action - no penalties applied.
+ *
+ * - Does NOT reset streak
+ * - Does NOT count as failure
+ * - Does NOT downgrade difficulty
+ * - Logged as "skipped" action in analytics
+ *
+ * Only intended for Advanced questions where user wants to progress
+ * without getting stuck.
+ */
+export function skipToNextModule(run: AutoRunV2): AutoRunV2 {
+  const current = getCurrentQueueEntry(run);
+  if (!current) return run;
+
+  const currentModuleId = current.moduleId;
+
+  console.log(
+    `[autoModeService] Skipping Advanced question in module "${current.moduleName}"`
+  );
+
+  // Find next entry with a different module
+  let nextIndex = run.currentIndex + 1;
+  while (nextIndex < run.topicQueue.length) {
+    if (run.topicQueue[nextIndex].moduleId !== currentModuleId) {
+      break;
+    }
+    nextIndex++;
+  }
+
+  // If no different module found in remaining queue, regenerate
+  if (nextIndex >= run.topicQueue.length) {
+    console.log(
+      "[autoModeService] No different module found, regenerating queue"
+    );
+    run.topicQueue = generateWeaknessBasedQueue(run.recentProblemTypes);
+    run.currentIndex = 0;
+  } else {
+    run.currentIndex = nextIndex;
+    const nextEntry = run.topicQueue[nextIndex];
+    console.log(
+      `[autoModeService] Skipped to module "${nextEntry.moduleName}"`
+    );
+  }
+
+  run.lastUpdatedAt = Date.now();
+  saveRun(run);
+
+  // Track skip in analytics (distinct from failures)
+  incrementAnalytics("skips");
+
+  return run;
+}
+
+/**
+ * Jump to a specific index in the queue.
+ * This is for intentional, user-initiated forward navigation (e.g., Jump Ahead).
+ *
+ * - Does NOT reset streak
+ * - Does NOT change difficulty
+ * - Does NOT mark skipped topics as completed
+ * - Purely moves the queue pointer forward
+ */
+export function jumpToQueueIndex(
+  run: AutoRunV2,
+  targetIndex: number
+): AutoRunV2 {
+  if (targetIndex < 0 || targetIndex >= run.topicQueue.length) {
+    console.warn(`[autoModeService] Invalid jump target index: ${targetIndex}`);
+    return run;
+  }
+
+  const targetEntry = run.topicQueue[targetIndex];
+  console.log(
+    `[autoModeService] Jumping ahead to "${targetEntry.subtopicName}" in module "${targetEntry.moduleName}"`
+  );
+
+  run.currentIndex = targetIndex;
+  run.lastUpdatedAt = Date.now();
+  saveRun(run);
+
+  return run;
+}
+
+/**
+ * Navigation item for the module dropdown.
+ */
+export type NavigationItem =
+  | { type: "header"; title: string }
+  | {
+      type: "item";
+      entry: TopicQueueEntry;
+      index: number;
+      isCurrent: boolean;
+      status: "completed" | "current" | "upcoming";
+    };
+
+/**
+ * Get navigation items for the dropdown (Current Module + Next Module).
+ * Scans the queue to find all items belonging to the current module and the next distinct module.
+ */
+export function getModuleNavigationItems(run: AutoRunV2): NavigationItem[] {
+  const result: NavigationItem[] = [];
+  const currentQEntry = getCurrentQueueEntry(run);
+
+  if (!currentQEntry) return result;
+
+  const currentModuleId = currentQEntry.moduleId;
+  let nextModuleId: string | null = null;
+  const currentModuleItems: NavigationItem[] = [];
+  const nextModuleItems: NavigationItem[] = [];
+
+  // 1. Scan for Current Module Items and determine Next Module ID
+  // We scan the WHOLE queue to find all items for current module (even if previous)
+  // But strictly, usually we only care about "what's in the queue".
+  // Note: generateWeaknessBasedQueue might interleave, so this might collect scattered items if we just filter.
+  // Requirement says "Current Module" listing all questions.
+  // If queue is sorted by module (typical for curriculum), they are contiguous.
+  // If interleaved, filtering by ID groups them visually, which is good.
+
+  // Find next module ID by looking ahead from current index
+  for (let i = run.currentIndex + 1; i < run.topicQueue.length; i++) {
+    if (run.topicQueue[i].moduleId !== currentModuleId) {
+      nextModuleId = run.topicQueue[i].moduleId;
+      break;
+    }
+  }
+
+  // 2. Build Lists
+  // To preserve queue order within groups, we iterate queue once.
+
+  for (let i = 0; i < run.topicQueue.length; i++) {
+    const entry = run.topicQueue[i];
+    const isCurrent = i === run.currentIndex;
+    const status =
+      i < run.currentIndex
+        ? "completed"
+        : i === run.currentIndex
+        ? "current"
+        : "upcoming";
+
+    const item: NavigationItem = {
+      type: "item",
+      entry,
+      index: i,
+      isCurrent,
+      status,
+    };
+
+    if (entry.moduleId === currentModuleId) {
+      currentModuleItems.push(item);
+    } else if (nextModuleId && entry.moduleId === nextModuleId) {
+      // Only add next module items if they are "upcoming" relative to the current block?
+      // Or just all items of that next module found in the queue?
+      // Let's add all.
+      nextModuleItems.push(item);
+    }
+  }
+
+  // 3. Assemble Result
+  if (currentModuleItems.length > 0) {
+    result.push({ type: "header", title: "CURRENT MODULE" });
+    result.push(...currentModuleItems);
+  }
+
+  if (nextModuleItems.length > 0) {
+    result.push({ type: "header", title: "NEXT MODULE" });
+    result.push(...nextModuleItems);
+  }
+
+  return result;
+}
+
+/**
+ * Get next N topics from queue (for preview) - Legacy/Simple use
  */
 export function getNextTopics(
   run: AutoRunV2,
@@ -579,7 +708,8 @@ export function getNextTopics(
 export function injectRemediationQuestions(
   run: AutoRunV2,
   subtopicId: string,
-  count: number = DEFAULT_AUTO_RUN_CONFIG.extraRemediationCount
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _count: number = DEFAULT_AUTO_RUN_CONFIG.extraRemediationCount
 ): AutoRunV2 {
   // Find problem types from this subtopic
   const modules = getAllModules();
@@ -597,28 +727,48 @@ export function injectRemediationQuestions(
 
   if (!targetSubtopic || !targetModule) return run;
 
-  // Create remediation entries (beginner difficulty)
-  const remediationEntries: TopicQueueEntry[] = targetSubtopic.problemTypes
-    .filter((pt) => !run.recentProblemTypes.includes(pt.id))
-    .slice(0, count)
-    .map((pt) => ({
-      moduleId: targetModule!.id,
-      subtopicId: targetSubtopic!.id,
-      problemTypeId: pt.id,
-      moduleName: targetModule!.name,
-      subtopicName: targetSubtopic!.name,
-      problemTypeName: pt.name,
-    }));
+  // Create remediation entries (just add subtopic - one entry)
+  // Only add if not already in queue nearby
+  const alreadyInQueue = run.topicQueue
+    .slice(run.currentIndex, run.currentIndex + 5)
+    .some((e) => e.subtopicId === subtopicId);
+
+  if (alreadyInQueue) {
+    console.log(
+      `[autoModeService] Remediation skipped - subtopic already in queue nearby`
+    );
+    return run;
+  }
+
+  const remediationEntry: TopicQueueEntry = {
+    moduleId: targetModule.id,
+    subtopicId: targetSubtopic.id,
+    moduleName: targetModule.name,
+    subtopicName: targetSubtopic.name,
+  };
 
   // Insert after current position
   const insertPos = run.currentIndex + 1;
-  run.topicQueue.splice(insertPos, 0, ...remediationEntries);
+  run.topicQueue.splice(insertPos, 0, remediationEntry);
 
   run.lastUpdatedAt = Date.now();
   saveRun(run);
   incrementAnalytics("remediationsTriggered");
 
   return run;
+}
+
+/**
+ * Check if a subtopic is being repeated (solved previously or attempted significantly).
+ */
+export function isRepeatedSubtopic(
+  run: AutoRunV2,
+  subtopicId: string
+): boolean {
+  const stats = run.perSubtopicStats[subtopicId];
+  // Requirement: "The current sub-topic has already been completed before".
+  // Completed implies solved at least once.
+  return !!stats && stats.solved > 0;
 }
 
 // ============================================
@@ -652,15 +802,16 @@ export function recordAttemptV2(
   run.perSubtopicStats[entry.subtopicId].attempts++;
   run.perSubtopicStats[entry.subtopicId].lastAttemptAt = Date.now();
 
-  // Update recent problem types
+  // Update recent subtopics (for avoiding consecutive repeats)
   run.recentProblemTypes = [
     ...run.recentProblemTypes.slice(-4),
-    entry.problemTypeId,
+    entry.subtopicId,
   ];
 
   if (result === "correct") {
     run.streak++;
     run.perSubtopicStats[entry.subtopicId].solved++;
+    run.perSubtopicStats[entry.subtopicId].consecutiveFailures = 0; // Reset failures
     run.completedQuestions++;
 
     // Check for promotion
@@ -671,12 +822,19 @@ export function recordAttemptV2(
     run.streak = 0;
     incrementAnalytics("streakResets");
 
-    // Demote difficulty
-    run = demoteSubtopicDifficulty(run, entry.subtopicId);
+    // Increment consecutive failures
+    const failures =
+      (run.perSubtopicStats[entry.subtopicId].consecutiveFailures || 0) + 1;
+    run.perSubtopicStats[entry.subtopicId].consecutiveFailures = failures;
 
-    // Inject remediation if enabled
-    if (run.remediationMode) {
-      run = injectRemediationQuestions(run, entry.subtopicId);
+    // Demote ONLY if sustained failure (>= 2 attempts) to prevent accidental demotion
+    if (failures >= 2) {
+      run = demoteSubtopicDifficulty(run, entry.subtopicId);
+
+      // Inject remediation if enabled
+      if (run.remediationMode) {
+        run = injectRemediationQuestions(run, entry.subtopicId);
+      }
     }
   } else {
     // Partial - increment attempt but don't affect streak significantly
@@ -721,6 +879,7 @@ function getAnalytics(): AdaptiveAnalytics {
       remediationsTriggered: 0,
       streakResets: 0,
       decaysApplied: 0,
+      skips: 0,
     };
   }
 
@@ -732,6 +891,7 @@ function getAnalytics(): AdaptiveAnalytics {
       remediationsTriggered: 0,
       streakResets: 0,
       decaysApplied: 0,
+      skips: 0,
     };
   }
 
@@ -744,6 +904,7 @@ function getAnalytics(): AdaptiveAnalytics {
       remediationsTriggered: 0,
       streakResets: 0,
       decaysApplied: 0,
+      skips: 0,
     };
   }
 }
