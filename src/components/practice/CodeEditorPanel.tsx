@@ -22,6 +22,14 @@ import { useSettingsStore } from "@/lib/stores/settingsStore";
 import { CircleNotch } from "@phosphor-icons/react";
 import type * as Monaco from "monaco-editor";
 
+/** Editor actions exposed to parent components */
+export interface EditorActions {
+  formatCode: () => void;
+  getCode: () => string;
+  setCode: (code: string) => void;
+  focus: () => void;
+}
+
 interface CodeEditorPanelProps {
   code: string;
   onChange: (value: string | undefined) => void;
@@ -31,6 +39,9 @@ interface CodeEditorPanelProps {
     column: number;
     message: string;
   }>; // Optional error markers
+  readOnly?: boolean; // Read-only mode for solution viewing
+  onEditorReady?: (actions: EditorActions) => void; // Callback when editor is ready with action methods
+  isTransitioning?: boolean; // Show loading skeleton during question transitions
 }
 
 // GitHub Dark syntax colors
@@ -128,6 +139,9 @@ export function CodeEditorPanel({
   onChange,
   onRun,
   errors,
+  readOnly = false,
+  onEditorReady,
+  isTransitioning = false,
 }: CodeEditorPanelProps) {
   const { resolvedTheme } = useTheme();
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -169,6 +183,18 @@ export function CodeEditorPanel({
       editorRef.current = editor;
       monacoRef.current = monaco;
 
+      // Expose editor actions to parent component
+      if (onEditorReady) {
+        onEditorReady({
+          formatCode: () => {
+            editor.getAction("editor.action.formatDocument")?.run();
+          },
+          getCode: () => editor.getValue(),
+          setCode: (code: string) => editor.setValue(code),
+          focus: () => editor.focus(),
+        });
+      }
+
       // Add custom keyboard shortcuts
       if (onRun) {
         // Ctrl/Cmd + Enter to run code
@@ -193,7 +219,7 @@ export function CodeEditorPanel({
         editor.getAction("editor.action.formatDocument")?.run();
       });
     },
-    [onRun]
+    [onRun, onEditorReady]
   );
 
   // Update error markers when errors change
@@ -226,7 +252,71 @@ export function CodeEditorPanel({
   }
 
   return (
-    <Card className="h-full border-none shadow-none rounded-none overflow-hidden flex flex-col">
+    <Card className="h-full border-none shadow-none rounded-none overflow-hidden flex flex-col relative">
+      {/* Transition skeleton overlay */}
+      {isTransitioning && (
+        <div className="absolute inset-0 z-10 bg-background flex flex-col p-4 gap-3 animate-in fade-in duration-200">
+          {/* Code lines skeleton */}
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-4 bg-muted rounded animate-pulse" />
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "60%" }}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-4 bg-muted rounded animate-pulse" />
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "75%" }}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-4 bg-muted rounded animate-pulse" />
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "45%" }}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-4 bg-muted rounded animate-pulse" />
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "80%" }}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-4 bg-muted rounded animate-pulse" />
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "55%" }}
+            />
+          </div>
+          <div className="flex items-center gap-3 pl-8">
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "50%" }}
+            />
+          </div>
+          <div className="flex items-center gap-3 pl-8">
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "65%" }}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-4 bg-muted rounded animate-pulse" />
+            <div
+              className="flex-1 h-4 bg-muted rounded animate-pulse"
+              style={{ maxWidth: "30%" }}
+            />
+          </div>
+          {/* Loading indicator */}
+          <div className="flex-1 flex items-center justify-center">
+            <CircleNotch className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        </div>
+      )}
       <div className="flex-1">
         <Editor
           height="100%"
@@ -242,6 +332,17 @@ export function CodeEditorPanel({
             </div>
           }
           options={{
+            // Read-only mode for solution viewing
+            readOnly: readOnly,
+            domReadOnly: readOnly,
+            // Formatting options
+            formatOnPaste: true,
+            formatOnType: true,
+            // Enhanced find widget
+            find: {
+              seedSearchStringFromSelection: "selection",
+              autoFindInSelection: "multiline",
+            },
             minimap: { enabled: showMinimap },
             fontSize: 14,
             fontFamily,
@@ -275,7 +376,9 @@ export function CodeEditorPanel({
             folding: true,
             foldingStrategy: "indentation", // Good for Python
             // Accessibility
-            ariaLabel: "Python code editor",
+            ariaLabel: readOnly
+              ? "Python code editor (read-only)"
+              : "Python code editor",
             accessibilitySupport: "auto",
           }}
         />

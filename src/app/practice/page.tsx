@@ -31,7 +31,6 @@ import { toast } from "sonner";
 import {
   Play,
   FastForward,
-  Lightbulb,
   Lock,
   ArrowCounterClockwise,
   SpinnerGap,
@@ -46,6 +45,7 @@ import { OutputPanel } from "@/components/practice/OutputPanel";
 import { PracticeHeader } from "@/components/practice/PracticeHeader";
 import { HelpSheet } from "@/components/help/HelpSheet";
 import { RuntimeStatusBar } from "@/components/practice/RuntimeStatusBar";
+import { HintPanel } from "@/components/practice/HintPanel";
 
 // AI Client (uses API routes with user's API key)
 import {
@@ -138,6 +138,17 @@ function PracticeWorkspace() {
   );
   const [isGeneratingHint, setIsGeneratingHint] = useState(false);
 
+  // Hint panel state
+  const [hint1, setHint1] = useState<string | null>(null);
+  const [hint2, setHint2] = useState<string | null>(null);
+
+  // Reset hints when question changes
+  useEffect(() => {
+    setHint1(null);
+    setHint2(null);
+    setHintsUsed(0);
+  }, [question?.id]);
+
   // Auto Mode V2 state
   const [saveFile, setSaveFile] = useState<AutoRunV2 | null>(null);
 
@@ -172,23 +183,13 @@ function PracticeWorkspace() {
           handleRun();
         }
       }
-      // Ctrl/Cmd + Shift + H for hint (all modes except review)
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        e.shiftKey &&
-        e.key.toLowerCase() === "h"
-      ) {
-        e.preventDefault();
-        if (hintsUsed < 2 && question && mode !== "review") {
-          handleHint();
-        }
-      }
+      // Removed: Hint keyboard shortcut - hints are now accessed via the HintPanel
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question, isRunning, runResult.status, hintsUsed, mode]);
+  }, [question, isRunning, runResult.status, mode]);
 
   // Load save file for Auto Mode V2
   useEffect(() => {
@@ -528,23 +529,32 @@ function PracticeWorkspace() {
     }
   };
 
-  const handleHint = async () => {
+  /**
+   * Request a hint for display in the HintPanel.
+   * Replaces the old toast-based handleHint - hints now appear only in the dedicated panel.
+   */
+  const handleRequestHint = async (hintNumber: 1 | 2) => {
     if (!question) return;
-    const nextLimit = hintsUsed + 1;
+
+    // Prevent requesting hint 2 before hint 1
+    if (hintNumber === 2 && hint1 === null) return;
+
     setIsGeneratingHint(true);
-    toast.info(`Generating hint (${nextLimit}/2)...`);
 
     try {
-      const hintObj = await getHints(question, code, hintsUsed);
+      // hintsUsed tracks which hints have been unlocked (0 = none, 1 = first, 2 = both)
+      const hintObj = await getHints(question, code, hintNumber - 1);
 
-      toast("AI Hint: " + hintObj.hint, {
-        duration: 8000,
-        icon: <Lightbulb className="h-4 w-4 text-yellow-500" />,
-      });
+      if (hintNumber === 1) {
+        setHint1(hintObj.hint);
+      } else {
+        setHint2(hintObj.hint);
+      }
 
-      setHintsUsed(nextLimit);
+      setHintsUsed(hintNumber);
     } catch {
-      toast.error("Could not get hint.");
+      // Show error only - no hint toast
+      toast.error("Could not get hint. Please try again.");
     } finally {
       setIsGeneratingHint(false);
     }
@@ -888,30 +898,7 @@ function PracticeWorkspace() {
                   </Tooltip>
                 </TooltipProvider>
 
-                {/* Hint */}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleHint}
-                        disabled={hintsUsed >= 2 || isGeneratingHint}
-                        className="hidden sm:flex h-8"
-                      >
-                        {isGeneratingHint ? (
-                          <SpinnerGap className="h-4 w-4 animate-spin lg:mr-2" />
-                        ) : (
-                          <Lightbulb className="h-4 w-4 lg:mr-2" />
-                        )}
-                        <span className="hidden lg:inline">
-                          Hint ({hintsUsed}/2)
-                        </span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Get AI Hint</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {/* Hint button removed - hints are now in the HintPanel below the question */}
 
                 {/* Reveal Solution */}
                 <AlertDialog>
@@ -1043,6 +1030,17 @@ function PracticeWorkspace() {
             <QuestionPanel
               question={question}
               isLoading={isLoading || isLoadingNext}
+              hintPanelSlot={
+                mode !== "review" && (
+                  <HintPanel
+                    hint1={hint1}
+                    hint2={hint2}
+                    onRequestHint={handleRequestHint}
+                    isGenerating={isGeneratingHint}
+                    isLoading={isLoading || isLoadingNext}
+                  />
+                )
+              }
             />
           </ResizablePanel>
 
@@ -1057,6 +1055,7 @@ function PracticeWorkspace() {
                     <CodeEditorPanel
                       code={code}
                       onChange={(val) => setCode(val || "")}
+                      isTransitioning={isLoading || isLoadingNext}
                     />
                   </div>
                   {/* Runtime Status Bar - between editor and output */}
