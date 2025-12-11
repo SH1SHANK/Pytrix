@@ -7,37 +7,24 @@
  *   X-API-Key: <user's Gemini API key>
  *
  * Body:
- *   { topic: string, difficulty: "easy" | "medium" | "hard" }
+ *   { topic: string, difficulty: "beginner" | "intermediate" | "advanced" }
  *
  * Returns:
  *   { question: Question, usage: { model, inputTokens, outputTokens } }
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { generateQuestion } from "@/lib/question/questionService";
+import { Difficulty } from "@/lib/types";
 import {
-  callGeminiWithFallback,
-  parseJsonResponse,
-  AIResult,
-} from "@/lib/ai/modelRouter";
-import { Question, Difficulty } from "@/lib/types";
-import { MOCK_QUESTIONS } from "@/lib/question/mockQuestions";
-
-import { generateTemplate } from "@/lib/question/questionTemplates";
-
-interface GeneratedQuestionData {
-  id?: string;
-  topic: string;
-  difficulty: string;
-  title: string;
-  description: string;
-  inputDescription: string;
-  outputDescription: string;
-  constraints: string[];
-  sampleInput: string;
-  sampleOutput: string;
-  starterCode?: string;
-  referenceSolution?: string;
-}
+  getProblemTypeWithContext,
+  searchModules,
+  listModuleProblemTypes,
+  searchSubtopics,
+  listProblemTypes,
+  getProblemTypeById,
+  getSubtopicById,
+} from "@/lib/stores/topicsStore";
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,10 +39,8 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { topic, difficulty } = body as {
-      topic: string;
-      difficulty: Difficulty;
-    };
+    let { topic } = body as { topic: string };
+    const { difficulty } = body as { difficulty: Difficulty };
 
     if (!topic || !difficulty) {
       return NextResponse.json(
@@ -64,163 +49,128 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Try to get a specific template for this topic (archetype)
-    const template = generateTemplate(topic, difficulty);
+    console.log(
+      `[generate-question] Received: topic="${topic}", difficulty="${difficulty}"`
+    );
 
-    let prompt = "";
+    // ---------------------------------------------------------
+    // Resolve "topic" string to a valid Problem Type ID
+    // ---------------------------------------------------------
+    let validatedProblemTypeId: string | undefined;
 
-    if (template) {
-      // Use specific template to guide the LLM
-      prompt = `
-You are an expert Python programming tutor.
-Generate a new, unique coding practice question based on the following template structure:
-
-Task: Create a ${template.difficulty} practice problem for "${
-        template.problemTypeName
-      }".
-Context: ${template.promptTemplate}
-Constraints: ${template.constraints.join(", ")}
-Sample Input: ${template.sampleInputs[0]}
-Sample Output: ${template.sampleOutputs[0]}
-
-The question should follow this structure but use specific values or a slightly different scenario to ensure variety.
-Do NOT copy the template example exactly. Create a VARIATION of this problem type.
-
-Return ONLY a raw JSON object with this exact schema (no markdown formatting):
-{
-  "id": "gen-${Date.now()}", 
-  "topic": "${template.problemTypeName}",
-  "difficulty": "${difficulty}",
-  "title": "A short descriptive title (e.g. ${template.title})",
-  "description": "Clear problem statement describing the task. Use markdown for code formatting.",
-  "inputDescription": "Description of input format",
-  "outputDescription": "Description of output format",
-  "constraints": ["Constraint 1", "Constraint 2"],
-  "sampleInput": "Example input",
-  "sampleOutput": "Example output",
-  "starterCode": "${template.starterCode
-    .replace(/\n/g, "\\n")
-    .replace(/"/g, '\\"')}",
-  "referenceSolution": "Efficient Python solution code"
-}
-
-Ensure the question is solvable and the reference solution is correct.
-`;
-    } else {
-      // Generic prompt (fallback)
-      prompt = `
-You are an expert Python programming tutor.
-Generate a distinct, unique coding practice question for the topic "${topic}" at "${difficulty}" difficulty.
-
-Return ONLY a raw JSON object with this exact schema (no markdown formatting):
-{
-  "id": "gen-${Date.now()}", 
-  "topic": "${topic}",
-  "difficulty": "${difficulty}",
-  "title": "Short descriptive title",
-  "description": "Clear problem statement. Use markdown for code formatting.",
-  "inputDescription": "Description of input format",
-  "outputDescription": "Description of output format",
-  "constraints": ["Constraint 1", "Constraint 2"],
-  "sampleInput": "Example input",
-  "sampleOutput": "Example output",
-  "starterCode": "def solve(input_data):\\n    pass",
-  "referenceSolution": "Efficient Python solution code"
-}
-
-Ensure the question is solvable and the reference solution is correct.
-`;
+    // 1. Direct match (ID)
+    if (getProblemTypeWithContext(topic)) {
+      validatedProblemTypeId = topic;
     }
-
-    const result: AIResult<GeneratedQuestionData> =
-      await callGeminiWithFallback(
-        apiKey,
-        "question-generation",
-        prompt,
-        parseJsonResponse<GeneratedQuestionData>
+    // 2. Case-insensitive match on ID
+    else if (getProblemTypeById(topic.toLowerCase())) {
+      validatedProblemTypeId = topic.toLowerCase();
+    }
+    // 3. Check if it matches a Module Name/ID -> Pick random problem type
+    else {
+      const moduleMatch = searchModules(topic).find(
+        (m) => m.name.toLowerCase() === topic.toLowerCase() || m.id === topic
       );
 
-    if (result.success && result.data) {
-      const json = result.data;
-
-      // CRITICAL: Log if AI returned wrong difficulty (for diagnostics)
-      if (json.difficulty && json.difficulty !== difficulty) {
-        console.warn(
-          `[generate-question] AI returned difficulty "${json.difficulty}" but requested "${difficulty}". Enforcing requested difficulty.`
-        );
+      if (moduleMatch) {
+        const types = listModuleProblemTypes(moduleMatch.id);
+        if (types.length > 0) {
+          validatedProblemTypeId =
+            types[Math.floor(Math.random() * types.length)].id;
+        }
       }
+      // 4. Check if it's a direct Subtopic ID -> Pick random problem type
+      else {
+        const directSubtopic = getSubtopicById(topic);
+        if (directSubtopic) {
+          const types = listProblemTypes(topic);
+          if (types.length > 0) {
+            validatedProblemTypeId =
+              types[Math.floor(Math.random() * types.length)].id;
+          }
+        }
+        // 5. Fallback: Search subtopics by name
+        else {
+          const subtopicMatch = searchSubtopics(topic).find(
+            (r) =>
+              r.subtopic.name.toLowerCase() === topic.toLowerCase() ||
+              r.subtopic.id === topic
+          );
 
-      // Map AI response to our full Question interface
-      const question: Question = {
-        id:
-          json.id ||
-          `gen-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-        // Use template IDs if available for consistency, otherwise fallback to API response
-        topicId: template ? template.problemTypeId : json.topic.toLowerCase(),
-        topicName: template ? template.problemTypeName : json.topic,
-        topic: json.topic, // Keep original AI topic field
-        // CRITICAL FIX: Use REQUESTED difficulty, NOT AI response
-        difficulty: difficulty,
-        title: json.title,
-        description: json.description,
-        inputDescription: json.inputDescription,
-        outputDescription: json.outputDescription,
-        constraints: json.constraints || [],
-        sampleInput: json.sampleInput,
-        sampleOutput: json.sampleOutput,
-        starterCode:
-          json.starterCode ||
-          `def solve(input_data):\n    # Write your solution here\n    pass`,
-        referenceSolution: json.referenceSolution || null,
-        testCases: [],
-      };
+          if (subtopicMatch) {
+            const types = listProblemTypes(subtopicMatch.subtopic.id);
+            if (types.length > 0) {
+              validatedProblemTypeId =
+                types[Math.floor(Math.random() * types.length)].id;
+            }
+          }
+        }
+      }
+    }
 
+    // If we resolved it, use the resolved ID. Otherwise keep original (will likely fail, but let service handle it)
+    if (validatedProblemTypeId) {
+      console.log(
+        `[generate-question] Resolved topic "${topic}" to problemTypeId "${validatedProblemTypeId}"`
+      );
+      topic = validatedProblemTypeId;
+    } else {
+      console.warn(
+        `[generate-question] Could not resolve topic "${topic}" to a known ID. Generation may fail.`
+      );
+    }
+
+    // Use the unified question service
+    // This handles: template loading, LLM generation, validation, padding test cases, and diversity
+    const result = await generateQuestion({
+      problemTypeId: topic,
+
+      difficulty: difficulty,
+      preferLLM: true,
+      apiKey: apiKey,
+      // On server-side, diversity check won't persist across requests but is safe to run
+      skipDiversityCheck: false,
+    });
+
+    if (result.success && result.question) {
       return NextResponse.json({
-        question,
-        usage: {
-          model: result.modelUsed,
-          inputTokens: result.usage?.inputTokens || 0,
-          outputTokens: result.usage?.outputTokens || 0,
-        },
+        question: result.question,
+        usage: result.usage
+          ? {
+              model: result.modelUsed,
+              inputTokens: result.usage.inputTokens,
+              outputTokens: result.usage.outputTokens,
+            }
+          : null,
       });
     }
 
-    // Handle specific error types
-    if (
-      result.errorType === "api_key_required" ||
-      result.errorType === "config_error"
-    ) {
+    // Handle known errors
+    if (result.error) {
+      console.warn(
+        `[generate-question] Generation failed: ${result.error.message}`,
+        result.error
+      );
+
+      // Map error codes to HTTP status
+      if (result.error.code === "PROBLEM_TYPE_NOT_FOUND") {
+        return NextResponse.json(
+          { error: `Topic not found: ${topic}`, errorType: "invalid_topic" },
+          { status: 400 }
+        );
+      }
+
       return NextResponse.json(
-        { error: result.message, errorType: result.errorType },
-        { status: 401 }
+        { error: result.error.message, errorType: "generation_failed" },
+        { status: 500 }
       );
     }
 
-    // Fallback to mock question - ENFORCE requested difficulty
-    console.warn(
-      "[generate-question] AI failed, using fallback:",
-      result.message
+    // Fallback error
+    return NextResponse.json(
+      { error: "Failed to generate question" },
+      { status: 500 }
     );
-    const fallback =
-      MOCK_QUESTIONS.find(
-        (q) => q.topicName.toLowerCase() === topic.toLowerCase()
-      ) || MOCK_QUESTIONS[0];
-
-    console.warn(
-      `[generate-question] FALLBACK: Serving mock question with enforced difficulty "${difficulty}"`
-    );
-
-    return NextResponse.json({
-      question: {
-        ...fallback,
-        topic: topic,
-        // CRITICAL FIX: Enforce requested difficulty on fallback
-        difficulty: difficulty,
-        id: `fallback-${Date.now()}`,
-      } as Question,
-      usage: null,
-      fallback: true,
-    });
   } catch (error) {
     console.error("[generate-question] Error:", error);
     return NextResponse.json(

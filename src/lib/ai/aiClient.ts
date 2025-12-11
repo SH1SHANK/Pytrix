@@ -142,20 +142,28 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
     // Determine error type from status
     let errorType: ApiErrorType = "UNKNOWN_ERROR";
+    let message: string;
 
     if (response.status === 401 || response.status === 403) {
       errorType = "INVALID_KEY";
+      message = getErrorMessage(errorType);
     } else if (response.status === 429) {
       errorType = "RATE_LIMIT";
       if (data.model) {
         recordRateLimitHit(data.model);
       }
+      message = getErrorMessage(errorType);
+    } else if (response.status === 400) {
+      // Bad Request - use server's error message if available
+      errorType = "UNKNOWN_ERROR";
+      message = data.error || "Invalid request. Please check your input.";
     } else if (response.status >= 500) {
       errorType = "NETWORK_ERROR";
+      message = getErrorMessage(errorType);
+    } else {
+      message = getErrorMessage(errorType);
     }
 
-    // Never include raw response details in error message
-    const message = getErrorMessage(errorType);
     throw new ApiError(message, errorType, response.status);
   }
 
@@ -308,6 +316,13 @@ interface ExecutionContext {
   stdout?: string;
   stderr?: string;
   didExecute?: boolean;
+  testResults?: {
+    testCaseId: string;
+    status: "passed" | "failed" | "error" | "timeout";
+    expectedOutput: string;
+    actualOutput: string;
+    error?: string;
+  }[];
 }
 
 interface EvaluationResult {
@@ -344,6 +359,7 @@ export async function evaluateCode(
       code,
       output: executionContext?.stdout,
       error: executionContext?.stderr,
+      testResults: executionContext?.testResults,
     }),
   });
 

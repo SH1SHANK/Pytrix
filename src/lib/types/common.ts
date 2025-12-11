@@ -41,13 +41,15 @@ export interface Question {
   sampleOutput: string;
   starterCode: string;
   referenceSolution: string | null;
-  testCases?: TestCase[]; // Made optional for AI questions
+  testCases: TestCase[]; // Required: every question must have >= 3 visible test cases
 }
 
 export interface TestCase {
+  id: string; // Stable identifier (e.g., "tc-1", "tc-edge-empty")
   input: string;
   expectedOutput: string;
   isHidden?: boolean;
+  description?: string; // Human-friendly name (e.g., "Basic case", "Edge: empty")
 }
 
 export interface RunResult {

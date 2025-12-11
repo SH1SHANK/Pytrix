@@ -103,7 +103,7 @@ describe("questionService - Extended Coverage", () => {
   describe("getQuestion", () => {
     it("should return template-based question when useLLM is false", async () => {
       const result = await getQuestion("binary-search", "beginner", {
-        useLLM: false,
+        preferLLM: false,
       });
 
       expect(result.success).toBe(true);
@@ -114,24 +114,25 @@ describe("questionService - Extended Coverage", () => {
 
     it("should return template-based question when no API key provided", async () => {
       const result = await getQuestion("binary-search", "beginner", {
-        useLLM: true,
+        preferLLM: true,
         // No apiKey
       });
 
       expect(result.success).toBe(true);
-      expect(result.source).toBe("template");
+      // When preferLLM is true but apiKey is missing, it counts as a fallback to template
+      expect(result.source).toBe("fallback");
     });
 
     it("should return error for non-existent problem type", async () => {
       const result = await getQuestion("non-existent", "beginner");
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Problem type not found");
+      expect(result.error?.message).toContain("No template found");
     });
 
     it("should include correct question structure", async () => {
       const result = await getQuestion("string-reverse", "intermediate", {
-        useLLM: false,
+        preferLLM: false,
       });
 
       expect(result.success).toBe(true);
@@ -151,7 +152,7 @@ describe("questionService - Extended Coverage", () => {
 
     it("should filter hidden test cases from result", async () => {
       const result = await getQuestion("test-problem", "beginner", {
-        useLLM: false,
+        preferLLM: false,
       });
 
       expect(result.success).toBe(true);
@@ -164,13 +165,13 @@ describe("questionService - Extended Coverage", () => {
 
     it("should handle different difficulty levels", async () => {
       const beginnerResult = await getQuestion("test", "beginner", {
-        useLLM: false,
+        preferLLM: false,
       });
       const intermediateResult = await getQuestion("test", "intermediate", {
-        useLLM: false,
+        preferLLM: false,
       });
       const advancedResult = await getQuestion("test", "advanced", {
-        useLLM: false,
+        preferLLM: false,
       });
 
       expect(beginnerResult.question?.difficulty).toBe("beginner");

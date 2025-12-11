@@ -462,7 +462,7 @@ function generateHints(
 }
 
 /**
- * Generates test cases
+ * Generates test cases with proper IDs and descriptions
  */
 function generateTestCases(
   difficulty: Difficulty,
@@ -471,13 +471,26 @@ function generateTestCases(
 ): TestCaseTemplate[] {
   const testCases: TestCaseTemplate[] = [];
 
+  // Ensure we have at least 3 visible test cases
+  const visibleInputs = sampleInputs.slice(0, 3);
+  const visibleOutputs = sampleOutputs.slice(0, 3);
+
+  // Pad with placeholder if needed
+  while (visibleInputs.length < 3) {
+    visibleInputs.push(sampleInputs[0] || "input = []");
+    visibleOutputs.push(sampleOutputs[0] || "expected");
+  }
+
+  // Test case descriptions based on position
+  const descriptions = ["Basic case", "Edge case", "Tricky case"];
+
   // Visible test cases from samples
-  sampleInputs.forEach((input, i) => {
+  visibleInputs.forEach((input, i) => {
     testCases.push({
       input,
-      expectedOutput: sampleOutputs[i] || "expected",
+      expectedOutput: visibleOutputs[i] || "expected",
       isHidden: false,
-      description: `Sample test case ${i + 1}`,
+      description: descriptions[i] || `Test case ${i + 1}`,
     });
   });
 

@@ -3,7 +3,7 @@
  *
  * Two-layer question generation system:
  * 1. Local template fallback (fast, immediate) - uses questionTemplates.ts
- * 2. LLM generation wrapper (richer variants) - uses modelRouter
+ * 2. LLM generation (richer variants) - uses modelRouter
  *
  * The service provides a unified interface for question generation,
  * with graceful fallback to templates when LLM is unavailable.
@@ -38,15 +38,17 @@ import {
 /**
  * Options for question generation
  */
-export interface GetQuestionOptions {
+export interface GenerateQuestionOptions {
+  /** Problem type ID from topics.json */
+  problemTypeId: string;
+  /** Difficulty level */
+  difficulty: Difficulty;
   /** Use LLM for richer question generation (default: true) */
-  useLLM?: boolean;
-  /** API key for LLM calls (required if useLLM is true) */
+  preferLLM?: boolean;
+  /** API key for LLM calls (required if preferLLM is true) */
   apiKey?: string;
   /** Additional context/constraints for LLM generation */
   additionalContext?: string;
-  /** Force specific variation (e.g., "variation-1", "variation-2") */
-  variation?: string;
   /** Include reference solution (default: true) */
   includeReferenceSolution?: boolean;
   /** Skip diversity checks (for explicit repetition) */
@@ -63,8 +65,8 @@ export interface QuestionResult {
   question?: Question;
   /** Generation method used */
   source: "template" | "llm" | "fallback";
-  /** Error message if unsuccessful */
-  error?: string;
+  /** Error details if unsuccessful */
+  error?: GenerationError;
   /** Model used if LLM was called */
   modelUsed?: string;
   /** Token usage if LLM was called */
@@ -75,7 +77,29 @@ export interface QuestionResult {
 }
 
 /**
- * LLM-enhanced question data
+ * Typed error codes for question generation
+ */
+export enum GenerationErrorCode {
+  PROBLEM_TYPE_NOT_FOUND = "PROBLEM_TYPE_NOT_FOUND",
+  TEMPLATE_GENERATION_FAILED = "TEMPLATE_GENERATION_FAILED",
+  LLM_CALL_FAILED = "LLM_CALL_FAILED",
+  LLM_PARSE_FAILED = "LLM_PARSE_FAILED",
+  VALIDATION_FAILED = "VALIDATION_FAILED",
+  MAX_RETRIES_EXCEEDED = "MAX_RETRIES_EXCEEDED",
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+}
+
+/**
+ * Structured error information
+ */
+export interface GenerationError {
+  code: GenerationErrorCode;
+  message: string;
+  details?: unknown;
+}
+
+/**
+ * Raw LLM response structure
  */
 interface LLMQuestionData {
   title: string;
@@ -95,58 +119,90 @@ interface LLMQuestionData {
 }
 
 // ============================================================================
-// Template to Question Conversion
+// Validation & Normalization
 // ============================================================================
 
 /**
- * Converts a QuestionTemplate to a Question object.
- * This is the fast, synchronous fallback path.
+ * Validates and normalizes a Question object.
+ * Ensures all required fields are present and properly formatted.
+ *
+ * @throws Error if validation fails
  */
-function templateToQuestion(template: QuestionTemplate): Question {
-  // Map template difficulty to Question difficulty
-  const difficultyMap: Record<TemplateDifficulty, Difficulty> = {
-    beginner: "beginner",
-    intermediate: "intermediate",
-    advanced: "advanced",
-  };
+function validateAndNormalizeQuestion(question: Question): Question {
+  // Required fields validation
+  if (!question.id || typeof question.id !== "string") {
+    throw new Error("Question must have a valid id");
+  }
+  if (!question.title || typeof question.title !== "string") {
+    throw new Error("Question must have a valid title");
+  }
+  if (
+    !question.difficulty ||
+    !["beginner", "intermediate", "advanced"].includes(question.difficulty)
+  ) {
+    throw new Error("Question must have a valid difficulty level");
+  }
+  if (!question.topicId || !question.topicName || !question.topic) {
+    throw new Error("Question must have valid topic identifiers");
+  }
+  if (!question.description || typeof question.description !== "string") {
+    throw new Error("Question must have a description");
+  }
 
-  // Convert test case templates to test cases
-  const testCases: TestCase[] = template.testCases
-    .filter((tc: TestCaseTemplate) => !tc.isHidden) // Only include visible test cases
-    .map((tc: TestCaseTemplate) => ({
-      input: tc.input,
-      expectedOutput: tc.expectedOutput,
-      isHidden: tc.isHidden,
-    }));
+  // Normalize test cases - ensure at least 3 visible cases
+  const visibleCases = question.testCases.filter((tc) => !tc.isHidden);
+  if (visibleCases.length < 3) {
+    console.warn(
+      `[Validation] Question ${question.id} has fewer than 3 visible test cases, padding with sample data`
+    );
 
-  const question: Question = {
-    id: `tpl-${template.id}`,
-    topicId: template.moduleId,
-    topicName: template.moduleName,
-    topic: template.subtopicName,
-    difficulty: difficultyMap[template.difficulty],
-    title: template.title,
-    description: generateDescription(template),
-    inputDescription: generateInputDescription(template),
-    outputDescription: generateOutputDescription(template),
-    constraints: template.constraints,
-    sampleInput: template.sampleInputs[0] || "",
-    sampleOutput: template.sampleOutputs[0] || "",
-    starterCode: template.starterCode,
-    referenceSolution: null, // Templates don't include solutions by default
-    testCases,
-  };
+    const paddedCases = [...question.testCases];
+    for (let i = visibleCases.length; i < 3; i++) {
+      paddedCases.push({
+        id: `tc-padded-${i + 1}`,
+        input: question.sampleInput || "[]",
+        expectedOutput: question.sampleOutput || "expected",
+        isHidden: false,
+        description: `Sample case ${i + 1}`,
+      });
+    }
+    question.testCases = paddedCases;
+  }
+
+  // Ensure test cases have IDs
+  question.testCases = question.testCases.map((tc, idx) => ({
+    ...tc,
+    id: tc.id || `tc-${idx + 1}`,
+    description: tc.description || `Test ${idx + 1}`,
+  }));
+
+  // Normalize arrays
+  question.constraints = question.constraints || [];
 
   return question;
 }
 
 /**
- * Generates a rich description from template
+ * Creates an error object with consistent structure
  */
-function generateDescription(template: QuestionTemplate): string {
+function createError(
+  code: GenerationErrorCode,
+  message: string,
+  details?: unknown
+): GenerationError {
+  return { code, message, details };
+}
+
+// ============================================================================
+// Template-based Generation
+// ============================================================================
+
+/**
+ * Generates description from template with edge cases and hints
+ */
+function buildDescription(template: QuestionTemplate): string {
   let description = template.promptTemplate;
 
-  // Add edge cases section
   if (template.edgeCases.length > 0) {
     description += "\n\n**Edge Cases to Consider:**\n";
     template.edgeCases.forEach((ec: EdgeCase) => {
@@ -154,7 +210,6 @@ function generateDescription(template: QuestionTemplate): string {
     });
   }
 
-  // Add hints section (collapsed by default in UI)
   if (template.hints.length > 0) {
     description += "\n\n**Hints:**\n";
     template.hints.forEach((hint: string, i: number) => {
@@ -166,101 +221,165 @@ function generateDescription(template: QuestionTemplate): string {
 }
 
 /**
- * Generates input description
+ * Converts template test cases to Question test cases
  */
-function generateInputDescription(template: QuestionTemplate): string {
-  const samples = template.sampleInputs.slice(0, 2).join("\n");
-  return `Input will be provided in the following format:\n\n\`\`\`\n${samples}\n\`\`\``;
+function buildTestCases(template: QuestionTemplate): TestCase[] {
+  const visibleTestCases = template.testCases.filter(
+    (tc: TestCaseTemplate) => !tc.isHidden
+  );
+
+  const testCases: TestCase[] = visibleTestCases.map(
+    (tc: TestCaseTemplate, index: number) => ({
+      id: `tc-${index + 1}`,
+      input: tc.input,
+      expectedOutput: tc.expectedOutput,
+      isHidden: tc.isHidden,
+      description: tc.description || `Test ${index + 1}`,
+    })
+  );
+
+  // Pad with sample-based tests if fewer than 3
+  while (testCases.length < 3) {
+    const idx = testCases.length;
+    testCases.push({
+      id: `tc-fallback-${idx + 1}`,
+      input: template.sampleInputs[idx] || template.sampleInputs[0] || "[]",
+      expectedOutput:
+        template.sampleOutputs[idx] || template.sampleOutputs[0] || "expected",
+      isHidden: false,
+      description: `Sample case ${idx + 1}`,
+    });
+  }
+
+  return testCases;
 }
 
 /**
- * Generates output description
+ * Converts a QuestionTemplate to a validated Question object.
+ * This is the fast, synchronous fallback path.
  */
-function generateOutputDescription(template: QuestionTemplate): string {
-  const samples = template.sampleOutputs.slice(0, 2).join("\n");
-  return `Your function should return/print:\n\n\`\`\`\n${samples}\n\`\`\``;
+function templateToQuestion(template: QuestionTemplate): Question {
+  const difficultyMap: Record<TemplateDifficulty, Difficulty> = {
+    beginner: "beginner",
+    intermediate: "intermediate",
+    advanced: "advanced",
+  };
+
+  const question: Question = {
+    id: `tpl-${template.id}`,
+    topicId: template.moduleId,
+    topicName: template.moduleName,
+    topic: template.subtopicName,
+    difficulty: difficultyMap[template.difficulty],
+    title: template.title,
+    description: buildDescription(template),
+    inputDescription: `Input will be provided in the following format:\n\n\`\`\`\n${template.sampleInputs
+      .slice(0, 2)
+      .join("\n")}\n\`\`\``,
+    outputDescription: `Your function should return/print:\n\n\`\`\`\n${template.sampleOutputs
+      .slice(0, 2)
+      .join("\n")}\n\`\`\``,
+    constraints: template.constraints,
+    sampleInput: template.sampleInputs[0] || "",
+    sampleOutput: template.sampleOutputs[0] || "",
+    starterCode: template.starterCode,
+    referenceSolution: null,
+    testCases: buildTestCases(template),
+  };
+
+  return validateAndNormalizeQuestion(question);
 }
 
 // ============================================================================
-// LLM Enhancement Functions
+// LLM-based Generation
 // ============================================================================
 
 /**
- * Builds the LLM prompt for enhancing a template
+ * Builds the LLM prompt for question generation.
+ * Centralized prompt construction for consistency.
  */
 function buildLLMPrompt(
   template: QuestionTemplate,
-  options: GetQuestionOptions,
+  additionalContext?: string,
   diversityConstraints?: string
 ): string {
-  const additionalContext = options.additionalContext
-    ? `\nAdditional requirements: ${options.additionalContext}`
+  const contextSection = additionalContext
+    ? `\nAdditional requirements: ${additionalContext}`
     : "";
 
-  // Add diversity constraints if provided
   const avoidSection = diversityConstraints
-    ? `\nAvoid: ${diversityConstraints}`
+    ? `\n\n**Diversity Requirements:**\n${diversityConstraints}`
     : "";
 
-  // Use compact prompt if available (it should be for all new templates)
   const corePrompt =
     template.compactPrompt ||
     `You are an expert Python programming tutor creating a practice question.
 
-Based on this template, generate a unique and engaging coding question:
-
-**Topic Area:** ${template.moduleName} > ${template.subtopicName}
+**Topic:** ${template.moduleName} > ${template.subtopicName}
 **Problem Type:** ${template.problemTypeName}
 **Difficulty:** ${template.difficulty}
-**Estimated Time:** ${template.estimatedMinutes} minutes
+**Time:** ${template.estimatedMinutes} minutes
 
-**Template Prompt:**
+**Template:**
 ${template.promptTemplate}
 
-**Constraints to include:**
+**Constraints:**
 ${template.constraints.map((c: string) => `- ${c}`).join("\n")}
 
-**Edge cases to cover:**
+**Edge cases:**
 ${template.edgeCases.map((ec: EdgeCase) => `- ${ec.description}`).join("\n")}`;
 
-  return `${corePrompt}${avoidSection}
-${additionalContext}
+  return `${corePrompt}${avoidSection}${contextSection}
 
-Return ONLY a raw JSON object (no markdown) with this exact schema:
+Return ONLY a raw JSON object (no markdown, no code blocks) with this exact schema:
 {
   "title": "Descriptive problem title",
-  "description": "Clear problem statement with examples. Use markdown for formatting.",
-  "inputDescription": "Description of input format",
-  "outputDescription": "Description of expected output",
+  "description": "Clear problem statement with examples. Use markdown.",
+  "inputDescription": "Input format description",
+  "outputDescription": "Expected output description",
   "constraints": ["Constraint 1", "Constraint 2"],
   "sampleInput": "Example input",
-  "sampleOutput": "Expected output for the sample input",
-  "starterCode": "def solution(...):\\n    # Your code here\\n    pass",
-  "referenceSolution": "A correct Python solution",
+  "sampleOutput": "Expected output",
+  "starterCode": "def solution(...):\\n    pass",
+  "referenceSolution": "Complete working solution",
   "testCases": [
-    {"input": "test input 1", "expectedOutput": "output 1", "isHidden": false},
-    {"input": "test input 2", "expectedOutput": "output 2", "isHidden": true}
+    {"input": "test1", "expectedOutput": "output1", "isHidden": false},
+    {"input": "test2", "expectedOutput": "output2", "isHidden": true}
   ]
 }
 
-Make the question unique, engaging, and solvable. Why? To maintain quality. Ensure test cases are correct.`;
+Requirements: Question must be unique, engaging, and solvable with correct test cases.`;
 }
 
 /**
- * Parses LLM response into question data
+ * Parses and validates LLM response
  */
 function parseLLMResponse(text: string): LLMQuestionData {
-  // Clean up markdown code blocks if present
   const cleaned = text
     .replace(/```json\s*/gi, "")
     .replace(/```\s*/g, "")
     .trim();
 
-  return JSON.parse(cleaned) as LLMQuestionData;
+  try {
+    const data = JSON.parse(cleaned) as LLMQuestionData;
+
+    // Basic validation
+    if (!data.title || !data.description) {
+      throw new Error("Missing required fields in LLM response");
+    }
+
+    return data;
+  } catch (error) {
+    throw createError(
+      GenerationErrorCode.LLM_PARSE_FAILED,
+      "Failed to parse LLM response as JSON",
+      { rawText: text.substring(0, 200), error }
+    );
+  }
 }
 
 /**
- * Converts LLM-enhanced data to a Question object
+ * Converts LLM data to a validated Question object
  */
 function llmDataToQuestion(
   data: LLMQuestionData,
@@ -273,13 +392,17 @@ function llmDataToQuestion(
     advanced: "advanced",
   };
 
-  const testCases: TestCase[] = (data.testCases || []).map((tc) => ({
+  const testCaseDescriptions = ["Basic case", "Edge case", "Complex case"];
+
+  const testCases: TestCase[] = (data.testCases || []).map((tc, index) => ({
+    id: `tc-llm-${index + 1}`,
     input: tc.input,
     expectedOutput: tc.expectedOutput,
-    isHidden: tc.isHidden,
+    isHidden: tc.isHidden ?? false,
+    description: testCaseDescriptions[index] || `Test ${index + 1}`,
   }));
 
-  return {
+  const question: Question = {
     id: `llm-${template.problemTypeId}-${Date.now().toString(36)}`,
     topicId: template.moduleId,
     topicName: template.moduleName,
@@ -298,6 +421,129 @@ function llmDataToQuestion(
       : null,
     testCases,
   };
+
+  return validateAndNormalizeQuestion(question);
+}
+
+/**
+ * Attempts LLM generation with retry logic for diversity
+ */
+async function tryLLMGeneration(
+  template: QuestionTemplate,
+  options: GenerateQuestionOptions
+): Promise<QuestionResult> {
+  const {
+    apiKey,
+    additionalContext,
+    includeReferenceSolution = true,
+    skipDiversityCheck = false,
+  } = options;
+
+  if (!apiKey) {
+    return {
+      success: false,
+      source: "llm",
+      error: createError(
+        GenerationErrorCode.LLM_CALL_FAILED,
+        "API key required for LLM generation"
+      ),
+    };
+  }
+
+  // Build avoid list for diversity
+  const avoidList = getAvoidList(template.moduleId, template.subtopicId);
+  const diversityConstraints = formatAvoidListForPrompt(avoidList);
+
+  const maxAttempts = skipDiversityCheck
+    ? 1
+    : DIVERSITY_CONFIG.MAX_REGENERATION_ATTEMPTS + 1;
+
+  try {
+    const { callGeminiWithFallback } = await import("@/lib/ai/modelRouter");
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const currentConstraints =
+        attempt > 0
+          ? `${diversityConstraints}\n**CRITICAL:** Use a completely different approach from previous attempt.`
+          : diversityConstraints;
+
+      const prompt = buildLLMPrompt(
+        template,
+        additionalContext,
+        currentConstraints
+      );
+
+      const result = await callGeminiWithFallback<LLMQuestionData>(
+        apiKey,
+        "question-generation",
+        prompt,
+        parseLLMResponse,
+        options.difficulty
+      );
+
+      if (!result.success || !result.data) {
+        return {
+          success: false,
+          source: "llm",
+          error: createError(
+            GenerationErrorCode.LLM_CALL_FAILED,
+            result.message || "LLM call failed"
+          ),
+        };
+      }
+
+      const question = llmDataToQuestion(
+        result.data,
+        template,
+        includeReferenceSolution
+      );
+      const fingerprint = createFingerprint(question, options.problemTypeId);
+
+      // Check diversity
+      if (
+        !skipDiversityCheck &&
+        shouldRegenerateQuestion(fingerprint, attempt)
+      ) {
+        console.log(
+          `[QuestionService] Diversity check failed, attempt ${
+            attempt + 1
+          }/${maxAttempts}`
+        );
+        continue;
+      }
+
+      // Success - record and return
+      recordFingerprint(fingerprint);
+
+      return {
+        success: true,
+        question,
+        source: "llm",
+        modelUsed: result.modelUsed,
+        usage: result.usage,
+      };
+    }
+
+    // Max attempts reached
+    return {
+      success: false,
+      source: "llm",
+      error: createError(
+        GenerationErrorCode.MAX_RETRIES_EXCEEDED,
+        `Failed to generate diverse question after ${maxAttempts} attempts`
+      ),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      source: "llm",
+      error: createError(
+        GenerationErrorCode.UNKNOWN_ERROR,
+        "Unexpected error during LLM generation",
+        error
+      ),
+    };
+  }
 }
 
 // ============================================================================
@@ -305,151 +551,60 @@ function llmDataToQuestion(
 // ============================================================================
 
 /**
- * Gets a question for a given problem type and difficulty.
+ * Main question generation function with unified interface.
  *
- * This is the main entry point for question generation.
- * It implements a two-layer system:
- * 1. If LLM is enabled and available, uses LLM for richer questions
- * 2. Falls back to template-based generation if LLM fails or is disabled
+ * Flow:
+ * 1. Load base template (required)
+ * 2. If preferLLM=true and apiKey provided: try LLM generation
+ * 3. On LLM failure or disabled: fall back to template
+ * 4. Validate and normalize result
+ * 5. Record fingerprint for diversity tracking
  *
- * @param problemTypeId - The problem type ID from topics.json
- * @param difficulty - The difficulty level
- * @param options - Optional configuration
- * @returns QuestionResult with the generated question
+ * @param options - Generation configuration
+ * @returns Promise<QuestionResult> with generated question or error
  */
-export async function getQuestion(
-  problemTypeId: string,
-  difficulty: Difficulty,
-  options: GetQuestionOptions = {}
+export async function generateQuestion(
+  options: GenerateQuestionOptions
 ): Promise<QuestionResult> {
   const {
-    useLLM = true,
-    apiKey,
-    includeReferenceSolution = true,
+    problemTypeId,
+    difficulty,
+    preferLLM = true,
     skipDiversityCheck = false,
   } = options;
 
-  // Map Difficulty to TemplateDifficulty
+  // Step 1: Get base template (always required)
   const templateDifficulty: TemplateDifficulty = difficulty;
-
-  // Step 1: Generate base template (always done first)
   const template = generateTemplate(problemTypeId, templateDifficulty);
 
   if (!template) {
     return {
       success: false,
-      source: "fallback",
-      error: `Problem type not found: ${problemTypeId}`,
-    };
-  }
-
-  // Step 2: If LLM is disabled or no API key, return template-based question
-  if (!useLLM || !apiKey) {
-    const question = templateToQuestion(template);
-
-    // Record fingerprint for template-based questions too
-    if (!skipDiversityCheck) {
-      const fingerprint = createFingerprint(question, problemTypeId);
-      recordFingerprint(fingerprint);
-    }
-
-    return {
-      success: true,
-      question,
       source: "template",
+      error: createError(
+        GenerationErrorCode.PROBLEM_TYPE_NOT_FOUND,
+        `No template found for problem type: ${problemTypeId}`
+      ),
     };
   }
 
-  // Step 3: Pre-generation - build avoid list for diversity
-  const avoidList = getAvoidList(template.moduleId, template.subtopicId);
-  const diversityConstraints = formatAvoidListForPrompt(avoidList);
+  // Step 2: Try LLM if preferred
+  if (preferLLM && options.apiKey) {
+    const llmResult = await tryLLMGeneration(template, options);
 
-  // Step 4: Try LLM enhancement with regeneration support
-  let attemptNumber = 0;
-  const maxAttempts = skipDiversityCheck
-    ? 1
-    : DIVERSITY_CONFIG.MAX_REGENERATION_ATTEMPTS + 1;
-
-  try {
-    // Dynamic import to avoid bundling server-only code
-    const { callGeminiWithFallback } = await import("@/lib/ai/modelRouter");
-
-    while (attemptNumber < maxAttempts) {
-      // Add stricter diversity constraints on retries
-      const currentConstraints =
-        attemptNumber > 0
-          ? `${diversityConstraints} (MUST be different approach from previous)`
-          : diversityConstraints;
-
-      const prompt = buildLLMPrompt(template, options, currentConstraints);
-
-      const result = await callGeminiWithFallback<LLMQuestionData>(
-        apiKey,
-        "question-generation",
-        prompt,
-        parseLLMResponse,
-        difficulty
-      );
-
-      if (result.success && result.data) {
-        const question = llmDataToQuestion(
-          result.data,
-          template,
-          includeReferenceSolution
-        );
-
-        // Step 5: Post-generation - check diversity
-        const fingerprint = createFingerprint(question, problemTypeId);
-
-        if (
-          !skipDiversityCheck &&
-          shouldRegenerateQuestion(fingerprint, attemptNumber)
-        ) {
-          console.log(
-            `[QuestionService] Question too similar, attempt ${
-              attemptNumber + 1
-            }/${maxAttempts}`
-          );
-          attemptNumber++;
-          continue;
-        }
-
-        // Record successful fingerprint
-        recordFingerprint(fingerprint);
-
-        return {
-          success: true,
-          question,
-          source: "llm",
-          modelUsed: result.modelUsed,
-          usage: result.usage,
-        };
-      }
-
-      // LLM failed, fall back to template
-      console.warn(
-        "[QuestionService] LLM failed, using template fallback:",
-        result.message
-      );
-      const question = templateToQuestion(template);
-
-      if (!skipDiversityCheck) {
-        const fingerprint = createFingerprint(question, problemTypeId);
-        recordFingerprint(fingerprint);
-      }
-
-      return {
-        success: true,
-        question,
-        source: "fallback",
-        error: result.message,
-      };
+    if (llmResult.success) {
+      return llmResult;
     }
 
-    // Exhausted regeneration attempts - return last generated question anyway
+    // LLM failed, log and continue to fallback
     console.warn(
-      "[QuestionService] Max regeneration attempts reached, using last question"
+      "[QuestionService] LLM generation failed, using template fallback:",
+      llmResult.error?.message
     );
+  }
+
+  // Step 3: Template fallback
+  try {
     const question = templateToQuestion(template);
 
     if (!skipDiversityCheck) {
@@ -460,43 +615,52 @@ export async function getQuestion(
     return {
       success: true,
       question,
-      source: "fallback",
-      error: "Max diversity regeneration attempts exceeded",
+      source: preferLLM ? "fallback" : "template",
     };
   } catch (error) {
-    // Unexpected error, fall back to template
-    console.error("[QuestionService] Unexpected error:", error);
-    const question = templateToQuestion(template);
-
-    if (!skipDiversityCheck) {
-      const fingerprint = createFingerprint(question, problemTypeId);
-      recordFingerprint(fingerprint);
-    }
-
     return {
-      success: true,
-      question,
-      source: "fallback",
-      error: error instanceof Error ? error.message : "Unknown error",
+      success: false,
+      source: "template",
+      error: createError(
+        GenerationErrorCode.VALIDATION_FAILED,
+        "Template question validation failed",
+        error
+      ),
     };
   }
 }
 
 /**
- * Gets a template-based question synchronously (no LLM).
- * Use this for immediate, offline question generation.
- *
- * @param problemTypeId - The problem type ID from topics.json
- * @param difficulty - The difficulty level
- * @returns Question or undefined if problem type not found
+ * Legacy wrapper for backward compatibility.
+ * Prefer generateQuestion() for new code.
+ */
+export async function getQuestion(
+  problemTypeId: string,
+  difficulty: Difficulty,
+  options: Partial<GenerateQuestionOptions> = {}
+): Promise<QuestionResult> {
+  return generateQuestion({
+    problemTypeId,
+    difficulty,
+    preferLLM: options.preferLLM ?? true,
+    ...options,
+  });
+}
+
+/**
+ * Synchronous template-only generation.
+ * Use for immediate, offline question generation.
  */
 export function getTemplateQuestion(
   problemTypeId: string,
   difficulty: Difficulty
 ): Question | undefined {
-  const templateDifficulty: TemplateDifficulty = difficulty;
-  const template = generateTemplate(problemTypeId, templateDifficulty);
+  const template = generateTemplate(
+    problemTypeId,
+    difficulty as TemplateDifficulty
+  );
 
+  // Return undefined if template generation failed
   if (!template) {
     return undefined;
   }
@@ -505,12 +669,7 @@ export function getTemplateQuestion(
 }
 
 /**
- * Gets questions for multiple problem types (batch generation).
- * Uses templates for all questions (no LLM) for performance.
- *
- * @param problemTypeIds - Array of problem type IDs
- * @param difficulty - The difficulty level (same for all)
- * @returns Array of questions (filters out failed generations)
+ * Batch template generation for multiple problem types.
  */
 export function getBatchTemplateQuestions(
   problemTypeIds: string[],
@@ -522,21 +681,14 @@ export function getBatchTemplateQuestions(
 }
 
 /**
- * Checks if a problem type exists and can be used for generation.
- *
- * @param problemTypeId - The problem type ID to check
- * @returns true if the problem type exists
+ * Checks if a problem type exists
  */
 export function isProblemTypeAvailable(problemTypeId: string): boolean {
-  const context = getProblemTypeWithContext(problemTypeId);
-  return context !== undefined;
+  return getProblemTypeWithContext(problemTypeId) !== undefined;
 }
 
 /**
- * Gets the context (module, subtopic) for a problem type.
- *
- * @param problemTypeId - The problem type ID
- * @returns Context object or undefined
+ * Gets context for a problem type
  */
 export function getProblemTypeContext(
   problemTypeId: string

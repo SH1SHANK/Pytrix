@@ -41,7 +41,7 @@ test.describe("Dashboard V2 Flow", () => {
 
     // Look for a known module name
     await expect(
-      page.getByText("Strings").or(page.getByText("Lists"))
+      page.getByText("Strings").or(page.getByText("Lists")).first()
     ).toBeVisible();
   });
 

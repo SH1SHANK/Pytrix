@@ -5,14 +5,11 @@
  */
 
 import { vi } from "vitest";
-import type {
-  ExecutionResult,
-  RuntimeInfo,
-  RuntimeStatus,
-} from "@/lib/runtime/pythonRuntime";
+import type { ExecutionResult, RuntimeInfo } from "@/lib/runtime/pythonRuntime";
+import { RuntimeStatus } from "@/lib/runtime/runtimeConfig";
 
 // Current mock state
-let mockStatus: RuntimeStatus = "ready";
+let mockStatus: RuntimeStatus = RuntimeStatus.READY;
 let mockVersion: string | null = "3.11.3";
 let mockError: string | null = null;
 
@@ -75,7 +72,7 @@ export function setMockRuntimeStatus(
  * Reset mock state
  */
 export function resetMockPythonRuntime() {
-  mockStatus = "ready";
+  mockStatus = RuntimeStatus.READY;
   mockVersion = "3.11.3";
   mockError = null;
   defaultResult = {
@@ -128,10 +125,10 @@ export const mockRunPython = vi
 export const mockInitPyodide = vi
   .fn()
   .mockImplementation(async (): Promise<boolean> => {
-    if (mockStatus === "error") {
+    if (mockStatus === RuntimeStatus.ERROR) {
       return false;
     }
-    mockStatus = "ready";
+    mockStatus = RuntimeStatus.READY;
     return true;
   });
 

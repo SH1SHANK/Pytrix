@@ -36,6 +36,7 @@ test.describe("Settings Persistence", () => {
       page
         .getByRole("heading", { name: /settings/i })
         .or(page.getByText(/preferences/i))
+        .first()
     ).toBeVisible({ timeout: 10000 });
   });
 
@@ -43,7 +44,9 @@ test.describe("Settings Persistence", () => {
     await page.goto("/support/settings");
 
     // Look for appearance/theme related content
-    await expect(page.getByText(/appearance|theme|dark|light/i)).toBeVisible({
+    await expect(
+      page.getByText(/appearance|theme|dark|light/i).first()
+    ).toBeVisible({
       timeout: 10000,
     });
   });
@@ -80,7 +83,10 @@ test.describe("Settings Persistence", () => {
 
     // Look for API key or BYOK section
     await expect(
-      page.getByText(/api.*key/i).or(page.getByText(/gemini/i))
+      page
+        .getByText(/api.*key/i)
+        .or(page.getByText(/gemini/i))
+        .first()
     ).toBeVisible({ timeout: 10000 });
   });
 });

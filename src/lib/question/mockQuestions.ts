@@ -41,8 +41,24 @@ export const MOCK_QUESTIONS: Question[] = [
     starterCode: "def solve(s):\n    # Write your code here\n    pass",
     referenceSolution: "def solve(s):\n    return s[::-1]",
     testCases: [
-      { input: "'hello'", expectedOutput: "'olleh'" },
-      { input: "'Python'", expectedOutput: "'nohtyP'" },
+      {
+        id: "tc-1",
+        input: "'hello'",
+        expectedOutput: "'olleh'",
+        description: "Basic case",
+      },
+      {
+        id: "tc-2",
+        input: "'Python'",
+        expectedOutput: "'nohtyP'",
+        description: "Mixed case",
+      },
+      {
+        id: "tc-3",
+        input: "''",
+        expectedOutput: "''",
+        description: "Edge: empty string",
+      },
     ],
   },
   {
@@ -62,8 +78,24 @@ export const MOCK_QUESTIONS: Question[] = [
     starterCode: "def solve(s):\n    pass",
     referenceSolution: "def solve(s):\n    return s == s[::-1]",
     testCases: [
-      { input: "'racecar'", expectedOutput: "True" },
-      { input: "'hello'", expectedOutput: "False" },
+      {
+        id: "tc-1",
+        input: "'racecar'",
+        expectedOutput: "True",
+        description: "Basic case",
+      },
+      {
+        id: "tc-2",
+        input: "'hello'",
+        expectedOutput: "False",
+        description: "Non-palindrome",
+      },
+      {
+        id: "tc-3",
+        input: "'a'",
+        expectedOutput: "True",
+        description: "Edge: single char",
+      },
     ],
   },
   // --- LISTS ---
@@ -83,8 +115,24 @@ export const MOCK_QUESTIONS: Question[] = [
     starterCode: "def solve(nums):\n    pass",
     referenceSolution: "def solve(nums):\n    return sum(nums)",
     testCases: [
-      { input: "[1, 2, 3]", expectedOutput: "6" },
-      { input: "[10, -5, 5]", expectedOutput: "10" },
+      {
+        id: "tc-1",
+        input: "[1, 2, 3]",
+        expectedOutput: "6",
+        description: "Basic case",
+      },
+      {
+        id: "tc-2",
+        input: "[10, -5, 5]",
+        expectedOutput: "10",
+        description: "With negatives",
+      },
+      {
+        id: "tc-3",
+        input: "[]",
+        expectedOutput: "0",
+        description: "Edge: empty list",
+      },
     ],
   },
   {
@@ -105,8 +153,24 @@ export const MOCK_QUESTIONS: Question[] = [
     referenceSolution:
       "def solve(nums):\n    return [x for x in nums if x % 2 == 0]",
     testCases: [
-      { input: "[1, 2, 3, 4]", expectedOutput: "[2, 4]" },
-      { input: "[1, 3, 5]", expectedOutput: "[]" },
+      {
+        id: "tc-1",
+        input: "[1, 2, 3, 4]",
+        expectedOutput: "[2, 4]",
+        description: "Basic case",
+      },
+      {
+        id: "tc-2",
+        input: "[1, 3, 5]",
+        expectedOutput: "[]",
+        description: "No evens",
+      },
+      {
+        id: "tc-3",
+        input: "[2, 4, 6]",
+        expectedOutput: "[2, 4, 6]",
+        description: "All evens",
+      },
     ],
   },
   // --- DICTIONARIES ---
@@ -128,7 +192,24 @@ export const MOCK_QUESTIONS: Question[] = [
     referenceSolution:
       "def solve(words):\n    d = {}\n    for w in words:\n        d[w] = d.get(w, 0) + 1\n    return d",
     testCases: [
-      { input: "['a', 'b', 'a']", expectedOutput: "{'a': 2, 'b': 1}" },
+      {
+        id: "tc-1",
+        input: "['a', 'b', 'a']",
+        expectedOutput: "{'a': 2, 'b': 1}",
+        description: "Basic case",
+      },
+      {
+        id: "tc-2",
+        input: "[]",
+        expectedOutput: "{}",
+        description: "Edge: empty list",
+      },
+      {
+        id: "tc-3",
+        input: "['x']",
+        expectedOutput: "{'x': 1}",
+        description: "Single word",
+      },
     ],
   },
   // --- OOP ---
@@ -149,7 +230,26 @@ export const MOCK_QUESTIONS: Question[] = [
     starterCode: "class Car:\n    pass",
     referenceSolution:
       "class Car:\n    def drive(self):\n        return 'Vroom'",
-    testCases: [{ input: "Car().drive()", expectedOutput: "'Vroom'" }],
+    testCases: [
+      {
+        id: "tc-1",
+        input: "Car().drive()",
+        expectedOutput: "'Vroom'",
+        description: "Basic case",
+      },
+      {
+        id: "tc-2",
+        input: "Car().drive()",
+        expectedOutput: "'Vroom'",
+        description: "Repeat test",
+      },
+      {
+        id: "tc-3",
+        input: "Car().drive()",
+        expectedOutput: "'Vroom'",
+        description: "Consistency",
+      },
+    ],
   },
   // --- PANDAS ---
   {
@@ -168,6 +268,25 @@ export const MOCK_QUESTIONS: Question[] = [
     starterCode: "import pandas as pd\n\ndef solve():\n    pass",
     referenceSolution:
       "import pandas as pd\ndef solve():\n    return pd.Series([10, 20, 30])",
-    testCases: [],
+    testCases: [
+      {
+        id: "tc-1",
+        input: "",
+        expectedOutput: "0    10\n1    20\n2    30",
+        description: "Basic case",
+      },
+      {
+        id: "tc-2",
+        input: "",
+        expectedOutput: "0    10\n1    20\n2    30",
+        description: "Verify output",
+      },
+      {
+        id: "tc-3",
+        input: "",
+        expectedOutput: "0    10\n1    20\n2    30",
+        description: "Consistency",
+      },
+    ],
   },
 ];

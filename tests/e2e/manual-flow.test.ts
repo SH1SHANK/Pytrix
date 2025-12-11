@@ -28,7 +28,7 @@ test.describe("Manual Practice Flow", () => {
 
     // Check visually active state (optional, hard to check styles easily without knowing exact classes)
     // But we can check if it stays on page without error
-    await expect(page.getByText("Manual Practice")).toBeVisible();
+    await expect(page.getByText("Manual Practice").first()).toBeVisible();
   });
 
   // Note: Full E2E test of "Run & Check" is complex because of Pyodide loading

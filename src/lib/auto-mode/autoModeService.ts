@@ -588,11 +588,16 @@ export function jumpToQueueIndex(
     `[autoModeService] Jumping ahead to "${targetEntry.subtopicName}" in module "${targetEntry.moduleName}"`
   );
 
-  run.currentIndex = targetIndex;
-  run.lastUpdatedAt = Date.now();
-  saveRun(run);
+  // Return a NEW object so React detects the state change
+  const updatedRun: AutoRunV2 = {
+    ...run,
+    currentIndex: targetIndex,
+    lastUpdatedAt: Date.now(),
+  };
 
-  return run;
+  saveRun(updatedRun);
+
+  return updatedRun;
 }
 
 /**

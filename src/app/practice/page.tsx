@@ -65,7 +65,12 @@ import {
 } from "@/lib/question/questionBufferService";
 
 // Python Runtime
-import { runPython, isRuntimeReady } from "@/lib/runtime/pythonRuntime";
+import { isRuntimeReady } from "@/lib/runtime/pythonRuntime";
+import {
+  runTestCases,
+  runSingleTestCase,
+  toTestCasesPanelResult,
+} from "@/lib/runtime/testRunner";
 
 // Auto Mode V2 Imports
 import {
@@ -102,7 +107,7 @@ function PracticeWorkspace() {
   }, []);
 
   const mode = searchParams.get("mode");
-  const topicId = searchParams.get("topic") || "Strings";
+  const topicId = searchParams.get("topic") || "indexing-and-slicing";
   const saveId = searchParams.get("saveId");
   const historyId = searchParams.get("historyId"); // For review mode
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -138,15 +143,25 @@ function PracticeWorkspace() {
   );
   const [isGeneratingHint, setIsGeneratingHint] = useState(false);
 
+  // Test case execution state
+  const [testCaseResults, setTestCaseResults] = useState<
+    Map<number, ReturnType<typeof toTestCasesPanelResult>>
+  >(new Map());
+  const [isRunningTests, setIsRunningTests] = useState(false);
+  const [runningTestIndex, setRunningTestIndex] = useState<number | undefined>(
+    undefined
+  );
+
   // Hint panel state
   const [hint1, setHint1] = useState<string | null>(null);
   const [hint2, setHint2] = useState<string | null>(null);
 
-  // Reset hints when question changes
+  // Reset hints and test results when question changes
   useEffect(() => {
     setHint1(null);
     setHint2(null);
     setHintsUsed(0);
+    setTestCaseResults(new Map());
   }, [question?.id]);
 
   // Auto Mode V2 state
@@ -303,7 +318,7 @@ function PracticeWorkspace() {
           if (entry) {
             targetTopic = entry.subtopicId; // Use subtopic ID for fetch
           } else {
-            targetTopic = "reverse-string";
+            targetTopic = "indexing-and-slicing";
           }
         }
 
@@ -363,120 +378,150 @@ function PracticeWorkspace() {
     if (!question) return;
 
     setIsRunning(true);
-    incrementAttempts(question.topic, false, currentDifficulty); // Record attempt first
+    setIsRunningTests(true);
+    setRunningTestIndex(undefined);
+    incrementAttempts(question.topic, false, currentDifficulty);
 
-    // Step 1: Execute in Pyodide
-    toast.info("Running code...");
+    // Step 1: Run test cases via test runner
+    toast.info("Running tests...");
+
+    let testSummary: Awaited<ReturnType<typeof runTestCases>> | null = null;
     let executionOutput = "";
     let executionError = "";
-    let executionSuccess = false;
 
-    if (isRuntimeReady()) {
-      const execResult = await runPython(code);
-      executionSuccess = execResult.success;
-      executionOutput = execResult.stdout;
-      executionError = execResult.stderr || execResult.error || "";
+    if (
+      question.testCases &&
+      question.testCases.length > 0 &&
+      isRuntimeReady()
+    ) {
+      try {
+        testSummary = await runTestCases(code, question.testCases);
 
-      if (execResult.traceback) {
-        executionError = execResult.traceback;
-      }
+        // Update test case results for UI
+        const resultsMap = new Map<
+          number,
+          ReturnType<typeof toTestCasesPanelResult>
+        >();
+        testSummary.results.forEach((result) => {
+          resultsMap.set(result.testCaseIndex, toTestCasesPanelResult(result));
+        });
+        setTestCaseResults(resultsMap);
 
-      // Store execution time for status bar
-      setLastExecutionTimeMs(execResult.executionTimeMs);
+        // Set execution time
+        setLastExecutionTimeMs(testSummary.totalExecutionTimeMs);
 
-      // Show raw output immediately
-      setRunResult({
-        status: executionSuccess ? "not_run" : "error",
-        stdout: executionOutput,
-        stderr: executionError,
-        message: executionSuccess
-          ? `Executed in ${execResult.executionTimeMs.toFixed(0)}ms`
-          : "Runtime error",
-      });
+        // Aggregate outputs for feedback
+        const passedTests = testSummary.results.filter(
+          (r) => r.status === "passed"
+        );
+        const failedTests = testSummary.results.filter(
+          (r) => r.status === "failed"
+        );
+        const errorTests = testSummary.results.filter(
+          (r) => r.status === "error" || r.status === "timeout"
+        );
 
-      if (!executionSuccess) {
+        // Build execution context from test results
+        if (errorTests.length > 0) {
+          executionError = errorTests
+            .map((t) => `Test ${t.testCaseIndex + 1}: ${t.error || "Error"}`)
+            .join("\n");
+        }
+        if (failedTests.length > 0) {
+          executionOutput = failedTests
+            .map(
+              (t) =>
+                `Test ${t.testCaseIndex + 1}:\nExpected: ${
+                  t.expectedOutput
+                }\nActual: ${t.actualOutput}`
+            )
+            .join("\n\n");
+        } else if (passedTests.length > 0) {
+          executionOutput = `All ${passedTests.length} test(s) passed!`;
+        }
+
+        // Show immediate feedback based on test results
+        if (testSummary.passedCount === testSummary.totalTests) {
+          setRunResult({
+            status: "correct",
+            stdout: executionOutput,
+            stderr: "",
+            message: `All ${testSummary.totalTests} tests passed!`,
+          });
+        } else if (testSummary.errorCount > 0 || testSummary.timeoutCount > 0) {
+          setRunResult({
+            status: "error",
+            stdout: "",
+            stderr: executionError,
+            message: `${
+              testSummary.errorCount + testSummary.timeoutCount
+            } test(s) had errors`,
+          });
+        } else {
+          setRunResult({
+            status: "incorrect",
+            stdout: executionOutput,
+            stderr: "",
+            message: `${testSummary.failedCount}/${testSummary.totalTests} tests failed`,
+          });
+        }
+      } catch (err) {
+        console.error("Test runner error:", err);
+        executionError =
+          err instanceof Error ? err.message : "Test execution failed";
+        setRunResult({
+          status: "error",
+          stdout: "",
+          stderr: executionError,
+          message: "Test execution failed",
+        });
         setFailedAttempts((prev) => prev + 1);
-        toast.error("Runtime error. Check the output.");
+        toast.error("Test execution failed. Check the output.");
         setIsRunning(false);
+        setIsRunningTests(false);
         return;
       }
-    } else {
+    } else if (!isRuntimeReady()) {
       toast.info("Python runtime initializing, using AI evaluation...");
     }
 
-    // Step 2: LLM Evaluation (with execution context if available)
-    toast.info("Checking solution...");
-    try {
-      // Pass execution output to evaluator for context
-      const result = await evaluateCode(question, code, {
-        stdout: executionOutput,
-        stderr: executionError,
-        didExecute: isRuntimeReady(),
-      });
+    setIsRunningTests(false);
 
-      setRunResult({
-        status: result.status,
-        stdout:
-          executionOutput ||
-          (result.expectedBehavior
-            ? `Expected: ${result.expectedBehavior}`
-            : ""),
-        stderr:
-          executionError ||
-          (result.status === "error" ? result.explanation : ""),
-        message: result.explanation,
-      });
+    // Step 2: AI Feedback Gate
+    // CRITICAL: Only call AI if there are failures or errors
+    const hasFailedOrErrorTests =
+      (testSummary?.failedCount || 0) > 0 ||
+      (testSummary?.errorCount || 0) > 0 ||
+      (testSummary?.timeoutCount || 0) > 0;
 
-      if (result.status === "correct") {
-        toast.success("Correct! " + result.explanation);
-        incrementSolved(question.topic, currentDifficulty);
-
-        // Log to history
-        upsertHistoryEntry({
-          mode: mode === "auto" ? "auto" : "manual",
-          topic: question.topic,
-          difficulty: currentDifficulty,
-          questionId: question.id,
-          questionTitle: question.title,
-          questionText: question.description,
-          codeSnapshot: code,
-          wasSubmitted: true,
-          wasCorrect: true,
-          executedAt: Date.now(),
-          runId: saveFile?.id || saveId || null,
-          sampleInput: question.sampleInput,
-          sampleOutput: question.sampleOutput,
+    if (hasFailedOrErrorTests) {
+      toast.info("Getting AI feedback on failures...");
+      try {
+        const result = await evaluateCode(question, code, {
+          stdout: executionOutput,
+          stderr: executionError,
+          didExecute: isRuntimeReady(),
+          testResults: testSummary?.results.map((r) => ({
+            testCaseId: r.testCaseId,
+            status: r.status as "passed" | "failed" | "error" | "timeout",
+            expectedOutput: r.expectedOutput,
+            actualOutput: r.actualOutput,
+            error: r.error,
+          })),
         });
 
-        // Manual Mode Streak Logic
-        if (mode !== "auto") {
-          const isPerfect = hintsUsed === 0 && !isSolutionRevealed;
-          if (isPerfect) {
-            const newStreak = incrementManualStreak();
-            setManualStreak(newStreak);
-          } else {
-            // Assisted solve: streak doesn't increment, but doesn't necessarily reset if we only count "wrong" as reset
-            // Requirement: "Increment currentStreak only when... Solution revealed before submission -> mark as 'assisted'."
-            // Requirement: "Reset... when User Submits and answer is incorrect... OR User reveals full solution before correct Submit"
-            // If we are here, status is "correct". If revealed, we should have reset ALREADY when revealed?
-            // Let's safe-guard: if revealed, it's assisted. Streak stays same.
-          }
-        }
+        // Use AI result status if tests failed (AI might give specific advice)
+        // But fundamentally, if tests failed, it is 'incorrect' or 'error'
+        const aiStatus = result.status;
 
-        // Update Auto Mode V2 Logic
-        if (mode === "auto" && saveFile) {
-          // Record success
-          const updated = recordAttemptV2(
-            saveFile,
-            "correct",
-            lastExecutionTimeMs || 0
-          );
-          // Advance queue regardless of rotation (V2 is strict queue based)
-          const advanced = advanceQueue(updated);
-          setSaveFile(advanced);
-        }
-      } else {
-        // Log incorrect attempt to history
+        setRunResult({
+          status: aiStatus === "correct" ? "incorrect" : aiStatus, // Fallback safety: if AI says correct but tests failed, mark incorrect
+          stdout: executionOutput,
+          stderr: executionError || result.explanation,
+          message: result.explanation,
+        });
+
+        // Log incorrect attempt
         upsertHistoryEntry({
           mode: mode === "auto" ? "auto" : "manual",
           topic: question.topic,
@@ -514,18 +559,116 @@ function PracticeWorkspace() {
         if (result.nextHint) {
           toast("Hint: " + result.nextHint);
         }
+      } catch (aiErr) {
+        console.error("AI evaluation failed:", aiErr);
+        toast.error("Could not get AI feedback");
+        setRunResult({
+          status: "incorrect",
+          stdout: executionOutput,
+          stderr: executionError,
+          message: "Tests failed. (AI feedback unavailable)",
+        });
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Evaluation failed.");
+    } else {
+      // SUCCESS PATH (All Passed)
       setRunResult({
-        status: "error",
+        status: "correct",
         stdout: executionOutput,
-        stderr: executionError || "Failed to connect to AI evaluator.",
-        message: "Network error.",
+        stderr: "",
+        message: "All tests passed!",
       });
+
+      toast.success("All tests passed! Great job!");
+      incrementSolved(question.topic, currentDifficulty);
+
+      upsertHistoryEntry({
+        mode: mode === "auto" ? "auto" : "manual",
+        topic: question.topic,
+        difficulty: currentDifficulty,
+        questionId: question.id,
+        questionTitle: question.title,
+        questionText: question.description,
+        codeSnapshot: code,
+        wasSubmitted: true,
+        wasCorrect: true,
+        executedAt: Date.now(),
+        runId: saveFile?.id || saveId || null,
+        sampleInput: question.sampleInput,
+        sampleOutput: question.sampleOutput,
+      });
+
+      if (mode !== "auto") {
+        const isPerfect = hintsUsed === 0 && !isSolutionRevealed;
+        if (isPerfect) {
+          const newStreak = incrementManualStreak();
+          setManualStreak(newStreak);
+        }
+      }
+
+      if (mode === "auto" && saveFile) {
+        const updated = recordAttemptV2(
+          saveFile,
+          "correct",
+          lastExecutionTimeMs || 0
+        );
+        const advanced = advanceQueue(updated);
+        setSaveFile(advanced);
+      }
+    }
+
+    setIsRunning(false);
+  };
+
+  // Handler for running all tests from TestCasesPanel
+  const handleRunAllTests = async () => {
+    if (!question || !question.testCases || question.testCases.length === 0)
+      return;
+
+    setIsRunningTests(true);
+    setRunningTestIndex(undefined);
+
+    try {
+      const summary = await runTestCases(code, question.testCases);
+
+      const resultsMap = new Map<
+        number,
+        ReturnType<typeof toTestCasesPanelResult>
+      >();
+      summary.results.forEach((result) => {
+        resultsMap.set(result.testCaseIndex, toTestCasesPanelResult(result));
+      });
+      setTestCaseResults(resultsMap);
+      setLastExecutionTimeMs(summary.totalExecutionTimeMs);
+    } catch (err) {
+      console.error("Run all tests error:", err);
+      toast.error("Failed to run tests");
     } finally {
-      setIsRunning(false);
+      setIsRunningTests(false);
+    }
+  };
+
+  // Handler for running a single test from TestCasesPanel
+  const handleRunSingleTest = async (index: number) => {
+    if (!question || !question.testCases || question.testCases.length === 0)
+      return;
+
+    setIsRunningTests(true);
+    setRunningTestIndex(index);
+
+    try {
+      const result = await runSingleTestCase(code, question.testCases, index);
+
+      setTestCaseResults((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(index, toTestCasesPanelResult(result));
+        return newMap;
+      });
+    } catch (err) {
+      console.error("Run single test error:", err);
+      toast.error("Failed to run test");
+    } finally {
+      setIsRunningTests(false);
+      setRunningTestIndex(undefined);
     }
   };
 
@@ -1048,37 +1191,42 @@ function PracticeWorkspace() {
 
           {/* Right: Editor + Output */}
           <ResizablePanel defaultSize={70}>
-            <ResizablePanelGroup direction="vertical">
-              <ResizablePanel defaultSize={60} minSize={30}>
-                <div className="h-full flex flex-col">
-                  <div className="flex-1">
-                    <CodeEditorPanel
-                      code={code}
-                      onChange={(val) => setCode(val || "")}
-                      isTransitioning={isLoading || isLoadingNext}
-                    />
-                  </div>
-                  {/* Runtime Status Bar - between editor and output */}
-                  <RuntimeStatusBar executionTimeMs={lastExecutionTimeMs} />
-                </div>
-              </ResizablePanel>
+            <div className="h-full flex flex-col">
+              {/* Editor Panel - grows to fill space */}
+              <ResizablePanelGroup direction="vertical" className="flex-1">
+                <ResizablePanel defaultSize={60} minSize={30}>
+                  <CodeEditorPanel
+                    code={code}
+                    onChange={(val) => setCode(val || "")}
+                    isTransitioning={isLoading || isLoadingNext}
+                  />
+                </ResizablePanel>
 
-              <ResizableHandle />
+                <ResizableHandle />
 
-              <ResizablePanel defaultSize={40} minSize={20}>
-                <OutputPanel
-                  key={question?.id} // Force reset state on question change
-                  runResult={runResult}
-                  question={question}
-                  isRevealed={isSolutionRevealed}
-                  currentCode={code}
-                  onApplyOptimizedCode={(optCode) => {
-                    setCode(optCode);
-                    setRunResult((prev) => ({ ...prev, status: "not_run" }));
-                  }}
-                />
-              </ResizablePanel>
-            </ResizablePanelGroup>
+                <ResizablePanel defaultSize={40} minSize={20}>
+                  <OutputPanel
+                    key={question?.id} // Force reset state on question change
+                    runResult={runResult}
+                    question={question}
+                    isRevealed={isSolutionRevealed}
+                    currentCode={code}
+                    onApplyOptimizedCode={(optCode) => {
+                      setCode(optCode);
+                      setRunResult((prev) => ({ ...prev, status: "not_run" }));
+                    }}
+                    testCaseResults={testCaseResults}
+                    onRunAllTests={handleRunAllTests}
+                    onRunSingleTest={handleRunSingleTest}
+                    isRunningTests={isRunningTests}
+                    runningTestIndex={runningTestIndex}
+                  />
+                </ResizablePanel>
+              </ResizablePanelGroup>
+
+              {/* Runtime Status Bar - fixed at bottom, never resizes */}
+              <RuntimeStatusBar executionTimeMs={lastExecutionTimeMs} />
+            </div>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

@@ -46,11 +46,19 @@ export async function POST(request: NextRequest) {
       code,
       output,
       error: execError,
+      testResults,
     } = body as {
       question: Question;
       code: string;
       output?: string;
       error?: string;
+      testResults?: {
+        testCaseId: string;
+        status: "passed" | "failed" | "error" | "timeout";
+        expectedOutput: string;
+        actualOutput: string;
+        error?: string;
+      }[];
     };
 
     if (!question || code === undefined) {
@@ -58,6 +66,24 @@ export async function POST(request: NextRequest) {
         { error: "Missing question or code" },
         { status: 400 }
       );
+    }
+
+    let executionContext = "";
+    if (testResults && testResults.length > 0) {
+      executionContext = `Test Results:\n${testResults
+        .map(
+          (t, i) =>
+            `Test ${i + 1}: ${t.status.toUpperCase()}\nInput: ${
+              question.testCases?.[i]?.input || "N/A"
+            }\nExpected: ${t.expectedOutput}\nActual: ${
+              t.actualOutput
+            }\nError: ${t.error || "None"}`
+        )
+        .join("\n\n")}`;
+    } else {
+      executionContext = `${output ? `Execution Output:\n${output}` : ""}\n${
+        execError ? `Execution Error:\n${execError}` : ""
+      }`;
     }
 
     const prompt = `
@@ -74,8 +100,7 @@ Student's Code:
 ${code}
 \`\`\`
 
-${output ? `Execution Output:\n${output}` : ""}
-${execError ? `Execution Error:\n${execError}` : ""}
+${executionContext}
 
 Evaluate the code and return ONLY a raw JSON object:
 {

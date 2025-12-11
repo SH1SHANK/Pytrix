@@ -15,6 +15,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import {
   Copy,
   Check,
   CaretDown,
@@ -24,7 +29,7 @@ import {
 } from "@phosphor-icons/react";
 import { memo, useState, useCallback, ReactNode } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 interface QuestionPanelProps {
   question: Question | null;
@@ -232,34 +237,10 @@ const ErrorState = memo(({ error }: { error: Error | string }) => {
 
 ErrorState.displayName = "ErrorState";
 
-// Main component
-export const QuestionPanel = memo(function QuestionPanel({
-  question,
-  isLoading = false,
-  error = null,
-  hintPanelSlot,
-}: QuestionPanelProps) {
-  // Handle loading state
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  // Handle error state
-  if (error) {
-    return <ErrorState error={error} />;
-  }
-
-  // Handle empty state
-  if (!question) {
-    return <EmptyState />;
-  }
-
+// Question content component (extracted for reusability)
+const QuestionContent = memo(({ question }: { question: Question }) => {
   return (
-    <Card
-      className="h-full flex flex-col border-none shadow-none"
-      role="article"
-      aria-labelledby="question-title"
-    >
+    <>
       <CardHeader className="pb-2 shrink-0">
         {question.topic && question.topicName !== question.topic && (
           <Breadcrumb className="mb-3" aria-label="Question category">
@@ -385,12 +366,76 @@ export const QuestionPanel = memo(function QuestionPanel({
           </div>
         </ScrollArea>
       </CardContent>
+    </>
+  );
+});
 
-      {hintPanelSlot && (
-        <div className="shrink-0" role="complementary" aria-label="Hints panel">
+QuestionContent.displayName = "QuestionContent";
+
+// Main component
+export const QuestionPanel = memo(function QuestionPanel({
+  question,
+  isLoading = false,
+  error = null,
+  hintPanelSlot,
+}: QuestionPanelProps) {
+  // Handle loading state
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  // Handle error state
+  if (error) {
+    return <ErrorState error={error} />;
+  }
+
+  // Handle empty state
+  if (!question) {
+    return <EmptyState />;
+  }
+
+  // If there's no hint panel, render without resizable
+  if (!hintPanelSlot) {
+    return (
+      <Card
+        className="h-full flex flex-col border-none shadow-none"
+        role="article"
+        aria-labelledby="question-title"
+      >
+        <QuestionContent question={question} />
+      </Card>
+    );
+  }
+
+  // Render with resizable hint panel
+  return (
+    <ResizablePanelGroup direction="vertical" className="h-full">
+      <ResizablePanel defaultSize={70} minSize={30}>
+        <Card
+          className="h-full flex flex-col border-none shadow-none"
+          role="article"
+          aria-labelledby="question-title"
+        >
+          <QuestionContent question={question} />
+        </Card>
+      </ResizablePanel>
+
+      <ResizableHandle withHandle className="my-0" />
+
+      <ResizablePanel
+        defaultSize={30}
+        minSize={15}
+        maxSize={50}
+        className="overflow-visible"
+      >
+        <div
+          className="h-full w-full"
+          role="complementary"
+          aria-label="Hints panel"
+        >
           {hintPanelSlot}
         </div>
-      )}
-    </Card>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 });
