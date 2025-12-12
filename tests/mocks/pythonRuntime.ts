@@ -139,6 +139,10 @@ export const mockGetRuntimeInfo = vi
       status: mockStatus,
       version: mockVersion,
       error: mockError,
+      pyodideVersion: "0.29.0",
+      heapSize: 1024 * 1024 * 10,
+      initTimeMs: 100,
+      lastRunMs: 50,
     };
   });
 
@@ -154,6 +158,10 @@ export const mockSubscribeToRuntimeStatus = vi
       status: mockStatus,
       version: mockVersion,
       error: mockError,
+      pyodideVersion: "0.29.0",
+      heapSize: 1024 * 1024 * 10,
+      initTimeMs: 100,
+      lastRunMs: 50,
     });
     // Return unsubscribe function
     return vi.fn();
