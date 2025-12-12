@@ -60,8 +60,8 @@ describe("Practice Pipeline Integration", () => {
 
   it("PYODIDE_VERSION and URL should be correct", () => {
     // pyodide_version_check
-    expect(PYODIDE_VERSION).toBe("0.26.4");
-    expect(PYODIDE_CDN_URL).toContain("0.26.4");
+    expect(PYODIDE_VERSION).toBe("0.27.0");
+    expect(PYODIDE_CDN_URL).toContain("0.27.0");
   });
 
   it("Question Service should return structured test cases (QService_returns_testcases)", async () => {

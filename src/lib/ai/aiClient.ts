@@ -274,13 +274,28 @@ export async function getHints(
 }
 
 /**
+ * Solution mode for reveal solution feature.
+ * - "thorough": Full explanation with algorithm breakdown, commented code, and complexity analysis
+ * - "direct": Just the working solution code with minimal comments
+ */
+export type SolutionMode = "thorough" | "direct";
+
+/**
  * Reveal the reference solution for a question.
+ *
+ * @param question - The question to reveal the solution for
+ * @param failedAttempts - Number of failed attempts (used for guard in manual mode)
+ * @param hintsUsed - Number of hints used (used for guard in manual mode)
+ * @param solutionMode - "thorough" for full explanation or "direct" for code only
+ * @param skipGuard - Skip the attempt/hint requirement check (for Auto Mode)
  */
 export async function revealSolution(
   question: Question,
   failedAttempts: number,
-  hintsUsed: number = 0
-): Promise<{ referenceSolution: string }> {
+  hintsUsed: number = 0,
+  solutionMode: SolutionMode = "thorough",
+  skipGuard: boolean = false
+): Promise<{ referenceSolution: string; solutionMode: SolutionMode }> {
   // Check safety limits first
   const safetyCheck = checkAndRecordCall("optimal-solution");
   if (!safetyCheck.allowed) {
@@ -295,11 +310,18 @@ export async function revealSolution(
       "Content-Type": "application/json",
       "X-API-Key": apiKey,
     },
-    body: JSON.stringify({ question, failedAttempts, hintsUsed }),
+    body: JSON.stringify({
+      question,
+      failedAttempts,
+      hintsUsed,
+      solutionMode,
+      skipGuard,
+    }),
   });
 
   const data = await handleResponse<{
     referenceSolution: string;
+    solutionMode?: SolutionMode;
     usage: UsageData | null;
     cached?: boolean;
   }>(response);
@@ -309,7 +331,10 @@ export async function revealSolution(
     topic: question.topic,
     difficulty: question.difficulty,
   });
-  return { referenceSolution: data.referenceSolution };
+  return {
+    referenceSolution: data.referenceSolution,
+    solutionMode: data.solutionMode || solutionMode,
+  };
 }
 
 interface ExecutionContext {

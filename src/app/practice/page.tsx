@@ -53,7 +53,11 @@ import {
   revealSolution, // was generateSolution
   getHints, // was generateHint
   evaluateCode,
+  type SolutionMode,
 } from "@/lib/ai/aiClient";
+
+// Auto Mode Reveal Solution
+import { RevealSolutionDropdown } from "@/components/automode/RevealSolutionDropdown";
 
 // Question Service for topic-select mode
 import { getTemplateQuestion } from "@/lib/question/questionService";
@@ -142,6 +146,7 @@ function PracticeWorkspace() {
     null
   );
   const [isGeneratingHint, setIsGeneratingHint] = useState(false);
+  const [isRevealingSolution, setIsRevealingSolution] = useState(false);
 
   // Test case execution state
   const [testCaseResults, setTestCaseResults] = useState<
@@ -731,6 +736,51 @@ function PracticeWorkspace() {
     }
   };
 
+  /**
+   * Auto Mode Reveal Solution Handler
+   * Fetches the solution (thorough or direct) and inserts it into the code editor.
+   * No penalty on streak - this is for learning.
+   */
+  const handleAutoModeReveal = async (solutionMode: SolutionMode) => {
+    if (!question) return;
+
+    setIsRevealingSolution(true);
+    try {
+      const { referenceSolution } = await revealSolution(
+        question,
+        0, // failedAttempts not used with skipGuard
+        0, // hintsUsed not used with skipGuard
+        solutionMode,
+        true // skipGuard - Auto Mode doesn't require attempts/hints
+      );
+
+      // Insert solution into code editor
+      setCode(referenceSolution);
+      setIsSolutionRevealed(true);
+      setQuestion((prev) => (prev ? { ...prev, referenceSolution } : null));
+
+      // Clear run result since we have new code
+      setRunResult({ status: "not_run", stdout: "", stderr: "" });
+
+      // Show appropriate toast based on mode
+      if (solutionMode === "thorough") {
+        toast.success("Full solution loaded with explanation!", {
+          description: "Review the comments to understand the approach.",
+        });
+      } else {
+        toast.success("Solution code loaded!", {
+          description: "The working solution has been inserted.",
+        });
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Could not reveal solution.";
+      toast.error(message);
+    } finally {
+      setIsRevealingSolution(false);
+    }
+  };
+
   const handleNext = async () => {
     setIsLoadingNext(true);
     try {
@@ -1124,6 +1174,13 @@ function PracticeWorkspace() {
             {/* Auto Mode Actions */}
             {mode === "auto" && (
               <div className="flex items-center gap-2">
+                {/* Reveal Solution Dropdown */}
+                <RevealSolutionDropdown
+                  onReveal={handleAutoModeReveal}
+                  disabled={isLoading || isRunning || isLoadingNext}
+                  isRevealing={isRevealingSolution}
+                />
+
                 {/* Skip Advanced / Repeated */}
                 {canSkip && (
                   <Button
