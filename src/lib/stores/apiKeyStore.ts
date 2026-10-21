@@ -58,16 +58,29 @@ export function loadUserApiConfig(): UserApiConfig | null {
       return null;
     }
 
-    const parsed = JSON.parse(stored) as UserApiConfig;
+    const parsed = JSON.parse(stored) as Partial<UserApiConfig>;
 
-    // Validate the shape
-    if (!parsed.provider || !parsed.apiKey || !parsed.createdAt) {
+    // Validate required key data; createdAt was added after keys were first stored.
+    if (
+      parsed.provider !== "gemini" ||
+      typeof parsed.apiKey !== "string" ||
+      !parsed.apiKey
+    ) {
       console.warn("[apiKeyStore] Invalid config shape, clearing");
       localStorage.removeItem(STORAGE_KEY);
       return null;
     }
 
-    return parsed;
+    return {
+      provider: parsed.provider,
+      apiKey: parsed.apiKey,
+      createdAt:
+        typeof parsed.createdAt === "number" &&
+        Number.isFinite(parsed.createdAt) &&
+        parsed.createdAt > 0
+          ? parsed.createdAt
+          : Date.now(),
+    };
   } catch (error) {
     console.error("[apiKeyStore] Failed to load config:", error);
     return null;
