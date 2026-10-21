@@ -21,22 +21,18 @@ import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 /**
  * Available Gemini Models (cost-aware)
  *
- * We focus on the 2.0 family:
- * - gemini-2.0-flash-lite → cheapest, best for high-volume tasks
- * - gemini-2.0-flash      → best price-performance, good reasoning
- *
- * 1.5 models are kept as legacy options but are not used by the router by default.
+ * Internal aliases are kept stable for saved usage history and router callers.
+ * Their endpoints point to currently supported Gemini models.
  *
  * Model names must match exactly what the Gemini API exposes.
  */
 export const AVAILABLE_MODELS = {
-  // 2.0 family (primary)
-  "gemini-2.0-flash-lite": "gemini-2.0-flash-lite-preview-02-05",
-  "gemini-2.0-flash": "gemini-2.0-flash",
+  "gemini-2.0-flash-lite": "gemini-3.5-flash-lite",
+  "gemini-2.0-flash": "gemini-3.6-flash",
 
-  // Legacy / optional 1.5 models
-  "gemini-1.5-flash": "gemini-1.5-flash",
-  "gemini-1.5-pro": "gemini-1.5-pro",
+  // Legacy aliases can still appear in router fallbacks.
+  "gemini-1.5-flash": "gemini-3.5-flash-lite",
+  "gemini-1.5-pro": "gemini-3.6-flash",
 } as const;
 
 export type ModelAlias = keyof typeof AVAILABLE_MODELS;
@@ -103,7 +99,7 @@ export async function testApiKey(apiKey: string): Promise<{
     const genAI = createGeminiClient(apiKey);
     // Make a minimal API call to validate the key
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-lite-preview-02-05",
+      model: AVAILABLE_MODELS["gemini-2.0-flash-lite"],
     });
     await model.generateContent("Hello");
     return { valid: true };
