@@ -16,7 +16,11 @@
  * - API routes extract key from request headers and pass to these functions
  */
 
-import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
+import {
+  GoogleGenerativeAI,
+  GoogleGenerativeAIAbortError,
+  GenerativeModel,
+} from "@google/generative-ai";
 
 /**
  * Available Gemini Models (cost-aware)
@@ -82,7 +86,7 @@ export function getModelWithKey(
 }
 
 /**
- * Test if an API key is valid by listing available models.
+ * Test API access without generating billable output.
  *
  * @param apiKey - User's Gemini API key to test
  * @returns Object with success status and any error message
@@ -97,13 +101,19 @@ export async function testApiKey(apiKey: string): Promise<{
 
   try {
     const genAI = createGeminiClient(apiKey);
-    // Make a minimal API call to validate the key
     const model = genAI.getGenerativeModel({
       model: AVAILABLE_MODELS["gemini-2.0-flash-lite"],
-    });
-    await model.generateContent("Hello");
+    }, { timeout: 7_000 });
+    await model.countTokens("Hello");
     return { valid: true };
   } catch (error) {
+    if (error instanceof GoogleGenerativeAIAbortError) {
+      return {
+        valid: false,
+        error: "Gemini verification timed out after 7 seconds. Try again.",
+      };
+    }
+
     const errorString = String(error);
 
     if (
